@@ -1,0 +1,29 @@
+<package>
+  <description brief="ar_track_alvar">
+
+     ar_track_alvar
+
+  </description>
+  <author>Scott Niekum</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/ar_track_alvar</url>
+
+  <depend package="std_msgs"/>
+  <depend package="rospy"/>
+  <depend package="roscpp"/>
+  <depend package="common_rosdeps" />
+  <depend package="tf" />
+  <depend package="image_transport" />
+  <depend package="sensor_msgs" />
+  <depend package="geometry_msgs" />
+  <depend package="visualization_msgs" />
+  <depend package="resource_retriever" />
+  <depend package="cv_bridge" />
+
+  <rosdep name="eigen" />
+
+
+</package>
+
+

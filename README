@@ -1,0 +1,81 @@
+Documentation for ar_track_alvar
+Package maintained by Scott Niekum
+sniekum@willowgarage.com
+sniekum@cs.umass.edu
+****************************************
+
+
+OVERVIEW
+---------
+
+This package is a ROS wrapper for Alvar, an open source AR tag tracking library.  
+More information on Alvar can be found at: http://virtual.vtt.fi/virtual/proj2/multimedia/index.html
+
+ar_track_alvar has 4 main functionalities:
+
+1) Generating AR tags of varying size, resolution, and data/ID encoding
+2) Identifying and tracking the pose of individual AR tags
+3) Identifying and tracking the pose of "bundles" consisting of multiple tags.  This allows for more stable pose estimates, robustness to occlusions, and tracking of multi-sided objects.
+4) Using camera images to automatically calculate spatial relationships between tags in a bundle, so that the user does not have to manually measure and enter tag locations in an XML file to use the bundle functionality (**NOT CURRENTLY WORKING -- SEE BELOW).
+
+Alvar is significantly newer and more advanced than the ARToolkit, which has been the basis for several other ROS AR tag packages.  Alvar features adaptive thresholding to handle a variety of lighting conditions, optical flow based tracking for more stable pose estimation, and an improved tag identification method that does not significantly slow down as the number of tags increases.
+
+
+INSTALLATION
+------------
+
+Download and run rosmake.  OpenCV must be installed.
+
+
+GENERATING AR TAGS
+------------------
+
+Two pdf files are in the markers directory containing tags 0-8 and 9-17, respectively.  The markers are 4.5 cm (although when printed and measured, came out to 4.4 cm for me).  If you want to generate your own markers with different ID numbers, border widths, or sizes, run:
+
+./bin/createMarker
+
+and instructions will appear describing the various options.
+
+
+DETECTING INDIVIDUAL AR TAGS
+----------------------------
+
+The first use case for this package is to identify and track the poses of (possibly) multiple AR tags that are each considered individually.  To do so, run ./bin/individualMarkers with the following command line arguments:
+
+1. Marker size (double) -- The width in centimeters of one side of the black square that makes up a marker
+2. Max new marker error (double) -- A threshold determining when new markers can be detected under uncertainty
+3. Max track error (double) -- A threshold determining how much tracking error can be observed before an tag is considered to have disappeared
+4. Camera image topic (string) -- The name of the topic that provides camera frames for detecting the AR tags.  This can be mono or color, but should be an UNrectified image, since rectification takes place in this package
+5. Camera info topic (string) -- The name of the topic that provides the camera calibration parameters so that the image can be rectified
+6. Output frame (string) -- The name of the frame that the Cpublished artesian locations of the AR tags will be relative to
+
+In the launch directory, pr2_indiv.launch shows an example of how to set these parameters in a reasonable way and start the node. Once running, the node will publish two topics:
+
+1. /visualization_marker (visualization_msgs::Marker) -- This is an rviz message that when subscribed to (as a Marker in rviz), will display a colored square block at the location of each identified AR tag, and will also overlay these blocks in a camera image.  Currently, it is set to display a unique color for markers 0-5 and a uniform color for all others.
+2. /ar_pose_marker (ar_track_alvar::AlvarMarkers) -- This is a list of the poses of all the observed AR tags, with respect to the output frame  
+
+A tf transform from the camera to each AR tag is also published under the name ar_marker_x, where x is the ID number of the tag.
+
+
+DETECTING MULTI-TAG "BUNDLES"
+-----------------------------
+
+Sometimes it is advantageous to treat "bundles" of multiple tags as a single unit.  For example, this can allow for the estimation of the pose of a many-sided object, even when some of the tags cannot be seen.  It can also lead to more stable pose estimates and provide robustness to occlusion.  A tag bundle is defined by an XML file that lists a set of tag IDs and their positions relative to a "master" tag.  The master tag always comes first in the XML file and defines a coordinate system for the rest of the tags.  IMPORTANT: this coordinate system is different from the standard system used in ROS!  In this system, when facing the tag, positive-z comes out of the front of the tag toward the viewer, positive-x is to the right, and positive-y is up.  So to create a bundle, first choose which tag you want to be the master tag.  Then, after placing the tags, measure the x, y, and z coordinate for each of the 4 corners of all the rest of the tags.  An example XML file showing this for a tagged table leg can be found in the ./bundles directory.
+
+Multiple bundles can be detected at once.  There should be one file for each bundle that is to be detected. To run the detection node, run ./bin/findMarkerBundles.  This takes all the same command line parameters as the individual markers, plus a list of XML file names, one for each bundle you wish to detect. 
+
+In the launch directory, pr2_bundle.launch shows an example of how to set these parameters and start the node. Once running, the node will publish two topics:
+
+1. /visualization_marker (visualization_msgs::Marker) -- This is the same as in the individual case, except that the "master" tag for each bundle will appear in red (whether it is actually observed or not, if any of the tags in the bundle are seen, it will use this information to predict the position of the master tag) and all other observed tags will appear in green.  
+2. /ar_pose_marker (ar_track_alvar::AlvarMarkers) -- This is a list of the (possibly estimated) poses of all the master tags, with respect to the output frame  
+
+A tf transform from the camera to each master tag is also published under the name ar_marker_x, where x is the ID number of the tag.
+   
+
+AUTOMATIC XML BUNDLE FILE GENERATION
+------------------------------------
+
+Rather than having to measure tag placements and construct an XML file by hand for each bundle, Alvar has a feature that allows this to be done automatically from multiple images in which 2 or more tags are visible.  Running ./bin/trainMarkerBundle (see pr2_train.launch for an example) provides a keyboard interface for captuing images and optimizing the bundle structure.  However, I was not able to get it working reliably.  It would be great if someone took this up as a small project.  Some tips from another group that uses Alvar can be found here:
+
+http://graphics.cs.columbia.edu/wiki/doku.php?id=alvar
+  
