@@ -1,6 +1,5 @@
 <stack>
-  <description brief="ar_track_alvar">Wraps the Alvar library for ar tracking</description>
-  </description>
+  <description brief="ar_track_alvar">Wraps the Alvar library for AR tag tracking</description>
   <author>Maintained by Scott Niekum</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
