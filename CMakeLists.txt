@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.4.6)
 include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+set(ROSPACK_MAKEDIST true)
 
 # Set the build type.  Options are:
 #  Coverage       : w/ debug symbols, w/o optimization, w/ code-coverage
@@ -48,4 +49,6 @@ target_link_libraries(findMarkerBundles ar_track_alvar)
 
 rosbuild_add_executable(createMarker src/SampleMarkerCreator.cpp)
 target_link_libraries(createMarker ar_track_alvar)
+
+rosbuild_make_distribution(0.2.0)
 
