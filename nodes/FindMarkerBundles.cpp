@@ -45,17 +45,26 @@
 #include <ar_track_alvar/AlvarMarkers.h>
 #include <tf/transform_listener.h>
 
-using namespace alvar;
-using namespace std;
+#include <sensor_msgs/PointCloud2.h>
+#include <pcl/ros/conversions.h>
+#include <pcl/point_types.h>
+#include <pcl/registration/icp.h>
+#include <pcl/registration/registration.h>
 
 #define MAIN_MARKER 1
 #define VISIBLE_MARKER 2
 #define GHOST_MARKER 3
 
+typedef pcl::PointCloud<pcl::PointXYZRGB> PointCloud;
+
+using namespace alvar;
+using namespace std;
+
 Camera *cam;
 IplImage *capture_;
 sensor_msgs::CvBridge bridge_;
 image_transport::Subscriber cam_sub_;
+ros::Subscriber cloud_sub_;
 ros::Publisher arMarkerPub_;
 ros::Publisher rvizMarkerPub_;
 ar_track_alvar::AlvarMarkers arPoseMarkers_;
@@ -80,16 +89,20 @@ int n_bundles = 0;
 void GetMultiMarkerPoses(IplImage *image);
 void getCapCallback (const sensor_msgs::ImageConstPtr & image_msg);
 void makeMarkerMsgs(int type, int id, Pose &p, sensor_msgs::ImageConstPtr image_msg, tf::StampedTransform &CamToOutput, visualization_msgs::Marker *rvizMarker, ar_track_alvar::AlvarMarker *ar_pose_marker);
+void getPointCloudCallback (const sensor_msgs::PointCloud2ConstPtr &msg);
 
 
 // Updates the bundlePoses of the multi_marker_bundles by detecting markers and using all markers in a bundle to infer the master tag's position
 void GetMultiMarkerPoses(IplImage *image) {
 
-    if (marker_detector.Detect(image, cam, true, false, max_new_marker_error, max_track_error, CVSEQ, true)) 
-	{
-		for(int i=0; i<n_bundles; i++)
+	if (marker_detector.Detect(image, cam, true, false, max_new_marker_error, max_track_error, CVSEQ, true)) 
+    {
+        //INSERT KINECT POSE UPDATE HERE BEFORE MULTI UPDATE
+
+	    for(int i=0; i<n_bundles; i++)
     		multi_marker_bundles[i]->Update(marker_detector.markers, cam, bundlePoses[i]);
 
+        /*
 		if(marker_detector.DetectAdditional(image, cam, false) > 0)
 		{
 			for(int i=0; i<n_bundles; i++)
@@ -97,7 +110,7 @@ void GetMultiMarkerPoses(IplImage *image) {
         		if ((multi_marker_bundles[i]->SetTrackMarkers(marker_detector, cam, bundlePoses[i], image) > 0))
         			multi_marker_bundles[i]->Update(marker_detector.markers, cam, bundlePoses[i]);
         	}
-		}
+		}*/
     }
 }
 
@@ -131,7 +144,7 @@ void makeMarkerMsgs(int type, int id, Pose &p, sensor_msgs::ImageConstPtr image_
 		std::string id_string = out.str();
 		markerFrame += id_string;
 		tf::StampedTransform camToMarker (t, image_msg->header.stamp, image_msg->header.frame_id, markerFrame.c_str());
-    	tf_broadcaster->sendTransform(camToMarker);
+    		tf_broadcaster->sendTransform(camToMarker);
 	}
 
 	//Create the rviz visualization message
@@ -276,6 +289,114 @@ void getCapCallback (const sensor_msgs::ImageConstPtr & image_msg)
 	}
 }
 
+//4.4 0.08 0.2 /kinect_head/rgb/image_rect_color /kinect_head/rgb/camera_info /torso_lift_link ../bundles/truthTableLeg.xml ../bundles/table_8_9_10.xml
+
+
+//Callback to handle getting kinect point clouds and processing them
+void getPointCloudCallback (const sensor_msgs::PointCloud2ConstPtr &msg)
+{
+	sensor_msgs::ImagePtr image_msg(new sensor_msgs::Image);
+
+	if(init){
+		CvSize sz_ = cvSize (cam->x_res, cam->y_res);
+    	capture_ = cvCreateImage (sz_, IPL_DEPTH_8U, 4);
+		init = false;	
+	}
+
+	//If we've already gotten the cam info, then go ahead
+	if(cam->getCamInfo_){
+		try{
+			//Get the transformation from the Camera to the output frame for this image capture
+			tf::StampedTransform CamToOutput;
+    		try{
+				tf_listener->waitForTransform(output_frame, msg->header.frame_id, msg->header.stamp, ros::Duration(1.0));
+				tf_listener->lookupTransform(output_frame, msg->header.frame_id, msg->header.stamp, CamToOutput);
+   			}
+    		catch (tf::TransformException ex){
+      			ROS_ERROR("%s",ex.what());
+    		}
+
+ 			//Init and clear visualization markers
+			visualization_msgs::Marker rvizMarker;
+    		ar_track_alvar::AlvarMarker ar_pose_marker;
+    		arPoseMarkers_.markers.clear ();
+
+            //Convert cloud to PCL 
+    		PointCloud cloud;
+    		pcl::fromROSMsg(*msg, cloud);
+
+			//Get an OpenCV image from the cloud
+    		pcl::toROSMsg (cloud, *image_msg);
+			image_msg->header.stamp = msg->header.stamp;
+			image_msg->header.frame_id = msg->header.frame_id;
+
+    		//Convert the image
+      		capture_ = bridge_.imgMsgToCv (image_msg, "rgb8");
+
+      		//Get the estimated pose of the main markers by using all the markers in each bundle
+    		GetMultiMarkerPoses(capture_);
+		
+    		//Draw the observed markers that are visible and note which bundles have at least 1 marker seen
+            for(int i=0; i<n_bundles; i++)
+            	bundles_seen[i] = false;
+
+ 			printf("\n");
+			for (size_t i=0; i<marker_detector.markers->size(); i++)
+			{
+        		int id = (*(marker_detector.markers))[i].GetId();
+                std::vector<PointDouble> *mpts = &((*(marker_detector.markers))[i].marker_allpoints_img);
+				printf("SIZE: %i\n",mpts->size());
+				for(int k=0; k<mpts->size(); k++)
+				{
+					printf("%i: %i %i\n", id, (*mpts)[k].x, (*mpts)[k].y);					
+				}				
+
+				//(*(marker_detector.markers))[i].SaveMarkerImage("asdf.jpg",0);
+
+				// Draw if id is valid
+        		if(id >= 0){
+
+        			//Mark the bundle that marker belongs to as "seen"
+					for(int j=0; j<n_bundles; j++){
+						for(int k=0; k<bundle_indices[j].size(); k++){
+							if(bundle_indices[j][k] == id){
+								bundles_seen[j] = true;
+								break;
+							}
+						}
+					}
+
+ 					// Don't draw if it is a master tag...we do this later, a bit differently
+					bool should_draw = true;
+					for(int i=0; i<n_bundles; i++){
+						if(id == master_id[i]) should_draw = false;
+					}
+					if(should_draw){
+        				Pose p = (*(marker_detector.markers))[i].pose;
+        				makeMarkerMsgs(VISIBLE_MARKER, id, p, image_msg, CamToOutput, &rvizMarker, &ar_pose_marker);
+        				rvizMarkerPub_.publish (rvizMarker);
+        			}
+				}
+			}
+			
+			//Draw the main markers, whether they are visible or not -- but only if at least 1 marker from their bundle is currently seen
+			for(int i=0; i<n_bundles; i++)
+			{
+                if(bundles_seen[i] == true){
+    				makeMarkerMsgs(MAIN_MARKER, master_id[i], bundlePoses[i], image_msg, CamToOutput, &rvizMarker, &ar_pose_marker);
+    				rvizMarkerPub_.publish (rvizMarker);
+    				arPoseMarkers_.markers.push_back (ar_pose_marker);
+				}
+			}
+
+			//Publish the marker messages
+			arMarkerPub_.publish (arPoseMarkers_);
+		}
+    	catch (sensor_msgs::CvBridgeException & e){
+      		ROS_ERROR ("ar_track_alvar: Image error: %s", image_msg->encoding.c_str ());
+    	}
+	}
+}
 
 
 int main(int argc, char *argv[])
@@ -338,8 +459,9 @@ int main(int argc, char *argv[])
 	 
 	//Subscribe to topics and set up callbacks
 	ROS_INFO ("Subscribing to image topic");
-	image_transport::ImageTransport it_(n);
-    cam_sub_ = it_.subscribe (cam_image_topic, 1, &getCapCallback);
+	//image_transport::ImageTransport it_(n);
+    //cam_sub_ = it_.subscribe (cam_image_topic, 1, &getCapCallback);
+    cloud_sub_ = n.subscribe("/kinect_head/depth_registered/points", 1, &getPointCloudCallback);
 
 	ros::spin();
 

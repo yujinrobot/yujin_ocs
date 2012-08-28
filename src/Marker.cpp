@@ -207,6 +207,7 @@ bool Marker::UpdateContentBasic(vector<PointDouble > &_marker_corners_img, IplIm
 			y = (int)(0.5+Limit(marker_points_img[(j*marker_content->width)+i].y, 1, gray->height-2));
 			
 			marker_points_img[(j*marker_content->width)+i].val = (int)cvGetReal2D(gray, y, x);
+
 			/*
 			// Use median of 5 neighbor pixels
 			vector<int> vals;
@@ -272,7 +273,7 @@ bool Marker::UpdateContentBasic(vector<PointDouble > &_marker_corners_img, IplIm
 	margin_error = (double)erroneous/total;
 	track_error;
 
-#ifdef VISUALIZE_MARKER_POINTS
+//#ifdef VISUALIZE_MARKER_POINTS
 	// Now we fill also this temporary debug table for visualizing marker code reading
 	// TODO: this whole vector is only for debug purposes
 	marker_allpoints_img.clear();
@@ -293,7 +294,9 @@ bool Marker::UpdateContentBasic(vector<PointDouble > &_marker_corners_img, IplIm
 		p.val=128; // Unknown?
 		marker_allpoints_img.push_back(p);
 	}
-#endif
+   
+
+//#endif
 	return true;
 }
 void Marker::UpdatePose(vector<PointDouble > &_marker_corners_img, Camera *cam, int orientation, int frame_no /* =0 */, bool update_pose /* =true */) {
