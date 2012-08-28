@@ -21,7 +21,6 @@
   <depend package="resource_retriever" />
   <depend package="cv_bridge" />
   <depend package="pcl_ros"/>
-
   <rosdep name="eigen" />
 
 
