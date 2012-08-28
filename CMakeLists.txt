@@ -38,6 +38,7 @@ rosbuild_add_library(ar_track_alvar src/Camera.cpp src/Pose.cpp src/Marker.cpp s
 
 TARGET_LINK_LIBRARIES(ar_track_alvar ${OpenCV_LIBS} )
 
+set(ALVAR_TARGETS individualMarkers trainMarkerBundle findMarkerBundles createMarker)
 rosbuild_add_executable(individualMarkers nodes/IndividualMarkers.cpp)
 target_link_libraries(individualMarkers ar_track_alvar)
 
@@ -49,6 +50,17 @@ target_link_libraries(findMarkerBundles ar_track_alvar)
 
 rosbuild_add_executable(createMarker src/SampleMarkerCreator.cpp)
 target_link_libraries(createMarker ar_track_alvar)
+
+foreach(t ${ALVAR_TARGETS})
+  rosbuild_add_compile_flags(ar_track_alvar
+    -Wno-unused-variable -Wno-unused-but-set-variable -Wno-missing-braces -Wno-comment -Wno-unused-value -Wno-sign-compare
+    -Wno-type-limits)
+endforeach(t)
+
+# Test node for kinect filtering
+rosbuild_add_executable(kinect_filtering src/kinect_filtering.cpp)
+rosbuild_add_compile_flags(kinect_filtering
+  -std=c++0x)
 
 rosbuild_make_distribution(0.2.0)
 
