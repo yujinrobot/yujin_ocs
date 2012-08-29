@@ -52,7 +52,7 @@ rosbuild_add_executable(createMarker src/SampleMarkerCreator.cpp)
 target_link_libraries(createMarker ar_track_alvar)
 
 foreach(t ${ALVAR_TARGETS})
-  rosbuild_add_compile_flags(ar_track_alvar
+  rosbuild_add_compile_flags(${t}
     -Wno-unused-variable -Wno-unused-but-set-variable -Wno-missing-braces -Wno-comment -Wno-unused-value -Wno-sign-compare
     -Wno-type-limits)
 endforeach(t)

@@ -62,6 +62,8 @@
 #include <pcl/filters/extract_indices.h>
 #include <boost/lexical_cast.hpp>
 
+#include <LinearMath/btMatrix3x3.h>
+
 #define MAIN_MARKER 1
 #define VISIBLE_MARKER 2
 #define GHOST_MARKER 3
@@ -120,21 +122,7 @@ int n_bundles = 0;
 
 // Distance threshold for plane fitting: how far are points
 // allowed to be off the plane?
-double distance_threshold_ = 0.005;
-// Pixel coordinates in depth image
-vector<Pixel> pixels_;
-
-PlaneFitResult fitPlane (ARCloud::ConstPtr cloud);
-ARCloud::Ptr filterCloud (const ARCloud& cloud, const vector<Pixel>& pixels);
-gm::Point centroid (const ARCloud& points);
-gm::Quaternion makeQuaternion (double x, double y, double z, double w);
-gm::Quaternion extractNormal (const pcl::ModelCoefficients& plane_coeffs);
-
-void GetMultiMarkerPoses(IplImage *image);
-void getCapCallback (const sensor_msgs::ImageConstPtr & image_msg);
-void makeMarkerMsgs(int type, int id, Pose &p, sensor_msgs::ImageConstPtr image_msg, tf::StampedTransform &CamToOutput, visualization_msgs::Marker *rvizMarker, ar_track_alvar::AlvarMarker *ar_pose_marker);
-void getPointCloudCallback (const sensor_msgs::PointCloud2ConstPtr &msg);
-
+const double distance_threshold_ = 0.005;
 
 // Wrapper for pcl plane fit
 PlaneFitResult fitPlane (ARCloud::ConstPtr cloud) 
@@ -161,18 +149,18 @@ PlaneFitResult fitPlane (ARCloud::ConstPtr cloud)
 }
 
 // Select out a subset of a cloud corresponding to a set of pixel coordinates
-ARCloud::Ptr filterCloud (const ARCloud& cloud, const vector<Pixel>& pixels)
+ARCloud::Ptr filterCloud (const ARCloud& cloud, const vector<PointDouble>& pixels)
 {
   ARCloud::Ptr out(new ARCloud());
   ROS_INFO("  Filtering %zu pixels", pixels.size());
   //for (const Pixel& p : pixels)
   for(int i=0; i<pixels.size(); i++)  
   {
-    const ARPoint& pt = cloud(pixels[i].r, pixels[i].c);
+    const ARPoint& pt = cloud(pixels[i].x, pixels[i].y);
     if (isnan(pt.x) || isnan(pt.y) || isnan(pt.z))
       ROS_INFO("    Skipping (%.4f, %.4f, %.4f)", pt.x, pt.y, pt.z);
     else
-      out->points.push_back(cloud(pixels[i].r, pixels[i].c));
+      out->points.push_back(cloud(pixels[i].x, pixels[i].y));
   }
   return out;
 }
@@ -185,7 +173,7 @@ gm::Point centroid (const ARCloud& points)
   sum.y = 0;
   sum.z = 0;
   //for (const Point& p : points)
-  for(int i=0; i<points.size(); i++)
+  for(size_t i=0; i<points.size(); i++)
   {
     sum.x += points[i].x;
     sum.y += points[i].y;
@@ -212,92 +200,107 @@ gm::Quaternion makeQuaternion (double x, double y, double z, double w)
   return q;
 }
 
-// Given the plane coefficients, produce a Quaternion that corresponds to a 
-// coordinate frame whose x axis lies along the normal to that plane.  Note that
-// the quaternion has a degree of freedom which is resolved arbitrarily.
-gm::Quaternion extractNormal (const pcl::ModelCoefficients& plane_coeffs)
+// Extract and normalize plane coefficients
+void getCoeffs (const pcl::ModelCoefficients& coeffs, double* a, double* b,
+                double* c, double* d)
 {
-  ROS_ASSERT(plane_coeffs.values.size()==4);
+  ROS_ASSERT(coeffs.values.size()==4);
+  const double s = coeffs.values[0]*coeffs.values[0] +
+    coeffs.values[1]*coeffs.values[1] + coeffs.values[2]*coeffs.values[2];
+  ROS_ASSERT(fabs(s)>1e-6);
+  *a = coeffs.values[0]/s;
+  *b = coeffs.values[1]/s;
+  *c = coeffs.values[2]/s;
+  *d = coeffs.values[3]/s;
+}
 
-  // Normalize normal vector
-  const double x0 = plane_coeffs.values[0];
-  const double y0 = plane_coeffs.values[1];
-  const double z0 = plane_coeffs.values[2];
-  const double s = sqrt(x0*x0 + y0*y0 + z0*z0);
-  const double x = x0/s;
-  const double y = y0/s;
-  const double z = z0/s;
+// Project point onto plane
+btVector3 project (const ARPoint& p, const double a, const double b,
+                   const double c, const double d)
+{
+  const double t = a*p.x + b*p.y + c*p.z + d;
+  return btVector3(p.x-t*a, p.y-t*b, p.z-t*c);
+}
+
+// Given the coefficients of a plane, and two points p1 and p2, we produce a 
+// quaternion q that sends p2'-p1' to (1,0,0) and n to (0,0,1), where p1' and
+// p2' are the projections of p1 and p2 onto the plane
+gm::Quaternion extractOrientation (const pcl::ModelCoefficients& coeffs,
+                                   const ARPoint& p1, const ARPoint& p2)
+{
+  // Get plane coeffs and project p1 and p2
+  double a=0, b=0, c=0, d=0;
+  getCoeffs(coeffs, &a, &b, &c, &d);
+  const btVector3 q1 = project(p1, a, b, c, d);
+  const btVector3 q2 = project(p2, a, b, c, d);
   
-  // Deal with degenerate case where normal is along x axis
-  if (fabs(y)<1e-3 && fabs(z)<1e-3)
-    return makeQuaternion(0, 0, 0, 1);
-
-  // Find rotation axis that's perpendicular to normal and to x axis, and 
-  // use this along with angle to x-axis to construct the quaternion
-  const double ny = -z;
-  const double nz = y;
-  const double theta = acos(x);
-  return makeQuaternion(0, ny*sin(theta/2), nz*sin(theta/2), cos(theta/2));
+  // (inverse) matrix with the given properties
+  const btVector3 v = (q2-q1).normalized();
+  const btVector3 n(a, b, c);
+  const btVector3 w = v.cross(n);
+  btMatrix3x3 m(v.x(), v.y(), v.z(), w[0], w[1], w[2], n[0], n[1], n[2]);
+  
+  // Convert to quaternion and return
+  btQuaternion q;
+  m.getRotation(q);
+  gm::Quaternion q_ros;
+  tf::quaternionTFToMsg(q.inverse(), q_ros);
+  return q_ros;
 }
 
 
-// Updates the bundlePoses of the multi_marker_bundles by detecting markers and using all markers in a bundle to infer the master tag's position
-void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud, const sensor_msgs::PointCloud2ConstPtr &msg) {
 
-	if (marker_detector.Detect(image, cam, true, false, max_new_marker_error, max_track_error, CVSEQ, true)) 
+// Updates the bundlePoses of the multi_marker_bundles by detecting markers and
+// using all markers in a bundle to infer the master tag's position
+void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
+
+  if (marker_detector.Detect(image, cam, true, false, max_new_marker_error,
+                             max_track_error, CVSEQ, true)) 
+  {
+    //Kinect pose improvement
+    printf("\n--------------------------\n");
+    for (size_t i=0; i<marker_detector.markers->size(); i++)
     {
-        //Kinect pose improvement
-		printf("\n--------------------------\n");
-		for (size_t i=0; i<marker_detector.markers->size(); i++)
-		{
-        	int id = (*(marker_detector.markers))[i].GetId();
-            std::vector<PointDouble> mpts = (*(marker_detector.markers))[i].ros_marker_points_img;
-            
-			pixels_.clear();    
-            printf("\n");
-			for(int k=0; k<mpts.size(); k++)
-			{
-				printf("%i: %f %f\n", id, mpts[k].x, mpts[k].y);
-				pixels_.push_back(Pixel(mpts[k].x, mpts[k].y));					
-		    }
+      ARCloud::Ptr selected_points =
+        filterCloud(cloud, (*marker_detector.markers)[i].ros_marker_points_img);
+      ROS_INFO("  Selected out %zu points", selected_points->size());
+      PlaneFitResult res = fitPlane(selected_points);
+      gm::PoseStamped pose;
+      pose.header.stamp = cloud.header.stamp;
+      pose.header.frame_id = cloud.header.frame_id;
+      pose.pose.position = centroid(*res.inliers);
+      pose.pose.orientation =
+        extractOrientation(res.coeffs, (*selected_points)[0],
+                           (*selected_points)[1]);
 
-			ARCloud::Ptr selected_points = filterCloud(cloud, pixels_);
-  			ROS_INFO("  Selected out %zu points", selected_points->size());
-  			PlaneFitResult res = fitPlane(selected_points);
-  			gm::PoseStamped pose;
-  			pose.header.stamp = msg->header.stamp;
-  			pose.header.frame_id = msg->header.frame_id;
-  			pose.pose.position = centroid(*res.inliers);
-  			pose.pose.orientation = extractNormal(res.coeffs);
-
-            printf("%f %f %f %f %f %f %f\n", pose.pose.position.x,pose.pose.position.y,pose.pose.position.z,pose.pose.orientation.x,pose.pose.orientation.y,pose.pose.orientation.z,pose.pose.orientation.w);	
+      ROS_INFO_STREAM("Pose is " << pose.pose);
 		
-			Pose *p = &((*(marker_detector.markers))[i].pose);
-			p->translation[0] = pose.pose.position.x * 100.0;
-			p->translation[1] = pose.pose.position.y * 100.0;
-			p->translation[2] = pose.pose.position.z * 100.0;
-			p->quaternion[1] = pose.pose.orientation.x;
-			p->quaternion[2] = pose.pose.orientation.y;
-			p->quaternion[3] = pose.pose.orientation.z;
-			p->quaternion[0] = pose.pose.orientation.w;
-		}	
+      Pose *p = &((*(marker_detector.markers))[i].pose);
+      p->translation[0] = pose.pose.position.x * 100.0;
+      p->translation[1] = pose.pose.position.y * 100.0;
+      p->translation[2] = pose.pose.position.z * 100.0;
+      p->quaternion[1] = pose.pose.orientation.x;
+      p->quaternion[2] = pose.pose.orientation.y;
+      p->quaternion[3] = pose.pose.orientation.z;
+      p->quaternion[0] = pose.pose.orientation.w;
+    }	
 
 		
 
-		//Update multi marker bundle positions
-	    for(int i=0; i<n_bundles; i++)
-    		multi_marker_bundles[i]->Update(marker_detector.markers, cam, bundlePoses[i]);
+    //Update multi marker bundle positions
+    for(int i=0; i<n_bundles; i++)
+      multi_marker_bundles[i]->Update(marker_detector.markers, cam, bundlePoses[i]);
 
-        /*
-		if(marker_detector.DetectAdditional(image, cam, false) > 0)
-		{
-			for(int i=0; i<n_bundles; i++)
-			{
-        		if ((multi_marker_bundles[i]->SetTrackMarkers(marker_detector, cam, bundlePoses[i], image) > 0))
-        			multi_marker_bundles[i]->Update(marker_detector.markers, cam, bundlePoses[i]);
-        	}
-		}*/
-    }
+    /*
+      if(marker_detector.DetectAdditional(image, cam, false) > 0)
+      {
+      for(int i=0; i<n_bundles; i++)
+      {
+      if ((multi_marker_bundles[i]->SetTrackMarkers(marker_detector, cam, bundlePoses[i], image) > 0))
+      multi_marker_bundles[i]->Update(marker_detector.markers, cam, bundlePoses[i]);
+      }
+      }*/
+  }
 }
 
 
@@ -521,7 +524,7 @@ void getPointCloudCallback (const sensor_msgs::PointCloud2ConstPtr &msg)
       		capture_ = bridge_.imgMsgToCv (image_msg, "rgb8");
 
       		//Get the estimated pose of the main markers by using all the markers in each bundle
-    		GetMultiMarkerPoses(capture_, cloud, msg);
+    		GetMultiMarkerPoses(capture_, cloud);
 		
     		//Draw the observed markers that are visible and note which bundles have at least 1 marker seen
             for(int i=0; i<n_bundles; i++)
@@ -546,8 +549,8 @@ void getPointCloudCallback (const sensor_msgs::PointCloud2ConstPtr &msg)
 
  					// Don't draw if it is a master tag...we do this later, a bit differently
 					bool should_draw = true;
-					for(int i=0; i<n_bundles; i++){
-						if(id == master_id[i]) should_draw = false;
+					for(int j=0; j<n_bundles; j++){
+						if(id == master_id[j]) should_draw = false;
 					}
 					if(should_draw){
         				Pose p = (*(marker_detector.markers))[i].pose;
