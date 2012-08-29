@@ -130,7 +130,8 @@ gm::Point centroid (const ARCloud& points);
 gm::Quaternion makeQuaternion (double x, double y, double z, double w);
 gm::Quaternion extractNormal (const pcl::ModelCoefficients& plane_coeffs);
 
-void GetMultiMarkerPoses(IplImage *image);
+//void GetMultiMarkerPoses(IplImage *image);
+void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud, const sensor_msgs::PointCloud2ConstPtr &msg);
 void getCapCallback (const sensor_msgs::ImageConstPtr & image_msg);
 void makeMarkerMsgs(int type, int id, Pose &p, sensor_msgs::ImageConstPtr image_msg, tf::StampedTransform &CamToOutput, visualization_msgs::Marker *rvizMarker, ar_track_alvar::AlvarMarker *ar_pose_marker);
 void getPointCloudCallback (const sensor_msgs::PointCloud2ConstPtr &msg);
@@ -276,10 +277,10 @@ void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud, const sensor_msgs::Poi
 			p->translation[0] = pose.pose.position.x * 100.0;
 			p->translation[1] = pose.pose.position.y * 100.0;
 			p->translation[2] = pose.pose.position.z * 100.0;
-			p->quaternion[1] = pose.pose.orientation.x;
-			p->quaternion[2] = pose.pose.orientation.y;
-			p->quaternion[3] = pose.pose.orientation.z;
-			p->quaternion[0] = pose.pose.orientation.w;
+			//p->quaternion[1] = pose.pose.orientation.x;
+			//p->quaternion[2] = pose.pose.orientation.y;
+			//p->quaternion[3] = pose.pose.orientation.z;
+			//p->quaternion[0] = pose.pose.orientation.w;
 		}	
 
 		
