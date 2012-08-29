@@ -234,11 +234,14 @@ gm::Quaternion extractOrientation (const pcl::ModelCoefficients& coeffs,
   const btVector3 q1 = project(p1, a, b, c, d);
   const btVector3 q2 = project(p2, a, b, c, d);
   
+  // Make sure q2 and q1 aren't the same so things are well-defined
+  ROS_ASSERT((q2-q1).length2()>1e-3);
+  
   // (inverse) matrix with the given properties
   const btVector3 v = (q2-q1).normalized();
   const btVector3 n(a, b, c);
-  const btVector3 w = v.cross(n);
-  btMatrix3x3 m(v.x(), v.y(), v.z(), w[0], w[1], w[2], n[0], n[1], n[2]);
+  const btVector3 w = v.cross(n); 
+  btMatrix3x3 m(v[0], v[1], v[2], w[0], w[1], w[2], n[0], n[1], n[2]);
   
   // Convert to quaternion and return
   btQuaternion q;
