@@ -126,17 +126,6 @@ const double distance_threshold_ = 0.005;
 // Pixel coordinates in depth image
 vector<Pixel> pixels_;
 
-PlaneFitResult fitPlane (ARCloud::ConstPtr cloud);
-ARCloud::Ptr filterCloud (const ARCloud& cloud, const vector<Pixel>& pixels);
-gm::Point centroid (const ARCloud& points);
-gm::Quaternion makeQuaternion (double x, double y, double z, double w);
-gm::Quaternion extractNormal (const pcl::ModelCoefficients& plane_coeffs);
-
-//void GetMultiMarkerPoses(IplImage *image);
-void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud, const sensor_msgs::PointCloud2ConstPtr &msg);
-void getCapCallback (const sensor_msgs::ImageConstPtr & image_msg);
-void makeMarkerMsgs(int type, int id, Pose &p, sensor_msgs::ImageConstPtr image_msg, tf::StampedTransform &CamToOutput, visualization_msgs::Marker *rvizMarker, ar_track_alvar::AlvarMarker *ar_pose_marker);
-void getPointCloudCallback (const sensor_msgs::PointCloud2ConstPtr &msg);
 
 
 // Wrapper for pcl plane fit
@@ -267,7 +256,6 @@ gm::Quaternion extractOrientation (const pcl::ModelCoefficients& coeffs,
 }
 
 
-
 // Updates the bundlePoses of the multi_marker_bundles by detecting markers and
 // using all markers in a bundle to infer the master tag's position
 void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
@@ -287,9 +275,13 @@ void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
       pose.header.stamp = cloud.header.stamp;
       pose.header.frame_id = cloud.header.frame_id;
       pose.pose.position = centroid(*res.inliers);
-      pose.pose.orientation =
-      extractOrientation(res.coeffs, (*selected_points)[0],
-                           (*selected_points)[1]);
+
+      PointDouble corner1 = (*marker_detector.markers)[i].marker_corners_img[0];
+      PointDouble corner4 = (*marker_detector.markers)[i].marker_corners_img[3];
+      const ARPoint& pt1 = cloud(corner1.x, corner1.y);
+      const ARPoint& pt4 = cloud(corner4.x, corner4.y);
+
+      pose.pose.orientation = extractOrientation(res.coeffs, pt1, pt4);
 
       ROS_INFO_STREAM("Pose is " << pose.pose);
 		
