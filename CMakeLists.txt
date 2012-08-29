@@ -58,9 +58,9 @@ foreach(t ${ALVAR_TARGETS})
 endforeach(t)
 
 # Test node for kinect filtering
-rosbuild_add_executable(kinect_filtering src/kinect_filtering.cpp)
-rosbuild_add_compile_flags(kinect_filtering
-  -std=c++0x)
+#rosbuild_add_executable(kinect_filtering src/kinect_filtering.cpp)
+#rosbuild_add_compile_flags(kinect_filtering
+#  -std=c++0x)
 
 rosbuild_make_distribution(0.2.0)
 

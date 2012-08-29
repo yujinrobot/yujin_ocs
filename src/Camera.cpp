@@ -415,6 +415,7 @@ void Camera::SetOpenglProjectionMatrix(double proj_matrix[16], const int width, 
 
 void Camera::Undistort(PointDouble &point)
 {
+/*
 	// focal length
 	double ifx = 1./cvmGet(&calib_K, 0, 0);
 	double ify = 1./cvmGet(&calib_K, 1, 1);
@@ -439,10 +440,12 @@ void Camera::Undistort(PointDouble &point)
 	// apply compensation
 	point.x = x/ifx + cx;
 	point.y = y/ify + cy;
+*/
 }
 
 void Camera::Undistort(vector<PointDouble >& points)
 {
+/*
 	// focal length
 	double ifx = 1./cvmGet(&calib_K, 0, 0);
 	double ify = 1./cvmGet(&calib_K, 1, 1);
@@ -470,10 +473,12 @@ void Camera::Undistort(vector<PointDouble >& points)
 		points[i].x = x/ifx + cx;
 		points[i].y = y/ify + cy;
 	}
+*/
 }
 
 void Camera::Undistort(CvPoint2D32f& point)
 {
+/*
 	// focal length
 	double ifx = 1./cvmGet(&calib_K, 0, 0);
 	double ify = 1./cvmGet(&calib_K, 1, 1);
@@ -499,7 +504,7 @@ void Camera::Undistort(CvPoint2D32f& point)
 	// apply compensation
 	point.x = float(x/ifx + cx);
 	point.y = float(y/ify + cy);
-
+*/
 }
 
 /*
@@ -534,6 +539,7 @@ void Camera::Undistort(CvPoint2D32f& point)
 
 void Camera::Distort(vector<PointDouble>& points) 
 {
+/*
 	double u0 = cvmGet(&calib_K, 0, 2), v0 = cvmGet(&calib_K, 1, 2); // cx, cy
 	double fx = cvmGet(&calib_K, 0, 0), fy = cvmGet(&calib_K, 1, 1);
 	double _fx = 1./fx, _fy = 1./fy;
@@ -559,10 +565,12 @@ void Camera::Distort(vector<PointDouble>& points)
 		points[i].x = fx*(x*(d + _2p1y) + p2y2 + (3*p2)*x2) + u0;
 		points[i].y = fy*(y*(d + (2*p2)*x) + _3p1y2 + p1*x2) + v0;
 	}
+*/
 }
 
 void Camera::Distort(PointDouble & point) 
 {
+/*
 	double u0 = cvmGet(&calib_K, 0, 2), v0 = cvmGet(&calib_K, 1, 2); // cx, cy
 	double fx = cvmGet(&calib_K, 0, 0), fy = cvmGet(&calib_K, 1, 1);
 	double _fx = 1./fx, _fy = 1./fy;
@@ -585,10 +593,12 @@ void Camera::Distort(PointDouble & point)
 
 	point.x = fx*(x*(d + _2p1y) + p2y2 + (3*p2)*x2) + u0;
 	point.y = fy*(y*(d + (2*p2)*x) + _3p1y2 + p1*x2) + v0;
+*/
 }
 
 void Camera::Distort(CvPoint2D32f & point) 
 {
+/*
 	double u0 = cvmGet(&calib_K, 0, 2), v0 = cvmGet(&calib_K, 1, 2); // cx, cy
 	double fx = cvmGet(&calib_K, 0, 0), fy = cvmGet(&calib_K, 1, 1);
 	double _fx = 1./fx, _fy = 1./fy;
@@ -611,6 +621,7 @@ void Camera::Distort(CvPoint2D32f & point)
 
 	point.x = float(fx*(x*(d + _2p1y) + p2y2 + (3*p2)*x2) + u0);
 	point.y = float(fy*(y*(d + (2*p2)*x) + _3p1y2 + p1*x2) + v0);
+*/
 }
 
 void Camera::CalcExteriorOrientation(vector<CvPoint3D64f>& pw, vector<CvPoint2D64f>& pi,

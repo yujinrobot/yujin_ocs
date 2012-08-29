@@ -236,6 +236,7 @@ void Node::cloudCB (const Cloud::ConstPtr& cloud)
 
 } // namespace
 
+
 int main (int argc, char** argv)
 {
   namespace ar=ar_track_alvar;
@@ -261,3 +262,4 @@ int main (int argc, char** argv)
   ros::spin();
   return 0;
 }
+

@@ -198,7 +198,10 @@ bool Marker::UpdateContentBasic(vector<PointDouble > &_marker_corners_img, IplIm
 	H.Find(marker_corners, marker_corners_img_undist);
 	H.ProjectPoints(marker_points, marker_points_img);
 	cam->Distort(marker_points_img);
-	// Read the content
+	
+	ros_marker_points_img.clear();
+
+    // Read the content
     int x, y;
 	double min = 255.0, max = 0.0;
 	for (int j=0; j<marker_content->height; j++) {
@@ -207,6 +210,8 @@ bool Marker::UpdateContentBasic(vector<PointDouble > &_marker_corners_img, IplIm
 			y = (int)(0.5+Limit(marker_points_img[(j*marker_content->width)+i].y, 1, gray->height-2));
 			
 			marker_points_img[(j*marker_content->width)+i].val = (int)cvGetReal2D(gray, y, x);
+			
+			ros_marker_points_img.push_back(PointDouble(x,y));
 
 			/*
 			// Use median of 5 neighbor pixels
@@ -273,7 +278,7 @@ bool Marker::UpdateContentBasic(vector<PointDouble > &_marker_corners_img, IplIm
 	margin_error = (double)erroneous/total;
 	track_error;
 
-//#ifdef VISUALIZE_MARKER_POINTS
+#ifdef VISUALIZE_MARKER_POINTS
 	// Now we fill also this temporary debug table for visualizing marker code reading
 	// TODO: this whole vector is only for debug purposes
 	marker_allpoints_img.clear();
@@ -294,9 +299,7 @@ bool Marker::UpdateContentBasic(vector<PointDouble > &_marker_corners_img, IplIm
 		p.val=128; // Unknown?
 		marker_allpoints_img.push_back(p);
 	}
-   
-
-//#endif
+#endif
 	return true;
 }
 void Marker::UpdatePose(vector<PointDouble > &_marker_corners_img, Camera *cam, int orientation, int frame_no /* =0 */, bool update_pose /* =true */) {
@@ -529,6 +532,8 @@ Marker::Marker(const Marker& m) {
 	track_error = m.track_error;
 	cvCopy(m.marker_content, marker_content);
 
+	ros_marker_points_img.resize(m.ros_marker_points_img.size());
+	copy(m.ros_marker_points_img.begin(), m.ros_marker_points_img.end(), ros_marker_points_img.begin());
 	marker_corners.resize(m.marker_corners.size());
 	copy(m.marker_corners.begin(), m.marker_corners.end(), marker_corners.begin());
 	marker_points.resize(m.marker_points.size());

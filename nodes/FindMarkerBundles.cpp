@@ -51,14 +51,46 @@
 #include <pcl/registration/icp.h>
 #include <pcl/registration/registration.h>
 
+#include <geometry_msgs/PoseStamped.h>
+#include <ros/ros.h>
+#include <pcl/ModelCoefficients.h>
+#include <pcl/point_types.h>
+#include <pcl/sample_consensus/method_types.h>
+#include <pcl/sample_consensus/model_types.h>
+#include <pcl/segmentation/sac_segmentation.h>
+#include <pcl_ros/point_cloud.h>
+#include <pcl/filters/extract_indices.h>
+#include <boost/lexical_cast.hpp>
+
 #define MAIN_MARKER 1
 #define VISIBLE_MARKER 2
 #define GHOST_MARKER 3
 
-typedef pcl::PointCloud<pcl::PointXYZRGB> PointCloud;
+using std::cerr;
+
+namespace gm=geometry_msgs;
+
+typedef pcl::PointXYZRGB ARPoint;
+typedef pcl::PointCloud<ARPoint> ARCloud;
 
 using namespace alvar;
 using namespace std;
+using boost::make_shared;
+
+// Pixel coordinates in an image
+struct Pixel
+{
+  unsigned r, c;
+  Pixel (unsigned r=0, unsigned c=0) : r(r), c(c) {}
+};
+
+// Result of plane fit: inliers and the plane equation
+struct PlaneFitResult
+{
+  PlaneFitResult () : inliers(make_shared<ARCloud>()) {}
+  ARCloud::Ptr inliers;
+  pcl::ModelCoefficients coeffs;
+};
 
 Camera *cam;
 IplImage *capture_;
@@ -86,19 +118,173 @@ std::string cam_info_topic;
 std::string output_frame;
 int n_bundles = 0;   
 
+// Distance threshold for plane fitting: how far are points
+// allowed to be off the plane?
+double distance_threshold_ = 0.005;
+// Pixel coordinates in depth image
+vector<Pixel> pixels_;
+
+PlaneFitResult fitPlane (ARCloud::ConstPtr cloud);
+ARCloud::Ptr filterCloud (const ARCloud& cloud, const vector<Pixel>& pixels);
+gm::Point centroid (const ARCloud& points);
+gm::Quaternion makeQuaternion (double x, double y, double z, double w);
+gm::Quaternion extractNormal (const pcl::ModelCoefficients& plane_coeffs);
+
 void GetMultiMarkerPoses(IplImage *image);
 void getCapCallback (const sensor_msgs::ImageConstPtr & image_msg);
 void makeMarkerMsgs(int type, int id, Pose &p, sensor_msgs::ImageConstPtr image_msg, tf::StampedTransform &CamToOutput, visualization_msgs::Marker *rvizMarker, ar_track_alvar::AlvarMarker *ar_pose_marker);
 void getPointCloudCallback (const sensor_msgs::PointCloud2ConstPtr &msg);
 
 
+// Wrapper for pcl plane fit
+PlaneFitResult fitPlane (ARCloud::ConstPtr cloud) 
+{
+  PlaneFitResult res;
+  pcl::PointIndices::Ptr inliers=boost::make_shared<pcl::PointIndices>();
+
+  pcl::SACSegmentation<ARPoint> seg;
+  seg.setOptimizeCoefficients(true);
+  seg.setModelType(pcl::SACMODEL_PLANE);
+  seg.setMethodType(pcl::SAC_RANSAC);
+  seg.setDistanceThreshold(distance_threshold_);
+
+  seg.setInputCloud(cloud);
+  seg.segment(*inliers, res.coeffs);
+
+  pcl::ExtractIndices<ARPoint> extracter;
+  extracter.setInputCloud(cloud);
+  extracter.setIndices(inliers);
+  extracter.setNegative(false);
+  extracter.filter(*res.inliers);
+  
+  return res;
+}
+
+// Select out a subset of a cloud corresponding to a set of pixel coordinates
+ARCloud::Ptr filterCloud (const ARCloud& cloud, const vector<Pixel>& pixels)
+{
+  ARCloud::Ptr out(new ARCloud());
+  ROS_INFO("  Filtering %zu pixels", pixels.size());
+  //for (const Pixel& p : pixels)
+  for(int i=0; i<pixels.size(); i++)  
+  {
+    const ARPoint& pt = cloud(pixels[i].r, pixels[i].c);
+    if (isnan(pt.x) || isnan(pt.y) || isnan(pt.z))
+      ROS_INFO("    Skipping (%.4f, %.4f, %.4f)", pt.x, pt.y, pt.z);
+    else
+      out->points.push_back(cloud(pixels[i].r, pixels[i].c));
+  }
+  return out;
+}
+
+// Return the centroid (mean) of a point cloud
+gm::Point centroid (const ARCloud& points)
+{
+  gm::Point sum;
+  sum.x = 0;
+  sum.y = 0;
+  sum.z = 0;
+  //for (const Point& p : points)
+  for(int i=0; i<points.size(); i++)
+  {
+    sum.x += points[i].x;
+    sum.y += points[i].y;
+    sum.z += points[i].z;
+  }
+  
+  gm::Point center;
+  const size_t n = points.size();
+  center.x = sum.x/n;
+  center.y = sum.y/n;
+  center.z = sum.z/n;
+  return center;
+}
+
+// Helper function to construct a geometry_msgs::Quaternion
+inline
+gm::Quaternion makeQuaternion (double x, double y, double z, double w)
+{
+  gm::Quaternion q;
+  q.x = x;
+  q.y = y;
+  q.z = z;
+  q.w = w;
+  return q;
+}
+
+// Given the plane coefficients, produce a Quaternion that corresponds to a 
+// coordinate frame whose x axis lies along the normal to that plane.  Note that
+// the quaternion has a degree of freedom which is resolved arbitrarily.
+gm::Quaternion extractNormal (const pcl::ModelCoefficients& plane_coeffs)
+{
+  ROS_ASSERT(plane_coeffs.values.size()==4);
+
+  // Normalize normal vector
+  const double x0 = plane_coeffs.values[0];
+  const double y0 = plane_coeffs.values[1];
+  const double z0 = plane_coeffs.values[2];
+  const double s = sqrt(x0*x0 + y0*y0 + z0*z0);
+  const double x = x0/s;
+  const double y = y0/s;
+  const double z = z0/s;
+  
+  // Deal with degenerate case where normal is along x axis
+  if (fabs(y)<1e-3 && fabs(z)<1e-3)
+    return makeQuaternion(0, 0, 0, 1);
+
+  // Find rotation axis that's perpendicular to normal and to x axis, and 
+  // use this along with angle to x-axis to construct the quaternion
+  const double ny = -z;
+  const double nz = y;
+  const double theta = acos(x);
+  return makeQuaternion(0, ny*sin(theta/2), nz*sin(theta/2), cos(theta/2));
+}
+
+
 // Updates the bundlePoses of the multi_marker_bundles by detecting markers and using all markers in a bundle to infer the master tag's position
-void GetMultiMarkerPoses(IplImage *image) {
+void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud, const sensor_msgs::PointCloud2ConstPtr &msg) {
 
 	if (marker_detector.Detect(image, cam, true, false, max_new_marker_error, max_track_error, CVSEQ, true)) 
     {
-        //INSERT KINECT POSE UPDATE HERE BEFORE MULTI UPDATE
+        //Kinect pose improvement
+		printf("\n--------------------------\n");
+		for (size_t i=0; i<marker_detector.markers->size(); i++)
+		{
+        	int id = (*(marker_detector.markers))[i].GetId();
+            std::vector<PointDouble> mpts = (*(marker_detector.markers))[i].ros_marker_points_img;
+            
+			pixels_.clear();    
+            printf("\n");
+			for(int k=0; k<mpts.size(); k++)
+			{
+				printf("%i: %f %f\n", id, mpts[k].x, mpts[k].y);
+				pixels_.push_back(Pixel(mpts[k].x, mpts[k].y));					
+		    }
 
+			ARCloud::Ptr selected_points = filterCloud(cloud, pixels_);
+  			ROS_INFO("  Selected out %zu points", selected_points->size());
+  			PlaneFitResult res = fitPlane(selected_points);
+  			gm::PoseStamped pose;
+  			pose.header.stamp = msg->header.stamp;
+  			pose.header.frame_id = msg->header.frame_id;
+  			pose.pose.position = centroid(*res.inliers);
+  			pose.pose.orientation = extractNormal(res.coeffs);
+
+            printf("%f %f %f %f %f %f %f\n", pose.pose.position.x,pose.pose.position.y,pose.pose.position.z,pose.pose.orientation.x,pose.pose.orientation.y,pose.pose.orientation.z,pose.pose.orientation.w);	
+		
+			Pose *p = &((*(marker_detector.markers))[i].pose);
+			p->translation[0] = pose.pose.position.x * 100.0;
+			p->translation[1] = pose.pose.position.y * 100.0;
+			p->translation[2] = pose.pose.position.z * 100.0;
+			p->quaternion[1] = pose.pose.orientation.x;
+			p->quaternion[2] = pose.pose.orientation.y;
+			p->quaternion[3] = pose.pose.orientation.z;
+			p->quaternion[0] = pose.pose.orientation.w;
+		}	
+
+		
+
+		//Update multi marker bundle positions
 	    for(int i=0; i<n_bundles; i++)
     		multi_marker_bundles[i]->Update(marker_detector.markers, cam, bundlePoses[i]);
 
@@ -204,6 +390,7 @@ void makeMarkerMsgs(int type, int id, Pose &p, sensor_msgs::ImageConstPtr image_
 }
 
 
+/*
 //Callback to handle getting video frames and processing them
 void getCapCallback (const sensor_msgs::ImageConstPtr & image_msg)
 {
@@ -288,7 +475,7 @@ void getCapCallback (const sensor_msgs::ImageConstPtr & image_msg)
     	}
 	}
 }
-
+*/
 //4.4 0.08 0.2 /kinect_head/rgb/image_rect_color /kinect_head/rgb/camera_info /torso_lift_link ../bundles/truthTableLeg.xml ../bundles/table_8_9_10.xml
 
 
@@ -322,7 +509,7 @@ void getPointCloudCallback (const sensor_msgs::PointCloud2ConstPtr &msg)
     		arPoseMarkers_.markers.clear ();
 
             //Convert cloud to PCL 
-    		PointCloud cloud;
+    		ARCloud cloud;
     		pcl::fromROSMsg(*msg, cloud);
 
 			//Get an OpenCV image from the cloud
@@ -334,24 +521,15 @@ void getPointCloudCallback (const sensor_msgs::PointCloud2ConstPtr &msg)
       		capture_ = bridge_.imgMsgToCv (image_msg, "rgb8");
 
       		//Get the estimated pose of the main markers by using all the markers in each bundle
-    		GetMultiMarkerPoses(capture_);
+    		GetMultiMarkerPoses(capture_, cloud, msg);
 		
     		//Draw the observed markers that are visible and note which bundles have at least 1 marker seen
             for(int i=0; i<n_bundles; i++)
             	bundles_seen[i] = false;
 
- 			printf("\n");
 			for (size_t i=0; i<marker_detector.markers->size(); i++)
 			{
-        		int id = (*(marker_detector.markers))[i].GetId();
-                std::vector<PointDouble> *mpts = &((*(marker_detector.markers))[i].marker_allpoints_img);
-				printf("SIZE: %i\n",mpts->size());
-				for(int k=0; k<mpts->size(); k++)
-				{
-					printf("%i: %i %i\n", id, (*mpts)[k].x, (*mpts)[k].y);					
-				}				
-
-				//(*(marker_detector.markers))[i].SaveMarkerImage("asdf.jpg",0);
+        		int id = (*(marker_detector.markers))[i].GetId();	
 
 				// Draw if id is valid
         		if(id >= 0){
@@ -467,3 +645,5 @@ int main(int argc, char *argv[])
 
     return 0;
 }
+
+

@@ -170,13 +170,15 @@ public:
 	std::vector<PointDouble> marker_corners;
 	/** \brief Marker corners in image coordinates */
 	std::vector<PointDouble> marker_corners_img;
+    /** \brief Marker points in image coordinates */
+	std::vector<PointDouble> ros_marker_points_img;
 	/** \brief Samples to be used in figuring out min/max for thresholding */
 	std::vector<PointDouble> marker_margin_w;
 	/** \brief Samples to be used in figuring out min/max for thresholding */
 	std::vector<PointDouble> marker_margin_b;
-//#ifdef VISUALIZE_MARKER_POINTS
+#ifdef VISUALIZE_MARKER_POINTS
 	std::vector<PointDouble> marker_allpoints_img;
-//#endif
+#endif
 };
 
 /**
