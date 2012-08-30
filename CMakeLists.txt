@@ -38,7 +38,11 @@ rosbuild_add_library(ar_track_alvar src/Camera.cpp src/Pose.cpp src/Marker.cpp s
 
 TARGET_LINK_LIBRARIES(ar_track_alvar ${OpenCV_LIBS} )
 
-set(ALVAR_TARGETS individualMarkers trainMarkerBundle findMarkerBundles createMarker)
+# Kinect filtering code
+rosbuild_add_library(kinect_filtering src/kinect_filtering.cpp)
+rosbuild_add_compile_flags(kinect_filtering -std=c++0x)
+
+set(ALVAR_TARGETS individualMarkers trainMarkerBundle findMarkerBundles createMarker ar_track_alvar)
 rosbuild_add_executable(individualMarkers nodes/IndividualMarkers.cpp)
 target_link_libraries(individualMarkers ar_track_alvar)
 
@@ -46,14 +50,17 @@ rosbuild_add_executable(trainMarkerBundle nodes/TrainMarkerBundle.cpp)
 target_link_libraries(trainMarkerBundle ar_track_alvar)
 
 rosbuild_add_executable(findMarkerBundles nodes/FindMarkerBundles.cpp)
-target_link_libraries(findMarkerBundles ar_track_alvar)
+target_link_libraries(findMarkerBundles ar_track_alvar kinect_filtering)
 
 rosbuild_add_executable(createMarker src/SampleMarkerCreator.cpp)
 target_link_libraries(createMarker ar_track_alvar)
 
+rosbuild_add_executable(test_kinect test/test_kinect_filtering.cpp)
+target_link_libraries(test_kinect kinect_filtering)
+
 foreach(t ${ALVAR_TARGETS})
   rosbuild_add_compile_flags(${t}
-    -Wno-unused-variable -Wno-unused-but-set-variable -Wno-missing-braces -Wno-comment -Wno-unused-value -Wno-sign-compare
+    -Wno-unused-variable -Wno-unused-but-set-variable -Wno-missing-braces -Wno-comment -Wno-unused-value -Wno-sign-compare -Wno-comment -Wno-deprecated-declarations
     -Wno-type-limits)
 endforeach(t)
 

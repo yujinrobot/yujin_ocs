@@ -32,23 +32,14 @@
 /**
  * \file 
  * 
- * Test node to demonstrate improving ar tag estimate based on depth data
+ * Library to improve ar tag estimate based on depth data
  *
  * \author Bhaskara Marthi
  */
 
-#include <geometry_msgs/PoseStamped.h>
 #include <ros/ros.h>
-#include <pcl/ModelCoefficients.h>
-#include <pcl/point_types.h>
-#include <pcl/sample_consensus/method_types.h>
-#include <pcl/sample_consensus/model_types.h>
-#include <pcl/segmentation/sac_segmentation.h>
-#include <pcl_ros/point_cloud.h>
-#include <pcl/filters/extract_indices.h>
-#include <boost/lexical_cast.hpp>
-
-using std::cerr;
+#include <ar_track_alvar/kinect_filtering.h>
+#include <tf/transform_datatypes.h>
 
 namespace ar_track_alvar
 {
@@ -56,70 +47,20 @@ namespace ar_track_alvar
 namespace gm=geometry_msgs;
 
 using std::vector;
-using boost::make_shared;
+using std::cerr;
+using std::endl;
+using std::ostream;
 
-typedef pcl::PointXYZRGB Point;
-typedef pcl::PointCloud<Point> Cloud;
+// Distance threshold for plane fitting: how far are points
+// allowed to be off the plane?
+const double distance_threshold_ = 0.005;
 
-// Pixel coordinates in an image
-struct Pixel
-{
-  unsigned r, c;
-  Pixel (unsigned r=0, unsigned c=0) : r(r), c(c) {}
-};
-
-// Result of plane fit: inliers and the plane equation
-struct PlaneFitResult
-{
-  PlaneFitResult () : inliers(make_shared<Cloud>()) {}
-  Cloud::Ptr inliers;
-  pcl::ModelCoefficients coeffs;
-};
-  
-
-// ROS node state
-class Node
-{
-public:
-
-  Node (const vector<Pixel>& pixels);
-  
-  void cloudCB (const Cloud::ConstPtr& cloud);
-
-private:
-  
-  PlaneFitResult fitPlane (Cloud::ConstPtr cloud) const;
-  
-  ros::NodeHandle nh_;
-  
-  // Distance threshold for plane fitting: how far are points
-  // allowed to be off the plane?
-  double distance_threshold_;
-
-  // Pixel coordinates in depth image
-  vector<Pixel> pixels_;
-  
-  ros::Subscriber cloud_sub_;
-  
-  ros::Publisher pose_pub_;
-
-};
-
-
-// Constructor
-Node::Node (const vector<Pixel>& pixels) :
-  distance_threshold_(0.005), pixels_(pixels),
-  cloud_sub_(nh_.subscribe("cloud_in", 1, &Node::cloudCB, this)),
-  pose_pub_(nh_.advertise<gm::PoseStamped>("origin", 10))
-{}
-
-// Wrapper for pcl plane fit
-PlaneFitResult Node::fitPlane (Cloud::ConstPtr cloud) const
+PlaneFitResult fitPlane (ARCloud::ConstPtr cloud)
 {
   PlaneFitResult res;
   pcl::PointIndices::Ptr inliers=boost::make_shared<pcl::PointIndices>();
 
-  pcl::SACSegmentation<Point> seg;
+  pcl::SACSegmentation<ARPoint> seg;
   seg.setOptimizeCoefficients(true);
   seg.setModelType(pcl::SACMODEL_PLANE);
   seg.setMethodType(pcl::SAC_RANSAC);
@@ -128,7 +69,7 @@ PlaneFitResult Node::fitPlane (Cloud::ConstPtr cloud) const
   seg.setInputCloud(cloud);
   seg.segment(*inliers, res.coeffs);
 
-  pcl::ExtractIndices<Point> extracter;
+  pcl::ExtractIndices<ARPoint> extracter;
   extracter.setInputCloud(cloud);
   extracter.setIndices(inliers);
   extracter.setNegative(false);
@@ -137,34 +78,33 @@ PlaneFitResult Node::fitPlane (Cloud::ConstPtr cloud) const
   return res;
 }
 
-// Select out a subset of a cloud corresponding to a set of pixel coordinates
-Cloud::Ptr filterCloud (const Cloud& cloud, const vector<Pixel>& pixels)
+ARCloud::Ptr filterCloud (const ARCloud& cloud, const vector<cv::Point>& pixels)
 {
-  Cloud::Ptr out(new Cloud());
-  ROS_INFO("  Filtering out %zu pixels", pixels.size());
-  for (const Pixel& p : pixels)
+  ARCloud::Ptr out(new ARCloud());
+  ROS_INFO("  Filtering %zu pixels", pixels.size());
+  for (const cv::Point& p : pixels)
   {
-    const Point& pt = cloud(p.r, p.c);
+    const ARPoint& pt = cloud(p.x, p.y);
     if (isnan(pt.x) || isnan(pt.y) || isnan(pt.z))
       ROS_INFO("    Skipping (%.4f, %.4f, %.4f)", pt.x, pt.y, pt.z);
     else
-      out->points.push_back(cloud(p.r, p.c));
+      out->points.push_back(pt);
   }
   return out;
 }
 
-// Return the centroid (mean) of a point cloud
-gm::Point centroid (const Cloud& points)
+gm::Point centroid (const ARCloud& points)
 {
   gm::Point sum;
   sum.x = 0;
   sum.y = 0;
   sum.z = 0;
-  for (const Point& p : points)
+  //for (const Point& p : points)
+  for(size_t i=0; i<points.size(); i++)
   {
-    sum.x += p.x;
-    sum.y += p.y;
-    sum.z += p.z;
+    sum.x += points[i].x;
+    sum.y += points[i].y;
+    sum.z += points[i].z;
   }
   
   gm::Point center;
@@ -187,79 +127,86 @@ gm::Quaternion makeQuaternion (double x, double y, double z, double w)
   return q;
 }
 
-// Given the plane coefficients, produce a Quaternion that corresponds to a 
-// coordinate frame whose x axis lies along the normal to that plane.  Note that
-// the quaternion has a degree of freedom which is resolved arbitrarily.
-gm::Quaternion extractNormal (const pcl::ModelCoefficients& plane_coeffs)
+// Extract and normalize plane coefficients
+void getCoeffs (const pcl::ModelCoefficients& coeffs, double* a, double* b,
+                double* c, double* d)
 {
-  ROS_ASSERT(plane_coeffs.values.size()==4);
+  ROS_ASSERT(coeffs.values.size()==4);
+  const double s = coeffs.values[0]*coeffs.values[0] +
+    coeffs.values[1]*coeffs.values[1] + coeffs.values[2]*coeffs.values[2];
+  ROS_ASSERT(fabs(s)>1e-6);
+  *a = coeffs.values[0]/s;
+  *b = coeffs.values[1]/s;
+  *c = coeffs.values[2]/s;
+  *d = coeffs.values[3]/s;
+}
 
-  // Normalize normal vector
-  const double x0 = plane_coeffs.values[0];
-  const double y0 = plane_coeffs.values[1];
-  const double z0 = plane_coeffs.values[2];
-  const double s = sqrt(x0*x0 + y0*y0 + z0*z0);
-  const double x = x0/s;
-  const double y = y0/s;
-  const double z = z0/s;
-  
-  // Deal with degenerate case where normal is along x axis
-  if (fabs(y)<1e-3 && fabs(z)<1e-3)
-    return makeQuaternion(0, 0, 0, 1);
+// Project point onto plane
+btVector3 project (const ARPoint& p, const double a, const double b,
+                   const double c, const double d)
+{
+  const double t = a*p.x + b*p.y + c*p.z + d;
+  return btVector3(p.x-t*a, p.y-t*b, p.z-t*c);
+}
 
-  // Find rotation axis that's perpendicular to normal and to x axis, and 
-  // use this along with angle to x-axis to construct the quaternion
-  const double ny = -z;
-  const double nz = y;
-  const double theta = acos(x);
-  return makeQuaternion(0, ny*sin(theta/2), nz*sin(theta/2), cos(theta/2));
+ostream& operator<< (ostream& str, const btMatrix3x3& m)
+{
+  str << "[" << m[0][0] << ", " << m[0][1] << ", " << m[0][2] << "; "
+      << m[1][0] << ", " << m[1][1] << ", " << m[1][2] << "; "
+      << m[2][0] << ", " << m[2][1] << ", " << m[2][2] << "]";
+  return str;
+}
+
+ostream& operator<< (ostream& str, const btQuaternion& q)
+{
+  str << "[(" << q.x() << ", " << q.y() << ", " << q.z() <<
+    "), " << q.w() << "]";
+  return str;
 }
 
 
-// Main callback: call fitPlane and publish result
-void Node::cloudCB (const Cloud::ConstPtr& cloud)
+btMatrix3x3 extractFrame (const pcl::ModelCoefficients& coeffs,
+                                const ARPoint& p1, const ARPoint& p2)
 {
-  ROS_INFO("In callback");
-  Cloud::Ptr selected_points = filterCloud(*cloud, pixels_);
-  ROS_INFO("  Selected out %zu points", selected_points->size());
-  PlaneFitResult res = fitPlane(selected_points);
-  gm::PoseStamped pose;
-  pose.header.stamp = cloud->header.stamp;
-  pose.header.frame_id = cloud->header.frame_id;
-  pose.pose.position = centroid(*res.inliers);
-  pose.pose.orientation = extractNormal(res.coeffs);
-  pose_pub_.publish(pose);
-  ROS_INFO("Callback completed");
-};
+  // Get plane coeffs and project p1 and p2
+  double a=0, b=0, c=0, d=0;
+  getCoeffs(coeffs, &a, &b, &c, &d);
+  const btVector3 q1 = project(p1, a, b, c, d);
+  const btVector3 q2 = project(p2, a, b, c, d);
+  
+  // Make sure q2 and q1 aren't the same so things are well-defined
+  ROS_ASSERT((q2-q1).length()>1e-3);
+  
+  // (inverse) matrix with the given properties
+  const btVector3 v = (q2-q1).normalized();
+  const btVector3 n(a, b, c);
+  const btVector3 w = v.cross(n); 
+  btMatrix3x3 m(v[0], v[1], v[2], w[0], w[1], w[2], n[0], n[1], n[2]);
+  btMatrix3x3 m2 = m.inverse();
 
+  cerr << "Frame is " << m2 << endl;
 
+  return m2;
+}
+
+btQuaternion getQuaternion (const btMatrix3x3& m)
+{
+  btScalar y=0, p=0, r=0;
+  m.getEulerYPR(y, p, r);
+  btQuaternion q(y, p, r);
+  ROS_INFO_STREAM("(y, p, r) are " << y << ", " << p << ", " << r <<
+                  " and quaternion is " << q);
+  return q;
+}
+
+gm::Quaternion extractOrientation (const pcl::ModelCoefficients& coeffs,
+                                   const ARPoint& p1, const ARPoint& p2)
+{
+  btMatrix3x3 m = extractFrame(coeffs, p1, p2);
+  btQuaternion q = getQuaternion(m);
+  gm::Quaternion q_ros;
+  tf::quaternionTFToMsg(q, q_ros);
+  return q_ros;
+}
 
 } // namespace
-
-
-int main (int argc, char** argv)
-{
-  namespace ar=ar_track_alvar;
-  ros::init(argc, argv, "kinect_filtering");
-  
-  // Parse command line arguments
-  if (argc!=5)
-  {
-    cerr << "Usage: " << argv[0] << " R1 R2 C1 C2\n";
-    return 1;
-  }
-  const int r0 = boost::lexical_cast<int>(argv[1]);
-  const int c0 = boost::lexical_cast<int>(argv[2]);
-  const int r1 = boost::lexical_cast<int>(argv[3]);
-  const int c1 = boost::lexical_cast<int>(argv[4]);
-  std::vector<ar::Pixel> pixels;
-
-  for (int r=r0; r<=r1; r++)
-    for (int c=c0; c<=c1; c++)
-      pixels.push_back(ar::Pixel(r, c));
-  
-  ar_track_alvar::Node node(pixels);
-  ros::spin();
-  return 0;
-}
-

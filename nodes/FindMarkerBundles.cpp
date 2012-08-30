@@ -63,6 +63,7 @@
 #include <boost/lexical_cast.hpp>
 
 #include <LinearMath/btMatrix3x3.h>
+#include <ar_track_alvar/kinect_filtering.h>
 
 #define MAIN_MARKER 1
 #define VISIBLE_MARKER 2
@@ -71,6 +72,7 @@
 using std::cerr;
 
 namespace gm=geometry_msgs;
+namespace ata=ar_track_alvar;
 
 typedef pcl::PointXYZRGB ARPoint;
 typedef pcl::PointCloud<ARPoint> ARCloud;
@@ -121,142 +123,7 @@ std::string cam_info_topic;
 std::string output_frame;
 int n_bundles = 0;   
 
-// Distance threshold for plane fitting: how far are points
-// allowed to be off the plane?
-const double distance_threshold_ = 0.005;
-// Pixel coordinates in depth image
-vector<Pixel> pixels_;
-
-
-
 // Wrapper for pcl plane fit
-PlaneFitResult fitPlane (ARCloud::ConstPtr cloud) 
-{
-  PlaneFitResult res;
-  pcl::PointIndices::Ptr inliers=boost::make_shared<pcl::PointIndices>();
-
-  pcl::SACSegmentation<ARPoint> seg;
-  seg.setOptimizeCoefficients(true);
-  seg.setModelType(pcl::SACMODEL_PLANE);
-  seg.setMethodType(pcl::SAC_RANSAC);
-  seg.setDistanceThreshold(distance_threshold_);
-
-  seg.setInputCloud(cloud);
-  seg.segment(*inliers, res.coeffs);
-
-  pcl::ExtractIndices<ARPoint> extracter;
-  extracter.setInputCloud(cloud);
-  extracter.setIndices(inliers);
-  extracter.setNegative(false);
-  extracter.filter(*res.inliers);
-  
-  return res;
-}
-
-// Select out a subset of a cloud corresponding to a set of pixel coordinates
-ARCloud::Ptr filterCloud (const ARCloud& cloud, const vector<PointDouble>& pixels)
-{
-  ARCloud::Ptr out(new ARCloud());
-  ROS_INFO("  Filtering %zu pixels", pixels.size());
-  //for (const Pixel& p : pixels)
-  for(int i=0; i<pixels.size(); i++)  
-  {
-    const ARPoint& pt = cloud(pixels[i].x, pixels[i].y);
-    if (isnan(pt.x) || isnan(pt.y) || isnan(pt.z))
-      ROS_INFO("    Skipping (%.4f, %.4f, %.4f)", pt.x, pt.y, pt.z);
-    else
-      out->points.push_back(cloud(pixels[i].x, pixels[i].y));
-  }
-  return out;
-}
-
-// Return the centroid (mean) of a point cloud
-gm::Point centroid (const ARCloud& points)
-{
-  gm::Point sum;
-  sum.x = 0;
-  sum.y = 0;
-  sum.z = 0;
-  //for (const Point& p : points)
-  for(size_t i=0; i<points.size(); i++)
-  {
-    sum.x += points[i].x;
-    sum.y += points[i].y;
-    sum.z += points[i].z;
-  }
-  
-  gm::Point center;
-  const size_t n = points.size();
-  center.x = sum.x/n;
-  center.y = sum.y/n;
-  center.z = sum.z/n;
-  return center;
-}
-
-// Helper function to construct a geometry_msgs::Quaternion
-inline
-gm::Quaternion makeQuaternion (double x, double y, double z, double w)
-{
-  gm::Quaternion q;
-  q.x = x;
-  q.y = y;
-  q.z = z;
-  q.w = w;
-  return q;
-}
-
-// Extract and normalize plane coefficients
-void getCoeffs (const pcl::ModelCoefficients& coeffs, double* a, double* b,
-                double* c, double* d)
-{
-  ROS_ASSERT(coeffs.values.size()==4);
-  const double s = coeffs.values[0]*coeffs.values[0] +
-    coeffs.values[1]*coeffs.values[1] + coeffs.values[2]*coeffs.values[2];
-  ROS_ASSERT(fabs(s)>1e-6);
-  *a = coeffs.values[0]/s;
-  *b = coeffs.values[1]/s;
-  *c = coeffs.values[2]/s;
-  *d = coeffs.values[3]/s;
-}
-
-// Project point onto plane
-btVector3 project (const ARPoint& p, const double a, const double b,
-                   const double c, const double d)
-{
-  const double t = a*p.x + b*p.y + c*p.z + d;
-  return btVector3(p.x-t*a, p.y-t*b, p.z-t*c);
-}
-
-// Given the coefficients of a plane, and two points p1 and p2, we produce a 
-// quaternion q that sends p2'-p1' to (1,0,0) and n to (0,0,1), where p1' and
-// p2' are the projections of p1 and p2 onto the plane
-gm::Quaternion extractOrientation (const pcl::ModelCoefficients& coeffs,
-                                   const ARPoint& p1, const ARPoint& p2)
-{
-  // Get plane coeffs and project p1 and p2
-  double a=0, b=0, c=0, d=0;
-  getCoeffs(coeffs, &a, &b, &c, &d);
-  const btVector3 q1 = project(p1, a, b, c, d);
-  const btVector3 q2 = project(p2, a, b, c, d);
-  
-  // Make sure q2 and q1 aren't the same so things are well-defined
-  ROS_ASSERT((q2-q1).length()>1e-3);
-  
-  // (inverse) matrix with the given properties
-  const btVector3 v = (q2-q1).normalized();
-  const btVector3 n(a, b, c);
-  const btVector3 w = v.cross(n); 
-  btMatrix3x3 m(v[0], v[1], v[2], w[0], w[1], w[2], n[0], n[1], n[2]);
-  
-  // Convert to quaternion and return
-  btQuaternion q;
-  m.getRotation(q);
-  gm::Quaternion q_ros;
-  tf::quaternionTFToMsg(q.inverse(), q_ros);
-  return q_ros;
-}
-
-
 //Debugging utility function
 void draw3dPoints(ARCloud::Ptr cloud, string frame, int color, int id)
 {
@@ -311,14 +178,18 @@ void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
     printf("\n--------------------------\n");
     for (size_t i=0; i<marker_detector.markers->size(); i++)
     {
+      vector<cv::Point> pixels;
+      BOOST_FOREACH (const PointDouble& p,
+                     (*marker_detector.markers)[i].ros_marker_points_img)
+        pixels.push_back(cv::Point(p.x, p.y));
       ARCloud::Ptr selected_points =
-        filterCloud(cloud, (*marker_detector.markers)[i].ros_marker_points_img);
+        ata::filterCloud(cloud, pixels);
       ROS_INFO("  Selected out %zu points", selected_points->size());
-      PlaneFitResult res = fitPlane(selected_points);
+      ata::PlaneFitResult res = ata::fitPlane(selected_points);
       gm::PoseStamped pose;
       pose.header.stamp = cloud.header.stamp;
       pose.header.frame_id = cloud.header.frame_id;
-      pose.pose.position = centroid(*res.inliers);
+      pose.pose.position = ata::centroid(*res.inliers);
 
       draw3dPoints(selected_points, cloud.header.frame_id, 1, i);
 
@@ -332,7 +203,7 @@ void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
 	  orient_points->points.push_back(pt2);
 	  draw3dPoints(orient_points, cloud.header.frame_id, 2, i+1000);
 
-      pose.pose.orientation = extractOrientation(res.coeffs, pt1, pt2);
+          pose.pose.orientation = ata::extractOrientation(res.coeffs, pt1, pt2);
 
       ROS_INFO_STREAM("Pose " << ((*marker_detector.markers)[i]).GetId() << " is \n" << pose.pose);
 		
