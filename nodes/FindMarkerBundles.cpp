@@ -101,6 +101,7 @@ image_transport::Subscriber cam_sub_;
 ros::Subscriber cloud_sub_;
 ros::Publisher arMarkerPub_;
 ros::Publisher rvizMarkerPub_;
+ros::Publisher rvizMarkerPub2_;
 ar_track_alvar::AlvarMarkers arPoseMarkers_;
 tf::TransformListener *tf_listener;
 tf::TransformBroadcaster *tf_broadcaster;
@@ -239,7 +240,7 @@ gm::Quaternion extractOrientation (const pcl::ModelCoefficients& coeffs,
   const btVector3 q2 = project(p2, a, b, c, d);
   
   // Make sure q2 and q1 aren't the same so things are well-defined
-  ROS_ASSERT((q2-q1).length2()>1e-3);
+  ROS_ASSERT((q2-q1).length()>1e-3);
   
   // (inverse) matrix with the given properties
   const btVector3 v = (q2-q1).normalized();
@@ -256,6 +257,49 @@ gm::Quaternion extractOrientation (const pcl::ModelCoefficients& coeffs,
 }
 
 
+//Debugging utility function
+void draw3dPoints(ARCloud::Ptr cloud, string frame, int color, int id)
+{
+	visualization_msgs::Marker rvizMarker;
+
+	rvizMarker.header.frame_id = frame;
+	rvizMarker.header.stamp = ros::Time::now(); 
+	rvizMarker.id = id;
+    rvizMarker.ns = "3dpts";
+
+	rvizMarker.scale.x = 0.005;
+	rvizMarker.scale.y = 0.005;
+	rvizMarker.scale.z = 0.005;
+
+	rvizMarker.type = visualization_msgs::Marker::SPHERE_LIST;
+	rvizMarker.action = visualization_msgs::Marker::ADD;
+
+	if(color==1){
+		rvizMarker.color.r = 0.0f;
+		rvizMarker.color.g = 1.0f;
+		rvizMarker.color.b = 1.0f;
+		rvizMarker.color.a = 1.0;
+	}
+    if(color==2){
+		rvizMarker.color.r = 1.0f;
+		rvizMarker.color.g = 0.0f;
+		rvizMarker.color.b = 1.0f;
+		rvizMarker.color.a = 1.0;
+	}
+
+	gm::Point p;
+	for(int i=0; i<cloud->points.size(); i++){
+		p.x = cloud->points[i].x;
+		p.y = cloud->points[i].y;
+		p.z = cloud->points[i].z;
+		rvizMarker.points.push_back(p);
+	}
+
+	rvizMarker.lifetime = ros::Duration (1.0);
+    rvizMarkerPub2_.publish (rvizMarker);
+}
+
+
 // Updates the bundlePoses of the multi_marker_bundles by detecting markers and
 // using all markers in a bundle to infer the master tag's position
 void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
@@ -263,7 +307,7 @@ void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
   if (marker_detector.Detect(image, cam, true, false, max_new_marker_error,
                              max_track_error, CVSEQ, true)) 
   {
-    //Kinect pose improvement
+    //Kinect pose improvement 
     printf("\n--------------------------\n");
     for (size_t i=0; i<marker_detector.markers->size(); i++)
     {
@@ -276,14 +320,21 @@ void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
       pose.header.frame_id = cloud.header.frame_id;
       pose.pose.position = centroid(*res.inliers);
 
-      PointDouble corner1 = (*marker_detector.markers)[i].marker_corners_img[0];
-      PointDouble corner4 = (*marker_detector.markers)[i].marker_corners_img[3];
-      const ARPoint& pt1 = cloud(corner1.x, corner1.y);
-      const ARPoint& pt4 = cloud(corner4.x, corner4.y);
+      draw3dPoints(selected_points, cloud.header.frame_id, 1, i);
 
-      pose.pose.orientation = extractOrientation(res.coeffs, pt1, pt4);
+      //Get 2 points the point forward in marker x direction
+	  int resol = ((*marker_detector.markers)[i]).GetRes();
+      const ARPoint& pt2 = selected_points->points[resol/2];
+      const ARPoint& pt1 = selected_points->points[(resol * (resol-1)) + (resol/2)];
 
-      ROS_INFO_STREAM("Pose is " << pose.pose);
+	  ARCloud::Ptr orient_points(new ARCloud());
+	  orient_points->points.push_back(pt1);
+	  orient_points->points.push_back(pt2);
+	  draw3dPoints(orient_points, cloud.header.frame_id, 2, i+1000);
+
+      pose.pose.orientation = extractOrientation(res.coeffs, pt1, pt2);
+
+      ROS_INFO_STREAM("Pose " << ((*marker_detector.markers)[i]).GetId() << " is \n" << pose.pose);
 		
       Pose *p = &((*(marker_detector.markers))[i].pose);
       p->translation[0] = pose.pose.position.x * 100.0;
@@ -292,23 +343,13 @@ void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
       p->quaternion[1] = pose.pose.orientation.x;
       p->quaternion[2] = pose.pose.orientation.y;
       p->quaternion[3] = pose.pose.orientation.z;
-      p->quaternion[0] = pose.pose.orientation.w;
-    }	
-
+      p->quaternion[0] = pose.pose.orientation.w; 
+	}	
 
     //Update multi marker bundle positions
-    for(int i=0; i<n_bundles; i++)
-      multi_marker_bundles[i]->Update(marker_detector.markers, cam, bundlePoses[i]);
+    //for(int i=0; i<n_bundles; i++)
+    //  multi_marker_bundles[i]->Update(marker_detector.markers, cam, bundlePoses[i]);
 
-    /*
-      if(marker_detector.DetectAdditional(image, cam, false) > 0)
-      {
-      for(int i=0; i<n_bundles; i++)
-      {
-      if ((multi_marker_bundles[i]->SetTrackMarkers(marker_detector, cam, bundlePoses[i], image) > 0))
-      multi_marker_bundles[i]->Update(marker_detector.markers, cam, bundlePoses[i]);
-      }
-      }*/
   }
 }
 
@@ -642,6 +683,7 @@ int main(int argc, char *argv[])
 	tf_broadcaster = new tf::TransformBroadcaster();
 	arMarkerPub_ = n.advertise < ar_track_alvar::AlvarMarkers > ("ar_pose_marker", 0);
 	rvizMarkerPub_ = n.advertise < visualization_msgs::Marker > ("visualization_marker", 0);
+	rvizMarkerPub2_ = n.advertise < visualization_msgs::Marker > ("ARmarker_points", 0);
 	
 	//Give tf a chance to catch up before the camera callback starts asking for transforms
 	ros::Duration(1.0).sleep();

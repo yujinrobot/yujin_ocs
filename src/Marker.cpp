@@ -201,12 +201,6 @@ bool Marker::UpdateContentBasic(vector<PointDouble > &_marker_corners_img, IplIm
 	
 	ros_marker_points_img.clear();
 
-    printf("CORNERS\n");
-    for(int i=0; i<marker_corners.size(); i++){
-		printf("%f %f | %f %f\n", marker_corners[i].x, marker_corners[i].y, marker_corners_img_undist[i].x, marker_corners_img_undist[i].y);
-	}
-	printf("\n");
-
     // Read the content
     int x, y;
 	double min = 255.0, max = 0.0;
@@ -263,6 +257,7 @@ bool Marker::UpdateContentBasic(vector<PointDouble > &_marker_corners_img, IplIm
 		min += marker_margin_b_img[i].val;
 		//if(marker_margin_b_img[i].val > max) max = marker_margin_b_img[i].val;
 		//if(marker_margin_b_img[i].val < min) min = marker_margin_b_img[i].val;
+        ros_marker_points_img.push_back(PointDouble(x,y));
 	}
 	max /= marker_margin_w_img.size();
 	min /= marker_margin_b_img.size();
