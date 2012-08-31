@@ -187,7 +187,7 @@ btMatrix3x3 extractFrame (const pcl::ModelCoefficients& coeffs,
   // (inverse) matrix with the given properties
   const btVector3 v = (q2-q1).normalized();
   const btVector3 n(a, b, c);
-  const btVector3 w = v.cross(n); 
+  const btVector3 w = -v.cross(n); 
   btMatrix3x3 m(v[0], v[1], v[2], w[0], w[1], w[2], n[0], n[1], n[2]);
   btMatrix3x3 m2 = m.inverse();
 
@@ -196,9 +196,11 @@ btMatrix3x3 extractFrame (const pcl::ModelCoefficients& coeffs,
   return m2;
 }
 
+
 btQuaternion getQuaternion (const btMatrix3x3& m)
 {
-  /*
+  ROS_ASSERT_MSG(m.determinant()>0, "Matrix had determinant %.2f",
+                 m.determinant());
   btScalar y=0, p=0, r=0;
   m.getEulerYPR(y, p, r);
   btQuaternion q;
@@ -208,15 +210,15 @@ btQuaternion getQuaternion (const btMatrix3x3& m)
   m2.setEulerYPR(y, p, r);
   ROS_INFO_STREAM("(y, p, r) are " << y << ", " << p << ", " << r <<
                   " and quaternion is " << q << " and frame is " << m2);
-  q.getEulerYPR(bbt
   return q;
-  */
+                /*
   const double q4 = 0.5*sqrt(1*m[0][0]+m[1][1]+m[2][2]);
   const double c = 1/(4*q4);
   const double q1 = c*(m[2][1]-m[1][2]);
   const double q2 = c*(m[0][2]-m[2][0]);
   const double q3 = c*(m[1][0]-m[0][1]);
   return btQuaternion(q1, q2, q3, q4).normalize();
+                */
 }
 
 btMatrix3x3 getMatrix (const btQuaternion& q)
@@ -243,13 +245,6 @@ gm::Quaternion extractOrientation (const pcl::ModelCoefficients& coeffs,
 {
   btMatrix3x3 m = extractFrame(coeffs, p1, p2);
   btQuaternion q = getQuaternion(m);
-  btMatrix3x3 m2 = getMatrix(q);
-  ROS_INFO_STREAM("Quaternion is " << q << " and frame is " << m2);
-  btVector3 p(1,2,3);
-  btVector3 pt2 = m*p;
-  btVector3 pt3 = quatRotate(q, p);
-  btVector3 pt4 = m2*p;
-  ROS_INFO_STREAM ("p2 is " << pt2 << " and p3 is " << pt3 << " and p4 is " << pt4);
   gm::Quaternion q_ros;
   tf::quaternionTFToMsg(q, q_ros);
   return q_ros;
