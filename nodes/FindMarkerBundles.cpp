@@ -172,6 +172,58 @@ void draw3dPoints(ARCloud::Ptr cloud, string frame, int color, int id, double ra
 }
 
 
+void drawArrow(gm::Point start, btMatrix3x3 mat, string frame, int color, int id)
+{
+	visualization_msgs::Marker rvizMarker;
+
+	rvizMarker.header.frame_id = frame;
+	rvizMarker.header.stamp = ros::Time::now(); 
+	rvizMarker.id = id;
+    rvizMarker.ns = "arrow";
+
+	rvizMarker.scale.x = 0.01;
+	rvizMarker.scale.y = 0.01;
+	rvizMarker.scale.z = 0.1;
+
+	rvizMarker.type = visualization_msgs::Marker::ARROW;
+	rvizMarker.action = visualization_msgs::Marker::ADD;
+
+    for(int i=0; i<3; i++){
+		rvizMarker.points.clear();	
+		rvizMarker.points.push_back(start);
+		gm::Point end;
+		end.x = start.x + mat[0][i];
+	    end.y = start.y + mat[1][i];
+		end.z = start.z + mat[2][i];
+		rvizMarker.points.push_back(end);
+        rvizMarker.id += 10*i;
+		rvizMarker.lifetime = ros::Duration (1.0);
+
+        if(color==1){
+			rvizMarker.color.r = 1.0f;
+			rvizMarker.color.g = 0.0f;
+			rvizMarker.color.b = 0.0f;
+			rvizMarker.color.a = 1.0;
+		}
+    	if(color==2){
+			rvizMarker.color.r = 0.0f;
+			rvizMarker.color.g = 1.0f;
+			rvizMarker.color.b = 0.0f;
+			rvizMarker.color.a = 1.0;
+		}
+		if(color==3){
+			rvizMarker.color.r = 0.0f;
+			rvizMarker.color.g = 0.0f;
+			rvizMarker.color.b = 1.0f;
+			rvizMarker.color.a = 1.0;
+		}
+        color += 1;
+
+    	rvizMarkerPub2_.publish (rvizMarker);
+	}
+}
+
+
 // Updates the bundlePoses of the multi_marker_bundles by detecting markers and
 // using all markers in a bundle to infer the master tag's position
 void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
@@ -232,6 +284,8 @@ void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
 	  draw3dPoints(orient_points, cloud.header.frame_id, 2, i+2000, 0.008);
  
       pose.pose.orientation = ata::extractOrientation(res.coeffs, *pt1, *pt2);
+      btMatrix3x3 mat = ata::extractFrame(res.coeffs, *pt1, *pt2);
+      drawArrow(pose.pose.position, mat, cloud.header.frame_id, 1, i);
 
       //ROS_INFO_STREAM("Pose " << m_id << " is \n" << pose.pose);
 
@@ -243,7 +297,8 @@ void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
       p->quaternion[2] = pose.pose.orientation.y;
       p->quaternion[3] = pose.pose.orientation.z;
       p->quaternion[0] = pose.pose.orientation.w; 
-	}	
+	
+}	
 
     //Update multi marker bundle positions
     for(int i=0; i<n_bundles; i++)
@@ -276,7 +331,7 @@ void makeMarkerMsgs(int type, int id, Pose &p, sensor_msgs::ImageConstPtr image_
 	btTransform markerPose = t * m;
 
 	//Publish the cam to marker transform for main marker in each bundle
-	if(type==MAIN_MARKER){
+	//if(type==MAIN_MARKER){
 		std::string markerFrame = "ar_marker_";
 		std::stringstream out;
 		out << id;
@@ -284,7 +339,7 @@ void makeMarkerMsgs(int type, int id, Pose &p, sensor_msgs::ImageConstPtr image_
 		markerFrame += id_string;
 		tf::StampedTransform camToMarker (t, image_msg->header.stamp, image_msg->header.frame_id, markerFrame.c_str());
     		tf_broadcaster->sendTransform(camToMarker);
-	}
+	//}
 
 	//Create the rviz visualization message
 	tf::poseTFToMsg (markerPose, rvizMarker->pose);
@@ -429,7 +484,6 @@ void getCapCallback (const sensor_msgs::ImageConstPtr & image_msg)
 	}
 }
 */
-//4.4 0.08 0.2 /kinect_head/rgb/image_rect_color /kinect_head/rgb/camera_info /torso_lift_link ../bundles/truthTableLeg.xml ../bundles/table_8_9_10.xml
 
 
 //Callback to handle getting kinect point clouds and processing them
