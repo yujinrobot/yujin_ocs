@@ -211,6 +211,8 @@ btQuaternion getQuaternion (const btMatrix3x3& m)
   q.getEulerYPR(bbt
   return q;
   */
+
+  
   const double q4 = 0.5*sqrt(1*m[0][0]+m[1][1]+m[2][2]);
   const double c = 1/(4*q4);
   const double q1 = c*(m[2][1]-m[1][2]);
