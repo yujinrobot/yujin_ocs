@@ -83,9 +83,9 @@ ARCloud::Ptr filterCloud (const ARCloud& cloud, const vector<cv::Point>& pixels)
   ARCloud::Ptr out(new ARCloud());
   //ROS_INFO("  Filtering %zu pixels", pixels.size());
   //for (const cv::Point& p : pixels)
-  for(int i=0; i<pixels.size(); i++)
+  for(size_t i=0; i<pixels.size(); i++)
   {
-	const cv::Point& p = pixels[i];
+    const cv::Point& p = pixels[i];
     const ARPoint& pt = cloud(p.x, p.y);
     if (isnan(pt.x) || isnan(pt.y) || isnan(pt.z))
       ROS_INFO("    Skipping (%.4f, %.4f, %.4f)", pt.x, pt.y, pt.z);
@@ -166,6 +166,11 @@ ostream& operator<< (ostream& str, const btQuaternion& q)
   return str;
 }
 
+ostream& operator<< (ostream& str, const btVector3& v)
+{
+  str << "(" << v.x() << ", " << v.y() << ", " << v.z() << ")";
+  return str;
+}
 
 btMatrix3x3 extractFrame (const pcl::ModelCoefficients& coeffs,
                                 const ARPoint& p1, const ARPoint& p2)
@@ -193,12 +198,44 @@ btMatrix3x3 extractFrame (const pcl::ModelCoefficients& coeffs,
 
 btQuaternion getQuaternion (const btMatrix3x3& m)
 {
+  /*
   btScalar y=0, p=0, r=0;
   m.getEulerYPR(y, p, r);
-  btQuaternion q(y, p, r);
+  btQuaternion q;
+  q.setEuler(y, p, r);
+  btMatrix3x3 m2;
+  m2.setRotation(q);
+  m2.setEulerYPR(y, p, r);
   ROS_INFO_STREAM("(y, p, r) are " << y << ", " << p << ", " << r <<
-                  " and quaternion is " << q);
+                  " and quaternion is " << q << " and frame is " << m2);
+  q.getEulerYPR(bbt
   return q;
+  */
+  const double q4 = 0.5*sqrt(1*m[0][0]+m[1][1]+m[2][2]);
+  const double c = 1/(4*q4);
+  const double q1 = c*(m[2][1]-m[1][2]);
+  const double q2 = c*(m[0][2]-m[2][0]);
+  const double q3 = c*(m[1][0]-m[0][1]);
+  return btQuaternion(q1, q2, q3, q4).normalize();
+}
+
+btMatrix3x3 getMatrix (const btQuaternion& q)
+{
+  btMatrix3x3 m;
+  const double x = q.x();
+  const double y = q.y();
+  const double z = q.z();
+  const double w = q.w();
+  m[0][0] = 1-2*y*y-2*z*z;
+  m[0][1] = 2*(x*y-z*w);
+  m[0][2] = 2*(x*z+y*w);
+  m[1][0] = 2*(x*y+z*w);
+  m[1][1] = 1-2*x*x-2*z*z;
+  m[1][2] = 2*(y*z+x*w);
+  m[2][0] = 2*(x*z-y*w);
+  m[2][1] = 2*(y*z+x*w);
+  m[2][2] = 1-2*x*x-2*y*y;
+  return m;
 }
 
 gm::Quaternion extractOrientation (const pcl::ModelCoefficients& coeffs,
@@ -206,6 +243,13 @@ gm::Quaternion extractOrientation (const pcl::ModelCoefficients& coeffs,
 {
   btMatrix3x3 m = extractFrame(coeffs, p1, p2);
   btQuaternion q = getQuaternion(m);
+  btMatrix3x3 m2 = getMatrix(q);
+  ROS_INFO_STREAM("Quaternion is " << q << " and frame is " << m2);
+  btVector3 p(1,2,3);
+  btVector3 pt2 = m*p;
+  btVector3 pt3 = quatRotate(q, p);
+  btVector3 pt4 = m2*p;
+  ROS_INFO_STREAM ("p2 is " << pt2 << " and p3 is " << pt3 << " and p4 is " << pt4);
   gm::Quaternion q_ros;
   tf::quaternionTFToMsg(q, q_ros);
   return q_ros;
