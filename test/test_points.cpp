@@ -37,11 +37,13 @@
  */
 
 #include <ar_track_alvar/kinect_filtering.h>
+#include <fstream>
 
 namespace a=ar_track_alvar;
 namespace gm=geometry_msgs;
 
 using std::cerr;
+using std::ifstream;
 
 // Random float between a and b
 float randFloat (float a, float b)
@@ -76,35 +78,25 @@ a::ARCloud::Ptr generateCloud(const double px, const double py, const double pz,
 
 int main (int argc, char** argv)
 {
-  if (argc != 12)
+  ros::init(argc, argv, "test_points");
+  ifstream f("points");
+  a::ARCloud::Ptr cloud(new a::ARCloud());
+  while (!f.eof())
   {
-    cerr << "Usage: " << argv[0] << " PX PY PZ VX VY VZ WX WY WZ I1 I2\n";
-    return 1;
+    a::ARPoint pt;
+    f >> pt.x >> pt.y >> pt.z;
+    cloud->points.push_back(pt);
   }
-  
-  const double px = atof(argv[1]);
-  const double py = atof(argv[2]);
-  const double pz = atof(argv[3]);
-  const double vx = atof(argv[4]);
-  const double vy = atof(argv[5]);
-  const double vz = atof(argv[6]);
-  const double wx = atof(argv[7]);
-  const double wy = atof(argv[8]);
-  const double wz = atof(argv[9]);
-
-  a::ARCloud::ConstPtr cloud =
-    generateCloud(px, py, pz, vx, vy, vz, wx, wy, wz);
-  const size_t n = cloud->size();
-  ROS_INFO("Generated cloud with %zu points such as (%.4f, %.4f, %.4f)"
-           " and (%.4f, %.4f, %.4f)", n, (*cloud)[0].x, (*cloud)[0].y,
-           (*cloud)[0].z, (*cloud)[n-1].x, (*cloud)[n-1].y, (*cloud)[n-1].z);
-  
-  const size_t i1 = atoi(argv[10]);
-  const size_t i2 = atoi(argv[11]);
-  a::ARPoint p1 = (*cloud)[i1];
-  a::ARPoint p2 = (*cloud)[i2];
-  ROS_INFO("Points are (%.4f, %.4f, %.4f) and (%.4f, %.4f, %.4f)",
-           p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
+  ROS_INFO("Cloud has %zu points such as (%.2f, %.2f, %.2f)",
+           cloud->points.size(), cloud->points[0].x, cloud->points[0].y,
+           cloud->points[0].z);
+  a::ARPoint p1, p2;
+  p1.x = 0.1888;
+  p1.y = 0.1240;
+  p1.z = 0.8620;
+  p2.x = 0.0372;
+  p2.y = 0.1181;
+  p2.z = 0.8670;
 
   a::PlaneFitResult res = a::fitPlane(cloud);
   ROS_INFO("Plane equation is %.3fx + %.3fy + %.3fz + %.3f = 0",
@@ -113,7 +105,5 @@ int main (int argc, char** argv)
   
   gm::Quaternion q = a::extractOrientation(res.coeffs, p1, p2);
   ROS_INFO_STREAM("Orientation is " << q);
-
-  
   return 0;
 }
