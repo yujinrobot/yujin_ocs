@@ -202,43 +202,16 @@ btQuaternion getQuaternion (const btMatrix3x3& m)
   ROS_ASSERT_MSG(m.determinant()>0, "Matrix had determinant %.2f",
                  m.determinant());
   btScalar y=0, p=0, r=0;
-  m.getEulerYPR(y, p, r);
+  m.getEulerZYX(y, p, r);
   btQuaternion q;
-  q.setEuler(y, p, r);
+  q.setEulerZYX(y, p, r);
   btMatrix3x3 m2;
   m2.setRotation(q);
-  m2.setEulerYPR(y, p, r);
   ROS_INFO_STREAM("(y, p, r) are " << y << ", " << p << ", " << r <<
                   " and quaternion is " << q << " and frame is " << m2);
   return q;
-                /*
-  const double q4 = 0.5*sqrt(1*m[0][0]+m[1][1]+m[2][2]);
-  const double c = 1/(4*q4);
-  const double q1 = c*(m[2][1]-m[1][2]);
-  const double q2 = c*(m[0][2]-m[2][0]);
-  const double q3 = c*(m[1][0]-m[0][1]);
-  return btQuaternion(q1, q2, q3, q4).normalize();
-                */
 }
 
-btMatrix3x3 getMatrix (const btQuaternion& q)
-{
-  btMatrix3x3 m;
-  const double x = q.x();
-  const double y = q.y();
-  const double z = q.z();
-  const double w = q.w();
-  m[0][0] = 1-2*y*y-2*z*z;
-  m[0][1] = 2*(x*y-z*w);
-  m[0][2] = 2*(x*z+y*w);
-  m[1][0] = 2*(x*y+z*w);
-  m[1][1] = 1-2*x*x-2*z*z;
-  m[1][2] = 2*(y*z+x*w);
-  m[2][0] = 2*(x*z-y*w);
-  m[2][1] = 2*(y*z+x*w);
-  m[2][2] = 1-2*x*x-2*y*y;
-  return m;
-}
 
 gm::Quaternion extractOrientation (const pcl::ModelCoefficients& coeffs,
                                    const ARPoint& p1, const ARPoint& p2)
