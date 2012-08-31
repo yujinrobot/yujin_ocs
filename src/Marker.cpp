@@ -522,6 +522,7 @@ Marker::Marker(double _edge_length, int _res, double _margin)
 	decode_error = 0;
 	track_error = 0;
 	SetMarkerSize(_edge_length, _res, _margin);
+	ros_orientation = -1;
 }
 Marker::Marker(const Marker& m) {
 	marker_content = NULL;
@@ -532,6 +533,7 @@ Marker::Marker(const Marker& m) {
 	decode_error = m.decode_error;
 	track_error = m.track_error;
 	cvCopy(m.marker_content, marker_content);
+    ros_orientation = m.ros_orientation;
 
 	ros_marker_points_img.resize(m.ros_marker_points_img.size());
 	copy(m.ros_marker_points_img.begin(), m.ros_marker_points_img.end(), ros_marker_points_img.begin());

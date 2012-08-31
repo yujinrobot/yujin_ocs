@@ -130,6 +130,7 @@ namespace alvar {
 					mn->SetError(Marker::MARGIN_ERROR, 0);
 					mn->SetError(Marker::TRACK_ERROR, track_error);
 					mn->UpdatePose(blob_corners[track_i], cam, track_orientation, update_pose);
+                    printf("SHOULDN'T BE HERE....KINECT FILTERING DOES NOT SUPPORT TRACKING");
 					_markers_push_back(mn);
 					blob_corners[track_i].clear(); // We don't want to handle this again...
 					if (visualize) mn->Visualize(image, cam, CV_RGB(255,255,0));
@@ -143,18 +144,21 @@ namespace alvar {
 			if (blob_corners[i].empty()) continue;
 
 			Marker *mn = new_M(edge_length, res, margin);
-			if (mn->UpdateContent(blob_corners[i], gray, cam) &&
-			    mn->DecodeContent(&orientation) &&
+			bool ub = mn->UpdateContent(blob_corners[i], gray, cam);
+            bool db = mn->DecodeContent(&orientation); 
+			if (ub && db &&
 				(mn->GetError(Marker::MARGIN_ERROR | Marker::DECODE_ERROR) <= max_new_marker_error))
 			{
 				if (map_edge_length.find(mn->GetId()) != map_edge_length.end()) {
 					mn->SetMarkerSize(map_edge_length[mn->GetId()], res, margin);
 				}
 				mn->UpdatePose(blob_corners[i], cam, orientation, update_pose);
+                mn->ros_orientation = orientation;
 				_markers_push_back(mn);
  
 				if (visualize) mn->Visualize(image, cam, CV_RGB(255,0,0));
 			}
+
 			delete mn;
 		}
 

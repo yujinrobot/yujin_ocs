@@ -246,19 +246,27 @@ gm::Quaternion extractOrientation (const pcl::ModelCoefficients& coeffs,
   const btVector3 v = (q2-q1).normalized();
   const btVector3 n(a, b, c);
   const btVector3 w = v.cross(n); 
+  ROS_INFO ("V: (%.2f, %.2f, %.2f), w: (%.2f, %.2f, %.2f), n: (%.2f, %.2f, %.2f)", v[0], v[1], v[2], w[0], w[1], w[2], n[0], n[1], n[2]);
   btMatrix3x3 m(v[0], v[1], v[2], w[0], w[1], w[2], n[0], n[1], n[2]);
   
   // Convert to quaternion and return
   btQuaternion q;
-  m.getRotation(q);
+  ROS_INFO("Q is (%.2f, %.2f, %.2f, %.2f)", q.x(), q.y(), q.z(), q.w());
+  //m.getRotation(q);
+  btScalar by,bp,br;
+  m.getEulerZYX(by,bp,br);
+  ROS_INFO("Euler is (%.2f %.2f %.2f)",by,bp,br);
+  q.setEulerZYX(by,bp,br);
   gm::Quaternion q_ros;
+  btQuaternion q_inv = q.inverse();
+  ROS_INFO("Q is (%.2f, %.2f, %.2f, %.2f) and inverse is (%.2f, %.2f, %.2f, %.2f)", q.x(), q.y(), q.z(), q.w(), q_inv.x(), q_inv.y(), q_inv.z(), q_inv.w());
   tf::quaternionTFToMsg(q.inverse(), q_ros);
   return q_ros;
 }
 
 
 //Debugging utility function
-void draw3dPoints(ARCloud::Ptr cloud, string frame, int color, int id)
+void draw3dPoints(ARCloud::Ptr cloud, string frame, int color, int id, double rad)
 {
 	visualization_msgs::Marker rvizMarker;
 
@@ -267,9 +275,9 @@ void draw3dPoints(ARCloud::Ptr cloud, string frame, int color, int id)
 	rvizMarker.id = id;
     rvizMarker.ns = "3dpts";
 
-	rvizMarker.scale.x = 0.005;
-	rvizMarker.scale.y = 0.005;
-	rvizMarker.scale.z = 0.005;
+	rvizMarker.scale.x = rad;
+	rvizMarker.scale.y = rad;
+	rvizMarker.scale.z = rad;
 
 	rvizMarker.type = visualization_msgs::Marker::SPHERE_LIST;
 	rvizMarker.action = visualization_msgs::Marker::ADD;
@@ -284,6 +292,12 @@ void draw3dPoints(ARCloud::Ptr cloud, string frame, int color, int id)
 		rvizMarker.color.r = 1.0f;
 		rvizMarker.color.g = 0.0f;
 		rvizMarker.color.b = 1.0f;
+		rvizMarker.color.a = 1.0;
+	}
+	if(color==3){
+		rvizMarker.color.r = 1.0f;
+		rvizMarker.color.g = 1.0f;
+		rvizMarker.color.b = 0.0f;
 		rvizMarker.color.a = 1.0;
 	}
 
@@ -304,7 +318,7 @@ void draw3dPoints(ARCloud::Ptr cloud, string frame, int color, int id)
 // using all markers in a bundle to infer the master tag's position
 void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
 
-  if (marker_detector.Detect(image, cam, true, false, max_new_marker_error,
+  if (marker_detector.Detect(image, cam, false, false, max_new_marker_error,
                              max_track_error, CVSEQ, true)) 
   {
     //Kinect pose improvement 
@@ -320,21 +334,44 @@ void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
       pose.header.frame_id = cloud.header.frame_id;
       pose.pose.position = centroid(*res.inliers);
 
-      draw3dPoints(selected_points, cloud.header.frame_id, 1, i);
+      draw3dPoints(selected_points, cloud.header.frame_id, 1, i, 0.005);
 
       //Get 2 points the point forward in marker x direction
 	  int resol = ((*marker_detector.markers)[i]).GetRes();
-      const ARPoint& pt2 = selected_points->points[resol/2];
-      const ARPoint& pt1 = selected_points->points[(resol * (resol-1)) + (resol/2)];
+      int ori = ((*marker_detector.markers)[i]).ros_orientation;
+      int m_id = ((*marker_detector.markers)[i]).GetId();
+      
+	  ARPoint *pt1, *pt2;
+	  if(ori==0){
+        pt1 = &(selected_points->points[(resol * (resol-1)) + (resol/2)]);
+	  	pt2 = &(selected_points->points[resol/2]);
+      }
+      else if(ori==1){
+	  	pt2 = &(selected_points->points[(resol*(resol/2))]);
+      	pt1 = &(selected_points->points[(resol*(resol/2)) + resol - 1]);
+      }
+      else if(ori==2){
+	  	pt2 = &(selected_points->points[(resol * (resol-1)) + (resol/2)]);
+	  	pt1 = &(selected_points->points[resol/2]);
+      }
+      else if(ori==3){
+	  	pt1 = &(selected_points->points[(resol*(resol/2))]);
+      	pt2 = &(selected_points->points[(resol*(resol/2)) + resol - 1]);
+      }
+	  else{
+	    ROS_ERROR("FindMarkerBundles: Bad Orientation: %i for ID: %i", ori, m_id);
+	  }
 
 	  ARCloud::Ptr orient_points(new ARCloud());
-	  orient_points->points.push_back(pt1);
-	  orient_points->points.push_back(pt2);
-	  draw3dPoints(orient_points, cloud.header.frame_id, 2, i+1000);
+	  orient_points->points.push_back(*pt1);
+	  draw3dPoints(orient_points, cloud.header.frame_id, 3, i+1000, 0.008);
+      orient_points->clear();
+      orient_points->points.push_back(*pt2);
+	  draw3dPoints(orient_points, cloud.header.frame_id, 2, i+2000, 0.008);
+ 
+      pose.pose.orientation = extractOrientation(res.coeffs, *pt1, *pt2);
 
-      pose.pose.orientation = extractOrientation(res.coeffs, pt1, pt2);
-
-      ROS_INFO_STREAM("Pose " << ((*marker_detector.markers)[i]).GetId() << " is \n" << pose.pose);
+      ROS_INFO_STREAM("Pose " << m_id << " is \n" << pose.pose);
 		
       Pose *p = &((*(marker_detector.markers))[i].pose);
       p->translation[0] = pose.pose.position.x * 100.0;
@@ -347,10 +384,11 @@ void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
 	}	
 
     //Update multi marker bundle positions
-    //for(int i=0; i<n_bundles; i++)
-    //  multi_marker_bundles[i]->Update(marker_detector.markers, cam, bundlePoses[i]);
+    for(int i=0; i<n_bundles; i++)
+      multi_marker_bundles[i]->Update(marker_detector.markers, cam, bundlePoses[i]);
 
   }
+
 }
 
 
@@ -569,7 +607,7 @@ void getPointCloudCallback (const sensor_msgs::PointCloud2ConstPtr &msg)
     		pcl::toROSMsg (cloud, *image_msg);
 			image_msg->header.stamp = msg->header.stamp;
 			image_msg->header.frame_id = msg->header.frame_id;
-
+            
     		//Convert the image
       		capture_ = bridge_.imgMsgToCv (image_msg, "rgb8");
 
