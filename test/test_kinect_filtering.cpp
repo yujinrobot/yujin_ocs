@@ -113,7 +113,7 @@ int main (int argc, char** argv)
            res.coeffs.values[0], res.coeffs.values[1], res.coeffs.values[2],
            res.coeffs.values[3]);
   
-  gm::Quaternion q = a::extractOrientation(res.coeffs, p1, p2, p3);
+  gm::Quaternion q = a::extractOrientation(res.coeffs, p1, p2, p3, p1);
   ROS_INFO_STREAM("Orientation is " << q);
 
   

@@ -174,7 +174,7 @@ ostream& operator<< (ostream& str, const btVector3& v)
 
 btMatrix3x3 extractFrame (const pcl::ModelCoefficients& coeffs,
                           const ARPoint& p1, const ARPoint& p2,
-                          const ARPoint& p3)
+                          const ARPoint& p3, const ARPoint& p4)
 {
   // Get plane coeffs and project points onto the plane
   double a=0, b=0, c=0, d=0;
@@ -182,11 +182,10 @@ btMatrix3x3 extractFrame (const pcl::ModelCoefficients& coeffs,
   const btVector3 q1 = project(p1, a, b, c, d);
   const btVector3 q2 = project(p2, a, b, c, d);
   const btVector3 q3 = project(p3, a, b, c, d);
+  const btVector3 q4 = project(p4, a, b, c, d);
   
   // Make sure points aren't the same so things are well-defined
   ROS_ASSERT((q2-q1).length()>1e-3);
-  ROS_ASSERT((q3-q1).length()>1e-3);
-  ROS_ASSERT((q3-q2).length()>1e-3);
   
   // (inverse) matrix with the given properties
   const btVector3 v = (q2-q1).normalized();
@@ -195,7 +194,7 @@ btMatrix3x3 extractFrame (const pcl::ModelCoefficients& coeffs,
   btMatrix3x3 m(v[0], v[1], v[2], w[0], w[1], w[2], n[0], n[1], n[2]);
   
   // Possibly flip things based on third point
-  const btVector3 diff = (q3-q1).normalized();
+  const btVector3 diff = (q4-q3).normalized();
   ROS_INFO_STREAM("w = " << w << " and d = " << diff);
   if (w.dot(diff)<0)
   {
@@ -230,9 +229,9 @@ btQuaternion getQuaternion (const btMatrix3x3& m)
 
 gm::Quaternion extractOrientation (const pcl::ModelCoefficients& coeffs,
                                    const ARPoint& p1, const ARPoint& p2,
-                                   const ARPoint& p3)
+                                   const ARPoint& p3, const ARPoint& p4)
 {
-  btMatrix3x3 m = extractFrame(coeffs, p1, p2, p3);
+  btMatrix3x3 m = extractFrame(coeffs, p1, p2, p3, p4);
   btQuaternion q = getQuaternion(m);
   gm::Quaternion q_ros;
   tf::quaternionTFToMsg(q, q_ros);
