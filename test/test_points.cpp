@@ -90,20 +90,23 @@ int main (int argc, char** argv)
   ROS_INFO("Cloud has %zu points such as (%.2f, %.2f, %.2f)",
            cloud->points.size(), cloud->points[0].x, cloud->points[0].y,
            cloud->points[0].z);
-  a::ARPoint p1, p2;
+  a::ARPoint p1, p2, p3;
   p1.x = 0.1888;
   p1.y = 0.1240;
   p1.z = 0.8620;
   p2.x = 0.0372;
   p2.y = 0.1181;
   p2.z = 0.8670;
+  p3.x = 42;
+  p3.y = 24;
+  p3.z = 88;
 
   a::PlaneFitResult res = a::fitPlane(cloud);
   ROS_INFO("Plane equation is %.3fx + %.3fy + %.3fz + %.3f = 0",
            res.coeffs.values[0], res.coeffs.values[1], res.coeffs.values[2],
            res.coeffs.values[3]);
   
-  gm::Quaternion q = a::extractOrientation(res.coeffs, p1, p2);
+  gm::Quaternion q = a::extractOrientation(res.coeffs, p1, p2, p3);
   ROS_INFO_STREAM("Orientation is " << q);
   return 0;
 }

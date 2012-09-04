@@ -78,7 +78,7 @@ int main (int argc, char** argv)
 {
   if (argc != 12)
   {
-    cerr << "Usage: " << argv[0] << " PX PY PZ VX VY VZ WX WY WZ I1 I2\n";
+    cerr << "Usage: " << argv[0] << " PX PY PZ VX VY VZ WX WY WZ I1 I2 I3\n";
     return 1;
   }
   
@@ -101,8 +101,10 @@ int main (int argc, char** argv)
   
   const size_t i1 = atoi(argv[10]);
   const size_t i2 = atoi(argv[11]);
+  const size_t i3 = atoi(argv[12]);
   a::ARPoint p1 = (*cloud)[i1];
   a::ARPoint p2 = (*cloud)[i2];
+  a::ARPoint p3 = (*cloud)[i3];
   ROS_INFO("Points are (%.4f, %.4f, %.4f) and (%.4f, %.4f, %.4f)",
            p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
 
@@ -111,7 +113,7 @@ int main (int argc, char** argv)
            res.coeffs.values[0], res.coeffs.values[1], res.coeffs.values[2],
            res.coeffs.values[3]);
   
-  gm::Quaternion q = a::extractOrientation(res.coeffs, p1, p2);
+  gm::Quaternion q = a::extractOrientation(res.coeffs, p1, p2, p3);
   ROS_INFO_STREAM("Orientation is " << q);
 
   

@@ -82,15 +82,19 @@ PlaneFitResult fitPlane (ARCloud::ConstPtr cloud);
 
 // Given the coefficients of a plane, and two points p1 and p2, we produce a 
 // quaternion q that sends p2'-p1' to (1,0,0) and n to (0,0,1), where p1' and
-// p2' are the projections of p1 and p2 onto the plane
+// p2' are the projections of p1 and p2 onto the plane and n is the normal. 
+// There's a sign ambiguity here, which is resolved by requiring that the
+// third point p3' ends up with a positive y coordinate
 geometry_msgs::Quaternion
 extractOrientation (const pcl::ModelCoefficients& coeffs,
-                    const ARPoint& p1, const ARPoint& p2);
+                    const ARPoint& p1, const ARPoint& p2,
+                    const ARPoint& p3);
 
 // Like extractOrientation except return value is a btMatrix3x3
 btMatrix3x3
 extractFrame (const pcl::ModelCoefficients& coeffs,
-              const ARPoint& p1, const ARPoint& p2);
+              const ARPoint& p1, const ARPoint& p2,
+              const ARPoint& p3);
 
 
 // Return the centroid (mean) of a point cloud
