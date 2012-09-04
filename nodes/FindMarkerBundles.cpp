@@ -229,10 +229,10 @@ void drawArrow(gm::Point start, btMatrix3x3 mat, string frame, int color, int id
 // Infer the master tag corner positons from the other observed tags
 // Also does some of the bookkeeping for tracking that MultiMarker::_GetPose does in the non-kinect case
 int InferCorners(const ARCloud &cloud, MultiMarkerBundle &master, ARCloud &bund_corners){
-  
-	//Start estimates at zero 
-    for(int i=0; i<4; i++){
-   		bund_corners[i].x = 0;
+	bund_corners.clear();
+    bund_corners.resize(4);
+	for(int i=0; i<4; i++){
+		bund_corners[i].x = 0;
         bund_corners[i].y = 0;
         bund_corners[i].z = 0;
 	}
@@ -252,27 +252,27 @@ int InferCorners(const ARCloud &cloud, MultiMarkerBundle &master, ARCloud &bund_
 		int index = master.get_id_index(id);
 		if (index < 0) continue;
 
-        std::string marker_frame = "ar_marker_";
-		std::stringstream out;
-		out << id;
-		std::string id_string = out.str();
-		marker_frame += id_string;
-
-		n_est++;
-
 		// But only if we have corresponding points in the pointcloud
 		if (master.marker_status[index] > 0) {
-			for(size_t j = 0; j < marker->marker_corners.size(); ++j)
+			n_est++;
+
+        	std::string marker_frame = "ar_marker_";
+			std::stringstream out;
+			out << id;
+			std::string id_string = out.str();
+			marker_frame += id_string;
+
+			for(int j = 0; j < marker->marker_corners.size(); ++j)
 			{
                 //Get the estimated coords of the master marker corner in the cam frame and average the estimates 
-                //Note: the coords of the master tag in marker frame are just the neg coords of the marker in master frame
+                //Note: the coords of the master tag in marker frame are just the neg coords of the marker in master frame, except opposite corners
 				CvPoint3D64f Xnew = master.pointcloud[master.pointcloud_index(id, (int)j)];
                 gm::PointStamped p, output_p;
-                p.point.x = -Xnew.x;
-                p.point.y = -Xnew.y;
-                p.point.z = -Xnew.z;
+                p.point.y = -Xnew.x / 100.0;
+                p.point.x = -Xnew.y / 100.0;
+                p.point.z = -Xnew.z / 100.0;
                 p.header.frame_id = marker_frame; 	
-                p.header.stamp = cloud.header.stamp;
+                p.header.stamp = ros::Time(0);
 
                 try{
                     tf_listener->waitForTransform(cloud.header.frame_id, marker_frame, ros::Time(0), ros::Duration(1.0));
@@ -283,19 +283,23 @@ int InferCorners(const ARCloud &cloud, MultiMarkerBundle &master, ARCloud &bund_
 					return -1;
     			}
 
-                bund_corners[j].x += output_p.point.x;
-        		bund_corners[j].y += output_p.point.y;
-        		bund_corners[j].z += output_p.point.z;
+				//Account for the diagonal "corner switching" that occurs when calculating the master corners from the current marker corners
+				int opp_ind = (j+2)%4;
+                bund_corners[opp_ind].x += output_p.point.x;
+        		bund_corners[opp_ind].y += output_p.point.y;
+        		bund_corners[opp_ind].z += output_p.point.z;
+				printf("corner %i    %f %f %f   |   %f %f %f\n",j,p.point.x,p.point.y,p.point.z,output_p.point.x,output_p.point.y,output_p.point.z);  
 			}
 			master.marker_status[index] = 2; // Used for tracking
 		}
 	}
-
+  
     //Divide to take the average of the summed estimates
     for(int i=0; i<4; i++){
    		bund_corners[i].x /= n_est;
         bund_corners[i].y /= n_est;
         bund_corners[i].z /= n_est;
+		cout << "Infer corners " << i << ": " << bund_corners[i].x << " " << bund_corners[i].y << " " << bund_corners[i].z << " " << endl;
 	}
 
 	return 0;
@@ -310,25 +314,25 @@ void PlaneFitPoseImprovement(int id, const ARCloud &corners_3D, ARCloud::Ptr sel
       pose.header.frame_id = cloud.header.frame_id;
       pose.pose.position = ata::centroid(*res.inliers);
 
-      if(id > 0)
+      //if(id >= 0)
       	draw3dPoints(selected_points, cloud.header.frame_id, 1, id, 0.005);
 	  
 	  //Get 2 points the point forward in marker x direction      
 	  ARCloud::Ptr orient_points(new ARCloud());
 	  orient_points->points.push_back(corners_3D[0]);
-      if(id > 0)
+      //if(id >= 0)
 	  	draw3dPoints(orient_points, cloud.header.frame_id, 3, id+1000, 0.008);
       
 	  orient_points->clear();
       orient_points->points.push_back(corners_3D[3]);
-	  if(id > 0)
+	  //if(id >= 0)
 	  	draw3dPoints(orient_points, cloud.header.frame_id, 2, id+2000, 0.008);
  
       pose.pose.orientation = ata::extractOrientation(res.coeffs, corners_3D[0], corners_3D[3]);
       btMatrix3x3 mat = ata::extractFrame(res.coeffs, corners_3D[0], corners_3D[3]);
 
-	  //if(id > 0)
-      //drawArrow(pose.pose.position, mat, cloud.header.frame_id, 1, id);
+	  //if(id >= 0)
+      //  drawArrow(pose.pose.position, mat, cloud.header.frame_id, 1, id);
 
       p.translation[0] = pose.pose.position.x * 100.0;
       p.translation[1] = pose.pose.position.y * 100.0;
@@ -348,7 +352,7 @@ void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
       	master_visible[i] = false;
 
 	//Detect and track the markers
-  	if (marker_detector.Detect(image, cam, true, false, max_new_marker_error,
+  	if (marker_detector.Detect(image, cam, false, false, max_new_marker_error,
     	                         max_track_error, CVSEQ, true)) 
   	{
     	printf("\n--------------------------\n");
@@ -380,6 +384,8 @@ void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
 					master_visible[j] = true; 
 	  		}
       
+			cout << "\n******* ID: " << id << endl;
+
 			//Use the kinect data to find a plane and pose for the marker
      		PlaneFitPoseImprovement(i, m->ros_corners_3D, selected_points, cloud, m->pose);
 		}	
@@ -387,12 +393,11 @@ void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
     	//For each master tag that isn't directly visible, infer the 3D position of its corners from other visible tags
     	//Then, do a plane fit to those new corners   	
 		ARCloud inferred_corners;
-        inferred_corners.resize(4);
 		for(int i=0; i<n_bundles; i++){
       		if(master_visible[i] == false){
       			if(InferCorners(cloud, *(multi_marker_bundles[i]), inferred_corners) >= 0){
-					ARCloud::Ptr inferred_cloud(&inferred_corners);
-					PlaneFitPoseImprovement(i+4000, inferred_corners, inferred_cloud, cloud, bundlePoses[i]);
+					ARCloud::Ptr inferred_cloud(new ARCloud(inferred_corners));
+					PlaneFitPoseImprovement(i+5000, inferred_corners, inferred_cloud, cloud, bundlePoses[i]);
 				}
             }
             //Otherwise, if we can see the master tag, just rely on the pose we found from the kinect data above 
@@ -405,6 +410,11 @@ void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
 			}
     	}		
   	}
+
+	for(int i=0; i<n_bundles; i++){
+		cout << i << ": " << master_id[i] << ": " << bundlePoses[i].translation[0] << " " << bundlePoses[i].translation[1] << " " << bundlePoses[i].translation[2] << " " << endl;
+    }
+
 }
 
 
@@ -430,7 +440,6 @@ void makeMarkerMsgs(int type, int id, Pose &p, sensor_msgs::ImageConstPtr image_
 	btTransform markerPose = t * m;
 
 	//Publish the cam to marker transform for each marker
-	//if(type==MAIN_MARKER){
 	std::string markerFrame = "ar_marker_";
 	std::stringstream out;
 	out << id;
@@ -438,7 +447,6 @@ void makeMarkerMsgs(int type, int id, Pose &p, sensor_msgs::ImageConstPtr image_
 	markerFrame += id_string;
 	tf::StampedTransform camToMarker (t, image_msg->header.stamp, image_msg->header.frame_id, markerFrame.c_str());
     tf_broadcaster->sendTransform(camToMarker);
-	//}
 
 	//Create the rviz visualization message
 	tf::poseTFToMsg (markerPose, rvizMarker->pose);

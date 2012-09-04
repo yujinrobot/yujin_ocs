@@ -136,7 +136,7 @@ void getCoeffs (const pcl::ModelCoefficients& coeffs, double* a, double* b,
   ROS_ASSERT(coeffs.values.size()==4);
   const double s = coeffs.values[0]*coeffs.values[0] +
     coeffs.values[1]*coeffs.values[1] + coeffs.values[2]*coeffs.values[2];
-  ROS_ASSERT(fabs(s)>1e-6);
+  //ROS_ASSERT(fabs(s)>1e-6);
   *a = coeffs.values[0]/s;
   *b = coeffs.values[1]/s;
   *c = coeffs.values[2]/s;
@@ -182,7 +182,7 @@ btMatrix3x3 extractFrame (const pcl::ModelCoefficients& coeffs,
   const btVector3 q2 = project(p2, a, b, c, d);
   
   // Make sure q2 and q1 aren't the same so things are well-defined
-  ROS_ASSERT((q2-q1).length()>1e-3);
+  //ROS_ASSERT((q2-q1).length()>1e-3);
   
   // (inverse) matrix with the given properties
   const btVector3 v = (q2-q1).normalized();
@@ -199,8 +199,8 @@ btMatrix3x3 extractFrame (const pcl::ModelCoefficients& coeffs,
 
 btQuaternion getQuaternion (const btMatrix3x3& m)
 {
-  ROS_ASSERT_MSG(m.determinant()>0, "Matrix had determinant %.2f",
-                 m.determinant());
+  //ROS_ASSERT_MSG(m.determinant()>0, "Matrix had determinant %.2f",
+  //               m.determinant());
   btScalar y=0, p=0, r=0;
   m.getEulerZYX(y, p, r);
   btQuaternion q;
