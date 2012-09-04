@@ -292,6 +292,7 @@ bool MultiMarker::IsValidMarker(int marker_id) {
 	return idx != -1 && marker_status[idx] != 0;
 }
 
+
 double MultiMarker::_GetPose(MarkerIterator &begin, MarkerIterator &end, Camera* cam, Pose& pose, IplImage* image) {
 	vector<CvPoint3D64f> world_points;
 	vector<PointDouble>  image_points;
@@ -333,6 +334,7 @@ double MultiMarker::_GetPose(MarkerIterator &begin, MarkerIterator &end, Camera*
 	pose.SetTranslation(&tra_mat);
 	return error;
 }
+
 
 int MultiMarker::_SetTrackMarkers(MarkerDetectorImpl &marker_detector, Camera* cam, Pose& pose, IplImage *image) {
 	int count=0;

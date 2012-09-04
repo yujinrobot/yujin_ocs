@@ -43,8 +43,17 @@ namespace alvar {
  * \brief Base class for using MultiMarker.
  */
 class ALVAR_EXPORT MultiMarker {
-protected:
-	// The marker information is stored in all three tables using 
+
+
+private:
+
+	bool SaveXML(const char* fname);
+	bool SaveText(const char* fname);
+	bool LoadText(const char* fname);
+	bool LoadXML(const char* fname);
+
+public:
+    // The marker information is stored in all three tables using 
 	// the indices-order given in constructor. 
 	// One idea is that the same 'pointcloud' could contain feature 
 	// points after marker-corner-points. This way they would be
@@ -61,14 +70,6 @@ protected:
 	int _SetTrackMarkers(MarkerDetectorImpl &marker_detector, Camera* cam, Pose& pose, IplImage *image);
 	int master_id;  //The id of the first marker specified in the XML file 
 
-private:
-
-	bool SaveXML(const char* fname);
-	bool SaveText(const char* fname);
-	bool LoadText(const char* fname);
-	bool LoadXML(const char* fname);
-
-public:
 
 	/** \brief Resets the multi marker. */
 	virtual void Reset();

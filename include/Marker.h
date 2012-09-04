@@ -39,6 +39,7 @@
 #include "Pose.h"
 #include "Bitset.h"
 #include <vector>
+#include "ar_track_alvar/kinect_filtering.h"
 
 namespace alvar {
 
@@ -172,6 +173,7 @@ public:
 	std::vector<PointDouble> marker_corners_img;
     /** \brief Marker points in image coordinates */
 	std::vector<PointDouble> ros_marker_points_img;
+    ar_track_alvar::ARCloud ros_corners_3D;
     int ros_orientation;
 	/** \brief Samples to be used in figuring out min/max for thresholding */
 	std::vector<PointDouble> marker_margin_w;

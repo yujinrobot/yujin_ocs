@@ -129,8 +129,8 @@ namespace alvar {
 					mn->SetError(Marker::DECODE_ERROR, 0);
 					mn->SetError(Marker::MARGIN_ERROR, 0);
 					mn->SetError(Marker::TRACK_ERROR, track_error);
+                    mn->UpdateContent(blob_corners[track_i], gray, cam);    //Maybe should only do this when kinect is being used? Don't think it hurts anything...
 					mn->UpdatePose(blob_corners[track_i], cam, track_orientation, update_pose);
-                    printf("SHOULDN'T BE HERE....KINECT FILTERING DOES NOT SUPPORT TRACKING");
 					_markers_push_back(mn);
 					blob_corners[track_i].clear(); // We don't want to handle this again...
 					if (visualize) mn->Visualize(image, cam, CV_RGB(255,255,0));

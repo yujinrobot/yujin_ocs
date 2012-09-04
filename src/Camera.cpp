@@ -640,9 +640,9 @@ void Camera::CalcExteriorOrientation(vector<CvPoint3D64f>& pw, vector<CvPoint2D6
 		image_points->data.fl[i*2+0]  = (float)pi[i].x;
 		image_points->data.fl[i*2+1]  = (float)pi[i].y;
 	}
-	//cvmodFindExtrinsicCameraParams2(object_points, image_points, &calib_K, &calib_D, &ext_rodriques_mat, &ext_translate_mat);
-	cvFindExtrinsicCameraParams2(object_points, image_points, &calib_K, &calib_D, &ext_rodriques_mat, &ext_translate_mat);
-	pose->SetRodriques(&ext_rodriques_mat);
+	//cvFindExtrinsicCameraParams2(object_points, image_points, &calib_K, &calib_D, &ext_rodriques_mat, &ext_translate_mat);
+	cvFindExtrinsicCameraParams2(object_points, image_points, &calib_K, NULL, &ext_rodriques_mat, &ext_translate_mat);
+    pose->SetRodriques(&ext_rodriques_mat);
 	pose->SetTranslation(&ext_translate_mat);
 	cvReleaseMat(&object_points);
 	cvReleaseMat(&image_points);
