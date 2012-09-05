@@ -85,16 +85,18 @@ PlaneFitResult fitPlane (ARCloud::ConstPtr cloud);
 // p2' are the projections of p1 and p2 onto the plane and n is the normal. 
 // There's a sign ambiguity here, which is resolved by requiring that the
 // difference p4'-p3' ends up with a positive y coordinate
-geometry_msgs::Quaternion
+int
 extractOrientation (const pcl::ModelCoefficients& coeffs,
                     const ARPoint& p1, const ARPoint& p2,
-                    const ARPoint& p3, const ARPoint& p4);
+                    const ARPoint& p3, const ARPoint& p4,
+                    geometry_msgs::Quaternion &retQ);
 
 // Like extractOrientation except return value is a btMatrix3x3
-btMatrix3x3
+int
 extractFrame (const pcl::ModelCoefficients& coeffs,
               const ARPoint& p1, const ARPoint& p2,
-              const ARPoint& p3, const ARPoint& p4);
+              const ARPoint& p3, const ARPoint& p4,
+              btMatrix3x3 &retmat);
 
 
 // Return the centroid (mean) of a point cloud

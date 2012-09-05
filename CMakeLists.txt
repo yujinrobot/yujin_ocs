@@ -58,11 +58,11 @@ target_link_libraries(findMarkerBundlesNoKinect ar_track_alvar)
 rosbuild_add_executable(createMarker src/SampleMarkerCreator.cpp)
 target_link_libraries(createMarker ar_track_alvar)
 
-rosbuild_add_executable(test_points test/test_points.cpp)
-target_link_libraries(test_points kinect_filtering)
+#rosbuild_add_executable(test_points test/test_points.cpp)
+#target_link_libraries(test_points kinect_filtering)
 
-rosbuild_add_executable(test_kinect test/test_kinect_filtering.cpp)
-target_link_libraries(test_kinect kinect_filtering)
+#rosbuild_add_executable(test_kinect test/test_kinect_filtering.cpp)
+#target_link_libraries(test_kinect kinect_filtering)
 
 
 foreach(t ${ALVAR_TARGETS})

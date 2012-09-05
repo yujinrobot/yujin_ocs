@@ -288,7 +288,7 @@ int InferCorners(const ARCloud &cloud, MultiMarkerBundle &master, ARCloud &bund_
                 bund_corners[opp_ind].x += output_p.point.x;
         		bund_corners[opp_ind].y += output_p.point.y;
         		bund_corners[opp_ind].z += output_p.point.z;
-				printf("corner %i    %f %f %f   |   %f %f %f\n",j,p.point.x,p.point.y,p.point.z,output_p.point.x,output_p.point.y,output_p.point.z);  
+				//printf("corner %i    %f %f %f   |   %f %f %f\n",j,p.point.x,p.point.y,p.point.z,output_p.point.x,output_p.point.y,output_p.point.z);  
 			}
 			master.marker_status[index] = 2; // Used for tracking
 		}
@@ -299,7 +299,7 @@ int InferCorners(const ARCloud &cloud, MultiMarkerBundle &master, ARCloud &bund_
    		bund_corners[i].x /= n_est;
         bund_corners[i].y /= n_est;
         bund_corners[i].z /= n_est;
-		cout << "Infer corners " << i << ": " << bund_corners[i].x << " " << bund_corners[i].y << " " << bund_corners[i].z << " " << endl;
+		//cout << "Infer corners " << i << ": " << bund_corners[i].x << " " << bund_corners[i].y << " " << bund_corners[i].z << " " << endl;
 	}
 
 	return 0;
@@ -364,8 +364,14 @@ int PlaneFitPoseImprovement(int id, const ARCloud &corners_3D, ARCloud::Ptr sele
     orient_points->points.push_back(corners_3D[i2]);
 	draw3dPoints(orient_points, cloud.header.frame_id, 2, id+2000, 0.008);
  
-    pose.pose.orientation = ata::extractOrientation(res.coeffs, corners_3D[i1], corners_3D[i2], corners_3D[i3], corners_3D[i4]);
-    btMatrix3x3 mat = ata::extractFrame(res.coeffs, corners_3D[i1], corners_3D[i2], corners_3D[i3], corners_3D[i4]);
+    int succ;
+    succ = ata::extractOrientation(res.coeffs, corners_3D[i1], corners_3D[i2], corners_3D[i3], corners_3D[i4], pose.pose.orientation);
+    if(succ < 0) return -1;
+
+    btMatrix3x3 mat; 
+    succ = ata::extractFrame(res.coeffs, corners_3D[i1], corners_3D[i2], corners_3D[i3], corners_3D[i4], mat);
+    if(succ < 0) return -1;
+
     drawArrow(pose.pose.position, mat, cloud.header.frame_id, 1, id);
 
     p.translation[0] = pose.pose.position.x * 100.0;
@@ -452,7 +458,6 @@ void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
 				if(bundle_ind >= 0)
 					bundles_seen[bundle_ind];
 			}
-            cout << "RET: " << ret << endl;
 		}	
 
     	//For each master tag that isn't directly visible, infer the 3D position of its corners from other visible tags
@@ -700,34 +705,6 @@ int main(int argc, char *argv[])
 		}		
 	}  
 
-	// Calc the affine transforms from the markers to their masters
-	std::vector<cv::Point3f> first, second;
-	std::vector<uchar> inliers;
-	cv::Mat aff(3,4,CV_64F);
-
-	for (int i=0; i<n_bundles; i++)
-	{
-		MultiMarkerBundle *master = multi_marker_bundles[i];
-
-		//for(int j=0; j<
-		first.clear();
-		second.clear();
-
-		for(int j=0; j<4; j++){
-            CvPoint3D64f pt2 = master->pointcloud[master->pointcloud_index(4, (int)j)];
-			CvPoint3D64f pt1 = master->pointcloud[master->pointcloud_index(0, (int)j)];
-    		first.push_back(cv::Point3f(pt1.x, pt1.y, pt1.z));
-    		second.push_back(cv::Point3f(pt2.x, pt2.y, pt2.z));
-		}
-	
-		cout << first << endl;
-		cout << second << endl;
-		int ret = cv::estimateAffine3D(first, second, aff, inliers);
-		std::cout << aff << std::endl;
-		exit(0);
-	}
-
-    
 
 	// Set up camera, listeners, and broadcasters
 	cam = new Camera(n, cam_info_topic);
