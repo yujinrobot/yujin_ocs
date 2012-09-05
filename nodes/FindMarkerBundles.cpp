@@ -268,9 +268,9 @@ int InferCorners(const ARCloud &cloud, MultiMarkerBundle &master, ARCloud &bund_
                 //Note: the coords of the master tag in marker frame are just the neg coords of the marker in master frame, except opposite corners
 				CvPoint3D64f Xnew = master.pointcloud[master.pointcloud_index(id, (int)j)];
                 gm::PointStamped p, output_p;
-                p.point.y = -Xnew.x / 100.0;
+                p.point.y = Xnew.x / 100.0;
                 p.point.x = -Xnew.y / 100.0;
-                p.point.z = -Xnew.z / 100.0;
+                p.point.z = Xnew.z / 100.0;
                 p.header.frame_id = marker_frame; 	
                 p.header.stamp = ros::Time(0);
 
@@ -306,41 +306,77 @@ int InferCorners(const ARCloud &cloud, MultiMarkerBundle &master, ARCloud &bund_
 }
 
 
-void PlaneFitPoseImprovement(int id, const ARCloud &corners_3D, ARCloud::Ptr selected_points, const ARCloud &cloud, Pose &p){
+int PlaneFitPoseImprovement(int id, const ARCloud &corners_3D, ARCloud::Ptr selected_points, const ARCloud &cloud, Pose &p){
 
-	  ata::PlaneFitResult res = ata::fitPlane(selected_points);
-      gm::PoseStamped pose;
-      pose.header.stamp = cloud.header.stamp;
-      pose.header.frame_id = cloud.header.frame_id;
-      pose.pose.position = ata::centroid(*res.inliers);
+	ata::PlaneFitResult res = ata::fitPlane(selected_points);
+    gm::PoseStamped pose;
+    pose.header.stamp = cloud.header.stamp;
+    pose.header.frame_id = cloud.header.frame_id;
+    pose.pose.position = ata::centroid(*res.inliers);
 
-      //if(id >= 0)
-      	draw3dPoints(selected_points, cloud.header.frame_id, 1, id, 0.005);
+    draw3dPoints(selected_points, cloud.header.frame_id, 1, id, 0.005);
 	  
-	  //Get 2 points the point forward in marker x direction      
-	  ARCloud::Ptr orient_points(new ARCloud());
-	  orient_points->points.push_back(corners_3D[0]);
-      //if(id >= 0)
-	  	draw3dPoints(orient_points, cloud.header.frame_id, 3, id+1000, 0.008);
+	//Get 2 points the point forward in marker x direction   
+    int i1,i2;
+    if(isnan(corners_3D[0].x) || isnan(corners_3D[0].y) || isnan(corners_3D[0].z) || 
+	   isnan(corners_3D[3].x) || isnan(corners_3D[3].y) || isnan(corners_3D[3].z))
+	{
+		if(isnan(corners_3D[1].x) || isnan(corners_3D[1].y) || isnan(corners_3D[1].z) || 
+		   isnan(corners_3D[2].x) || isnan(corners_3D[2].y) || isnan(corners_3D[2].z))
+		{
+			return -1;
+		}
+		else{
+			i1 = 1;
+			i2 = 2;
+		}	
+	}
+	else{
+		i1 = 0;
+		i2 = 3;
+    }
+
+	//Get 2 points the point forward in marker xydirection   
+    int i3,i4;
+    if(isnan(corners_3D[0].x) || isnan(corners_3D[0].y) || isnan(corners_3D[0].z) || 
+	   isnan(corners_3D[1].x) || isnan(corners_3D[1].y) || isnan(corners_3D[1].z))
+	{
+		if(isnan(corners_3D[3].x) || isnan(corners_3D[3].y) || isnan(corners_3D[3].z) || 
+		   isnan(corners_3D[2].x) || isnan(corners_3D[2].y) || isnan(corners_3D[2].z))
+		{
+			return -1;
+		}
+		else{
+			i3 = 2;
+			i4 = 3;
+		}	
+	}
+	else{
+		i3 = 1;
+		i4 = 0;
+    }
+   
+	ARCloud::Ptr orient_points(new ARCloud());
+	orient_points->points.push_back(corners_3D[i1]);
+	draw3dPoints(orient_points, cloud.header.frame_id, 3, id+1000, 0.008);
       
-	  orient_points->clear();
-      orient_points->points.push_back(corners_3D[3]);
-	  //if(id >= 0)
-	  	draw3dPoints(orient_points, cloud.header.frame_id, 2, id+2000, 0.008);
+	orient_points->clear();
+    orient_points->points.push_back(corners_3D[i2]);
+	draw3dPoints(orient_points, cloud.header.frame_id, 2, id+2000, 0.008);
  
-      pose.pose.orientation = ata::extractOrientation(res.coeffs, corners_3D[0], corners_3D[3]);
-      btMatrix3x3 mat = ata::extractFrame(res.coeffs, corners_3D[0], corners_3D[3]);
+    pose.pose.orientation = ata::extractOrientation(res.coeffs, corners_3D[i1], corners_3D[i2], corners_3D[i3], corners_3D[i4]);
+    btMatrix3x3 mat = ata::extractFrame(res.coeffs, corners_3D[i1], corners_3D[i2], corners_3D[i3], corners_3D[i4]);
+    drawArrow(pose.pose.position, mat, cloud.header.frame_id, 1, id);
 
-	  //if(id >= 0)
-      //  drawArrow(pose.pose.position, mat, cloud.header.frame_id, 1, id);
+    p.translation[0] = pose.pose.position.x * 100.0;
+    p.translation[1] = pose.pose.position.y * 100.0;
+    p.translation[2] = pose.pose.position.z * 100.0;
+    p.quaternion[1] = pose.pose.orientation.x;
+    p.quaternion[2] = pose.pose.orientation.y;
+    p.quaternion[3] = pose.pose.orientation.z;
+    p.quaternion[0] = pose.pose.orientation.w; 
 
-      p.translation[0] = pose.pose.position.x * 100.0;
-      p.translation[1] = pose.pose.position.y * 100.0;
-      p.translation[2] = pose.pose.position.z * 100.0;
-      p.quaternion[1] = pose.pose.orientation.x;
-      p.quaternion[2] = pose.pose.orientation.y;
-      p.quaternion[3] = pose.pose.orientation.z;
-      p.quaternion[0] = pose.pose.orientation.w; 
+	return 0;
 }
 
 
@@ -351,8 +387,11 @@ void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
   	for(int i=0; i<n_bundles; i++)
       	master_visible[i] = false;
 
+    for(int i=0; i<n_bundles; i++)
+        bundles_seen[i] = false;
+
 	//Detect and track the markers
-  	if (marker_detector.Detect(image, cam, false, false, max_new_marker_error,
+  	if (marker_detector.Detect(image, cam, true, false, max_new_marker_error,
     	                         max_track_error, CVSEQ, true)) 
   	{
     	printf("\n--------------------------\n");
@@ -379,42 +418,65 @@ void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
 
 			//Check if we have spotted a master tag
       		int id = m->GetId();
+            int master_ind = -1;
       		for(int j=0; j<n_bundles; j++){
 	    		if(id == master_id[j])
 					master_visible[j] = true; 
+					master_ind = j;
 	  		}
+
+            //Mark the bundle that marker belongs to as "seen"
+            int bundle_ind = -1;
+			for(int j=0; j<n_bundles; j++){
+				for(int k=0; k<bundle_indices[j].size(); k++){
+					if(bundle_indices[j][k] == id){
+                        if(bundles_seen[j] == false)  //Check if it was already seen before
+							bundle_ind = j;
+						bundles_seen[j] = true;
+						break;
+					}
+				}
+			}
       
 			cout << "\n******* ID: " << id << endl;
 
 			//Use the kinect data to find a plane and pose for the marker
-     		PlaneFitPoseImprovement(i, m->ros_corners_3D, selected_points, cloud, m->pose);
+     		int ret = PlaneFitPoseImprovement(i, m->ros_corners_3D, selected_points, cloud, m->pose);
+            
+			//If the plane fit fails...
+			if(ret < 0){
+				//If this was a master tag, reset its visibility
+				if(master_ind >= 0)
+					master_visible[master_ind] = false;
+				//If this was the only observed tag in the bundle, the bundle is no longer "seen"
+				if(bundle_ind >= 0)
+					bundles_seen[bundle_ind];
+			}
+            cout << "RET: " << ret << endl;
 		}	
 
     	//For each master tag that isn't directly visible, infer the 3D position of its corners from other visible tags
     	//Then, do a plane fit to those new corners   	
 		ARCloud inferred_corners;
 		for(int i=0; i<n_bundles; i++){
-      		if(master_visible[i] == false){
-      			if(InferCorners(cloud, *(multi_marker_bundles[i]), inferred_corners) >= 0){
-					ARCloud::Ptr inferred_cloud(new ARCloud(inferred_corners));
-					PlaneFitPoseImprovement(i+5000, inferred_corners, inferred_cloud, cloud, bundlePoses[i]);
+            if(bundles_seen[i] == true){
+      			if(master_visible[i] == false){
+      				if(InferCorners(cloud, *(multi_marker_bundles[i]), inferred_corners) >= 0){
+						ARCloud::Ptr inferred_cloud(new ARCloud(inferred_corners));
+						PlaneFitPoseImprovement(i+5000, inferred_corners, inferred_cloud, cloud, bundlePoses[i]);
+					}
+            	}
+            	//Otherwise, if we can see the master tag, just rely on the pose we found from the kinect data above 
+				else{
+					for (size_t j=0; j<marker_detector.markers->size(); j++){
+						Marker *m = &((*marker_detector.markers)[j]);                	
+						if(m->GetId() == master_id[i])
+							bundlePoses[i] = m->pose;
+					} 
 				}
-            }
-            //Otherwise, if we can see the master tag, just rely on the pose we found from the kinect data above 
-			else{
-				for (size_t j=0; j<marker_detector.markers->size(); j++){
-					Marker *m = &((*marker_detector.markers)[j]);                	
-					if(m->GetId() == master_id[i])
-						bundlePoses[i] = m->pose;
-				} 
-			}
-    	}		
-  	}
-
-	for(int i=0; i<n_bundles; i++){
-		cout << i << ": " << master_id[i] << ": " << bundlePoses[i].translation[0] << " " << bundlePoses[i].translation[1] << " " << bundlePoses[i].translation[2] << " " << endl;
-    }
-
+    		}		
+  		}
+	}
 }
 
 
@@ -487,7 +549,7 @@ void makeMarkerMsgs(int type, int id, Pose &p, sensor_msgs::ImageConstPtr image_
 		rvizMarker->color.a = 0.5;
 	}
 
-	rvizMarker->lifetime = ros::Duration (1.0);
+	rvizMarker->lifetime = ros::Duration (0.1);
 
 	// Only publish the pose of the master tag in each bundle, since that's all we really care about aside from visualization 
 	if(type==MAIN_MARKER){
@@ -549,10 +611,6 @@ void getPointCloudCallback (const sensor_msgs::PointCloud2ConstPtr &msg)
 
       		//Get the estimated pose of the main markers by using all the markers in each bundle
     		GetMultiMarkerPoses(capture_, cloud);
-		
-    		//Draw the observed markers that are visible and note which bundles have at least 1 marker seen
-            for(int i=0; i<n_bundles; i++)
-            	bundles_seen[i] = false;
 
 			for (size_t i=0; i<marker_detector.markers->size(); i++)
 			{
@@ -560,16 +618,6 @@ void getPointCloudCallback (const sensor_msgs::PointCloud2ConstPtr &msg)
 
 				// Draw if id is valid
         		if(id >= 0){
-
-        			//Mark the bundle that marker belongs to as "seen"
-					for(int j=0; j<n_bundles; j++){
-						for(int k=0; k<bundle_indices[j].size(); k++){
-							if(bundle_indices[j][k] == id){
-								bundles_seen[j] = true;
-								break;
-							}
-						}
-					}
 
  					// Don't draw if it is a master tag...we do this later, a bit differently
 					bool should_draw = true;
@@ -651,6 +699,35 @@ int main(int argc, char *argv[])
 			return 0;
 		}		
 	}  
+
+	// Calc the affine transforms from the markers to their masters
+	std::vector<cv::Point3f> first, second;
+	std::vector<uchar> inliers;
+	cv::Mat aff(3,4,CV_64F);
+
+	for (int i=0; i<n_bundles; i++)
+	{
+		MultiMarkerBundle *master = multi_marker_bundles[i];
+
+		//for(int j=0; j<
+		first.clear();
+		second.clear();
+
+		for(int j=0; j<4; j++){
+            CvPoint3D64f pt2 = master->pointcloud[master->pointcloud_index(4, (int)j)];
+			CvPoint3D64f pt1 = master->pointcloud[master->pointcloud_index(0, (int)j)];
+    		first.push_back(cv::Point3f(pt1.x, pt1.y, pt1.z));
+    		second.push_back(cv::Point3f(pt2.x, pt2.y, pt2.z));
+		}
+	
+		cout << first << endl;
+		cout << second << endl;
+		int ret = cv::estimateAffine3D(first, second, aff, inliers);
+		std::cout << aff << std::endl;
+		exit(0);
+	}
+
+    
 
 	// Set up camera, listeners, and broadcasters
 	cam = new Camera(n, cam_info_topic);

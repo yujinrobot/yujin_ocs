@@ -136,7 +136,7 @@ void getCoeffs (const pcl::ModelCoefficients& coeffs, double* a, double* b,
   ROS_ASSERT(coeffs.values.size()==4);
   const double s = coeffs.values[0]*coeffs.values[0] +
     coeffs.values[1]*coeffs.values[1] + coeffs.values[2]*coeffs.values[2];
-  //ROS_ASSERT(fabs(s)>1e-6);
+  ROS_ASSERT(fabs(s)>1e-6);
   *a = coeffs.values[0]/s;
   *b = coeffs.values[1]/s;
   *c = coeffs.values[2]/s;
