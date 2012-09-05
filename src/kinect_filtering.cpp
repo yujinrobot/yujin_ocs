@@ -44,209 +44,209 @@
 namespace ar_track_alvar
 {
 
-namespace gm=geometry_msgs;
+  namespace gm=geometry_msgs;
 
-using std::vector;
-using std::cerr;
-using std::endl;
-using std::ostream;
+  using std::vector;
+  using std::cerr;
+  using std::endl;
+  using std::ostream;
 
-// Distance threshold for plane fitting: how far are points
-// allowed to be off the plane?
-const double distance_threshold_ = 0.005;
+  // Distance threshold for plane fitting: how far are points
+  // allowed to be off the plane?
+  const double distance_threshold_ = 0.005;
 
-PlaneFitResult fitPlane (ARCloud::ConstPtr cloud)
-{
-  PlaneFitResult res;
-  pcl::PointIndices::Ptr inliers=boost::make_shared<pcl::PointIndices>();
-
-  pcl::SACSegmentation<ARPoint> seg;
-  seg.setOptimizeCoefficients(true);
-  seg.setModelType(pcl::SACMODEL_PLANE);
-  seg.setMethodType(pcl::SAC_RANSAC);
-  seg.setDistanceThreshold(distance_threshold_);
-
-  seg.setInputCloud(cloud);
-  seg.segment(*inliers, res.coeffs);
-
-  pcl::ExtractIndices<ARPoint> extracter;
-  extracter.setInputCloud(cloud);
-  extracter.setIndices(inliers);
-  extracter.setNegative(false);
-  extracter.filter(*res.inliers);
-  
-  return res;
-}
-
-ARCloud::Ptr filterCloud (const ARCloud& cloud, const vector<cv::Point>& pixels)
-{
-  ARCloud::Ptr out(new ARCloud());
-  //ROS_INFO("  Filtering %zu pixels", pixels.size());
-  //for (const cv::Point& p : pixels)
-  for(size_t i=0; i<pixels.size(); i++)
+  PlaneFitResult fitPlane (ARCloud::ConstPtr cloud)
   {
-    const cv::Point& p = pixels[i];
-    const ARPoint& pt = cloud(p.x, p.y);
-    if (isnan(pt.x) || isnan(pt.y) || isnan(pt.z)){
-      //ROS_INFO("    Skipping (%.4f, %.4f, %.4f)", pt.x, pt.y, pt.z);
-    }
-    else
-      out->points.push_back(pt);
-  }
-  return out;
-}
+    PlaneFitResult res;
+    pcl::PointIndices::Ptr inliers=boost::make_shared<pcl::PointIndices>();
 
-gm::Point centroid (const ARCloud& points)
-{
-  gm::Point sum;
-  sum.x = 0;
-  sum.y = 0;
-  sum.z = 0;
-  //for (const Point& p : points)
-  for(size_t i=0; i<points.size(); i++)
-  {
-    sum.x += points[i].x;
-    sum.y += points[i].y;
-    sum.z += points[i].z;
-  }
+    pcl::SACSegmentation<ARPoint> seg;
+    seg.setOptimizeCoefficients(true);
+    seg.setModelType(pcl::SACMODEL_PLANE);
+    seg.setMethodType(pcl::SAC_RANSAC);
+    seg.setDistanceThreshold(distance_threshold_);
+
+    seg.setInputCloud(cloud);
+    seg.segment(*inliers, res.coeffs);
+
+    pcl::ExtractIndices<ARPoint> extracter;
+    extracter.setInputCloud(cloud);
+    extracter.setIndices(inliers);
+    extracter.setNegative(false);
+    extracter.filter(*res.inliers);
   
-  gm::Point center;
-  const size_t n = points.size();
-  center.x = sum.x/n;
-  center.y = sum.y/n;
-  center.z = sum.z/n;
-  return center;
-}
-
-// Helper function to construct a geometry_msgs::Quaternion
-inline
-gm::Quaternion makeQuaternion (double x, double y, double z, double w)
-{
-  gm::Quaternion q;
-  q.x = x;
-  q.y = y;
-  q.z = z;
-  q.w = w;
-  return q;
-}
-
-// Extract and normalize plane coefficients
-int getCoeffs (const pcl::ModelCoefficients& coeffs, double* a, double* b,
-                double* c, double* d)
-{
-  if(coeffs.values.size() != 4)
-    return -1;
-  const double s = coeffs.values[0]*coeffs.values[0] +
-    coeffs.values[1]*coeffs.values[1] + coeffs.values[2]*coeffs.values[2];
-  if(fabs(s) < 1e-6)
-	return -1;
-  *a = coeffs.values[0]/s;
-  *b = coeffs.values[1]/s;
-  *c = coeffs.values[2]/s;
-  *d = coeffs.values[3]/s;
-  return 0;
-}
-
-// Project point onto plane
-btVector3 project (const ARPoint& p, const double a, const double b,
-                   const double c, const double d)
-{
-  const double t = a*p.x + b*p.y + c*p.z + d;
-  return btVector3(p.x-t*a, p.y-t*b, p.z-t*c);
-}
-
-ostream& operator<< (ostream& str, const btMatrix3x3& m)
-{
-  str << "[" << m[0][0] << ", " << m[0][1] << ", " << m[0][2] << "; "
-      << m[1][0] << ", " << m[1][1] << ", " << m[1][2] << "; "
-      << m[2][0] << ", " << m[2][1] << ", " << m[2][2] << "]";
-  return str;
-}
-
-ostream& operator<< (ostream& str, const btQuaternion& q)
-{
-  str << "[(" << q.x() << ", " << q.y() << ", " << q.z() <<
-    "), " << q.w() << "]";
-  return str;
-}
-
-ostream& operator<< (ostream& str, const btVector3& v)
-{
-  str << "(" << v.x() << ", " << v.y() << ", " << v.z() << ")";
-  return str;
-}
-
-int extractFrame (const pcl::ModelCoefficients& coeffs,
-                  const ARPoint& p1, const ARPoint& p2,
-                  const ARPoint& p3, const ARPoint& p4,
-				  btMatrix3x3 &retmat)
-{
-  // Get plane coeffs and project points onto the plane
-  double a=0, b=0, c=0, d=0;
-  if(getCoeffs(coeffs, &a, &b, &c, &d) < 0)
-	return -1;
-  
-  const btVector3 q1 = project(p1, a, b, c, d);
-  const btVector3 q2 = project(p2, a, b, c, d);
-  const btVector3 q3 = project(p3, a, b, c, d);
-  const btVector3 q4 = project(p4, a, b, c, d);
-  
-  // Make sure points aren't the same so things are well-defined
-  if((q2-q1).length() < 1e-3)
-	return -1;
-  
-  // (inverse) matrix with the given properties
-  const btVector3 v = (q2-q1).normalized();
-  const btVector3 n(a, b, c);
-  const btVector3 w = -v.cross(n); 
-  btMatrix3x3 m(v[0], v[1], v[2], w[0], w[1], w[2], n[0], n[1], n[2]);
-  
-  // Possibly flip things based on third point
-  const btVector3 diff = (q4-q3).normalized();
-  //ROS_INFO_STREAM("w = " << w << " and d = " << diff);
-  if (w.dot(diff)<0)
-  {
-    //ROS_INFO_STREAM("Flipping normal based on p3.  Current value: " << m);
-    m[1] = -m[1];
-    m[2] = -m[2];
-    //ROS_INFO_STREAM("New value: " << m);
+    return res;
   }
 
-  // Invert and return
-  retmat = m.inverse();
-  //cerr << "Frame is " << retmat << endl;
-  return 0;
-}
+  ARCloud::Ptr filterCloud (const ARCloud& cloud, const vector<cv::Point>& pixels)
+  {
+    ARCloud::Ptr out(new ARCloud());
+    //ROS_INFO("  Filtering %zu pixels", pixels.size());
+    //for (const cv::Point& p : pixels)
+    for(size_t i=0; i<pixels.size(); i++)
+      {
+	const cv::Point& p = pixels[i];
+	const ARPoint& pt = cloud(p.x, p.y);
+	if (isnan(pt.x) || isnan(pt.y) || isnan(pt.z)){
+	  //ROS_INFO("    Skipping (%.4f, %.4f, %.4f)", pt.x, pt.y, pt.z);
+	}
+	else
+	  out->points.push_back(pt);
+      }
+    return out;
+  }
+
+  gm::Point centroid (const ARCloud& points)
+  {
+    gm::Point sum;
+    sum.x = 0;
+    sum.y = 0;
+    sum.z = 0;
+    //for (const Point& p : points)
+    for(size_t i=0; i<points.size(); i++)
+      {
+	sum.x += points[i].x;
+	sum.y += points[i].y;
+	sum.z += points[i].z;
+      }
+  
+    gm::Point center;
+    const size_t n = points.size();
+    center.x = sum.x/n;
+    center.y = sum.y/n;
+    center.z = sum.z/n;
+    return center;
+  }
+
+  // Helper function to construct a geometry_msgs::Quaternion
+  inline
+  gm::Quaternion makeQuaternion (double x, double y, double z, double w)
+  {
+    gm::Quaternion q;
+    q.x = x;
+    q.y = y;
+    q.z = z;
+    q.w = w;
+    return q;
+  }
+
+  // Extract and normalize plane coefficients
+  int getCoeffs (const pcl::ModelCoefficients& coeffs, double* a, double* b,
+		 double* c, double* d)
+  {
+    if(coeffs.values.size() != 4)
+      return -1;
+    const double s = coeffs.values[0]*coeffs.values[0] +
+      coeffs.values[1]*coeffs.values[1] + coeffs.values[2]*coeffs.values[2];
+    if(fabs(s) < 1e-6)
+      return -1;
+    *a = coeffs.values[0]/s;
+    *b = coeffs.values[1]/s;
+    *c = coeffs.values[2]/s;
+    *d = coeffs.values[3]/s;
+    return 0;
+  }
+
+  // Project point onto plane
+  btVector3 project (const ARPoint& p, const double a, const double b,
+		     const double c, const double d)
+  {
+    const double t = a*p.x + b*p.y + c*p.z + d;
+    return btVector3(p.x-t*a, p.y-t*b, p.z-t*c);
+  }
+
+  ostream& operator<< (ostream& str, const btMatrix3x3& m)
+  {
+    str << "[" << m[0][0] << ", " << m[0][1] << ", " << m[0][2] << "; "
+	<< m[1][0] << ", " << m[1][1] << ", " << m[1][2] << "; "
+	<< m[2][0] << ", " << m[2][1] << ", " << m[2][2] << "]";
+    return str;
+  }
+
+  ostream& operator<< (ostream& str, const btQuaternion& q)
+  {
+    str << "[(" << q.x() << ", " << q.y() << ", " << q.z() <<
+      "), " << q.w() << "]";
+    return str;
+  }
+
+  ostream& operator<< (ostream& str, const btVector3& v)
+  {
+    str << "(" << v.x() << ", " << v.y() << ", " << v.z() << ")";
+    return str;
+  }
+
+  int extractFrame (const pcl::ModelCoefficients& coeffs,
+		    const ARPoint& p1, const ARPoint& p2,
+		    const ARPoint& p3, const ARPoint& p4,
+		    btMatrix3x3 &retmat)
+  {
+    // Get plane coeffs and project points onto the plane
+    double a=0, b=0, c=0, d=0;
+    if(getCoeffs(coeffs, &a, &b, &c, &d) < 0)
+      return -1;
+  
+    const btVector3 q1 = project(p1, a, b, c, d);
+    const btVector3 q2 = project(p2, a, b, c, d);
+    const btVector3 q3 = project(p3, a, b, c, d);
+    const btVector3 q4 = project(p4, a, b, c, d);
+  
+    // Make sure points aren't the same so things are well-defined
+    if((q2-q1).length() < 1e-3)
+      return -1;
+  
+    // (inverse) matrix with the given properties
+    const btVector3 v = (q2-q1).normalized();
+    const btVector3 n(a, b, c);
+    const btVector3 w = -v.cross(n); 
+    btMatrix3x3 m(v[0], v[1], v[2], w[0], w[1], w[2], n[0], n[1], n[2]);
+  
+    // Possibly flip things based on third point
+    const btVector3 diff = (q4-q3).normalized();
+    //ROS_INFO_STREAM("w = " << w << " and d = " << diff);
+    if (w.dot(diff)<0)
+      {
+	//ROS_INFO_STREAM("Flipping normal based on p3.  Current value: " << m);
+	m[1] = -m[1];
+	m[2] = -m[2];
+	//ROS_INFO_STREAM("New value: " << m);
+      }
+
+    // Invert and return
+    retmat = m.inverse();
+    //cerr << "Frame is " << retmat << endl;
+    return 0;
+  }
 
 
-int getQuaternion (const btMatrix3x3& m, btQuaternion &retQ)
-{
-  if(m.determinant() <= 0)
-	return -1;
-  btScalar y=0, p=0, r=0;
-  m.getEulerZYX(y, p, r);
-  retQ.setEulerZYX(y, p, r);
-  btMatrix3x3 m2;
-  m2.setRotation(retQ);
-  //ROS_INFO_STREAM("(y, p, r) are " << y << ", " << p << ", " << r <<
-  //                " and quaternion is " << q << " and frame is " << m2);
-  return 0;
-}
+  int getQuaternion (const btMatrix3x3& m, btQuaternion &retQ)
+  {
+    if(m.determinant() <= 0)
+      return -1;
+    btScalar y=0, p=0, r=0;
+    m.getEulerZYX(y, p, r);
+    retQ.setEulerZYX(y, p, r);
+    btMatrix3x3 m2;
+    m2.setRotation(retQ);
+    //ROS_INFO_STREAM("(y, p, r) are " << y << ", " << p << ", " << r <<
+    //                " and quaternion is " << q << " and frame is " << m2);
+    return 0;
+  }
 
 
-int extractOrientation (const pcl::ModelCoefficients& coeffs,
-                        const ARPoint& p1, const ARPoint& p2,
-                        const ARPoint& p3, const ARPoint& p4,
-                        gm::Quaternion &retQ)
-{
-  btMatrix3x3 m;
-  if(extractFrame(coeffs, p1, p2, p3, p4, m) < 0)
-    return -1;
-  btQuaternion q;
-  if(getQuaternion(m,q) < 0)
-	return -1;
-  tf::quaternionTFToMsg(q, retQ);
-  return 0;
-}
+  int extractOrientation (const pcl::ModelCoefficients& coeffs,
+			  const ARPoint& p1, const ARPoint& p2,
+			  const ARPoint& p3, const ARPoint& p4,
+			  gm::Quaternion &retQ)
+  {
+    btMatrix3x3 m;
+    if(extractFrame(coeffs, p1, p2, p3, p4, m) < 0)
+      return -1;
+    btQuaternion q;
+    if(getQuaternion(m,q) < 0)
+      return -1;
+    tf::quaternionTFToMsg(q, retQ);
+    return 0;
+  }
 
 } // namespace
