@@ -115,7 +115,12 @@ int *master_id;
 bool *bundles_seen;
 bool *master_visible;
 std::vector<int> *bundle_indices; 	
-bool init = true;  
+bool init = true;
+
+int median_n;  
+Pose **median_poses;
+int *median_ind;
+bool *median_init;
 
 double marker_size;
 double max_new_marker_error;
@@ -386,6 +391,45 @@ int PlaneFitPoseImprovement(int id, const ARCloud &corners_3D, ARCloud::Ptr sele
 }
 
 
+void medianFilter(int bund, const Pose &new_pose, Pose &ret_pose){
+  median_poses[bund][median_ind[bund]] = new_pose;
+  
+  if(!median_init[bund]){
+    if(median_ind[bund] == (median_n-1))
+      median_init[bund] = true;
+    ret_pose = new_pose;
+  }
+
+  else{
+    double min_dist = 0;
+    int min_ind = 0;
+    for(int i=0; i<median_n; i++){
+      double total_dist = 0;
+      for(int j=0; j<median_n; j++){
+	total_dist += pow(median_poses[bund][i].translation[0] - median_poses[bund][j].translation[0], 2);
+	total_dist += pow(median_poses[bund][i].translation[1] - median_poses[bund][j].translation[1], 2);
+	total_dist += pow(median_poses[bund][i].translation[2] - median_poses[bund][j].translation[2], 2);
+	total_dist += pow(median_poses[bund][i].quaternion[0] - median_poses[bund][j].quaternion[0], 2);
+	total_dist += pow(median_poses[bund][i].quaternion[1] - median_poses[bund][j].quaternion[1], 2);
+	total_dist += pow(median_poses[bund][i].quaternion[2] - median_poses[bund][j].quaternion[2], 2);
+	total_dist += pow(median_poses[bund][i].quaternion[3] - median_poses[bund][j].quaternion[3], 2);
+      }
+      if(i==0) min_dist = total_dist;
+      else{
+	if(total_dist < min_dist){
+	  min_dist = total_dist;
+	  min_ind = i;
+	}
+      }
+    }
+    ret_pose = median_poses[bund][min_ind];
+    //cout << median_ind[bund] << " min " << min_dist << " " << min_ind << endl;
+  }
+
+  median_ind[bund] = (median_ind[bund]+1) % median_n;
+}
+
+
 // Updates the bundlePoses of the multi_marker_bundles by detecting markers and
 // using all markers in a bundle to infer the master tag's position
 void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
@@ -406,12 +450,7 @@ void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
 	  vector<cv::Point> pixels;
 	  Marker *m = &((*marker_detector.markers)[i]);
 	  int id = m->GetId();
-
-	  //Get the 3D marker points
-	  BOOST_FOREACH (const PointDouble& p, m->ros_marker_points_img)
-	    pixels.push_back(cv::Point(p.x, p.y));
-
-	  ARCloud::Ptr selected_points = ata::filterCloud(cloud, pixels);
+	  cout << "******* ID: " << id << endl;
       
 	  //Get the 3D points of the outer corners
           /*
@@ -425,8 +464,7 @@ void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
 	  m->ros_corners_3D[3] = cloud(corner3.x, corner3.y);
 	  */
           
-	  ///*
-	  //Get the inner corner points - more stable than outer corners that can "fall off" object
+	  //Get the 3D inner corner points - more stable than outer corners that can "fall off" object
 	  int resol = m->GetRes();
 	  int ori = m->ros_orientation;
       
@@ -448,7 +486,6 @@ void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
 	  }
 	  else
 	    ROS_ERROR("FindMarkerBundles: Bad Orientation: %i for ID: %i", ori, id);
-	  //*/
 
 	  //Check if we have spotted a master tag
 	  int master_ind = -1;
@@ -470,8 +507,11 @@ void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
 	      }
 	    }
 	  }
-      
-	  cout << "******* ID: " << id << endl;
+
+	  //Get the 3D marker points
+	  BOOST_FOREACH (const PointDouble& p, m->ros_marker_points_img)
+	    pixels.push_back(cv::Point(p.x, p.y));	  
+	  ARCloud::Ptr selected_points = ata::filterCloud(cloud, pixels);
 
 	  //Use the kinect data to find a plane and pose for the marker
 	  int ret = PlaneFitPoseImprovement(i, m->ros_corners_3D, selected_points, cloud, m->pose);
@@ -506,6 +546,9 @@ void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
 		bundlePoses[i] = m->pose;
 	    } 
 	  }
+	  Pose ret_pose;
+	  medianFilter(i,bundlePoses[i], ret_pose);
+	  bundlePoses[i] = ret_pose;   
 	}		
       }
     }
@@ -713,7 +756,17 @@ int main(int argc, char *argv[])
   master_id = new int[n_bundles]; 
   bundle_indices = new std::vector<int>[n_bundles]; 
   bundles_seen = new bool[n_bundles]; 
-  master_visible = new bool[n_bundles];	
+  master_visible = new bool[n_bundles];
+	
+  median_n = 10;
+  median_ind = new int[n_bundles];
+  median_init = new bool[n_bundles];
+  median_poses = new Pose*[n_bundles];
+  for(int i=0; i<n_bundles; i++){
+    median_init[i] = false;
+    median_ind[i] = 0;
+    median_poses[i] = new Pose[median_n];
+  }
 
   // Load the marker bundle XML files
   for(int i=0; i<n_bundles; i++){	
