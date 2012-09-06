@@ -737,7 +737,7 @@ int main(int argc, char *argv[])
 	 
   //Subscribe to topics and set up callbacks
   ROS_INFO ("Subscribing to image topic");
-  cloud_sub_ = n.subscribe("/kinect_head/depth_registered/points", 1, &getPointCloudCallback);
+  cloud_sub_ = n.subscribe(cam_image_topic, 1, &getPointCloudCallback);
 
   ros::spin();
 
