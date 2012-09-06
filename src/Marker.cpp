@@ -524,6 +524,7 @@ Marker::Marker(double _edge_length, int _res, double _margin)
 	SetMarkerSize(_edge_length, _res, _margin);
 	ros_orientation = -1;
 	ros_corners_3D.resize(4);
+	valid=false;
 }
 Marker::Marker(const Marker& m) {
 	marker_content = NULL;
@@ -546,6 +547,8 @@ Marker::Marker(const Marker& m) {
 	copy(m.marker_corners_img.begin(), m.marker_corners_img.end(), marker_corners_img.begin());
     ros_corners_3D.resize(m.ros_corners_3D.size());
 	copy(m.ros_corners_3D.begin(), m.ros_corners_3D.end(), ros_corners_3D.begin());
+
+	valid = m.valid;
 #ifdef VISUALIZE_MARKER_POINTS
 	marker_allpoints_img.resize(m.marker_allpoints_img.size());
 	copy(m.marker_allpoints_img.begin(), m.marker_allpoints_img.end(), marker_allpoints_img.begin());

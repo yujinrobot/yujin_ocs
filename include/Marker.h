@@ -57,6 +57,8 @@ namespace alvar {
     bool UpdateContentBasic(std::vector<Point<CvPoint2D64f> > &_marker_corners_img, IplImage *gray, Camera *cam, int frame_no = 0);
 
   public:
+    bool valid;
+
     /** \brief Compares the marker corners with the previous match. 
      *
      *  In some cases the tracking of the marker can be accepted solely based on this.

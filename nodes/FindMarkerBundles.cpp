@@ -239,7 +239,7 @@ int InferCorners(const ARCloud &cloud, MultiMarkerBundle &master, ARCloud &bund_
       if (index < 0) continue;
 
       // But only if we have corresponding points in the pointcloud
-      if (master.marker_status[index] > 0) {
+      if (master.marker_status[index] > 0 && marker->valid) {
 	n_est++;
 
 	std::string marker_frame = "ar_marker_";
@@ -460,13 +460,17 @@ void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
             
 	  //If the plane fit fails...
 	  if(ret < 0){
+		//Mark this tag as invalid
+		m->valid = false;
 	    //If this was a master tag, reset its visibility
 	    if(master_ind >= 0)
 	      master_visible[master_ind] = false;
 	    //If this was the only observed tag in the bundle, the bundle is no longer "seen"
 	    if(bundle_ind >= 0)
-	      bundles_seen[bundle_ind];
+	      bundles_seen[bundle_ind] = false;
 	  }
+	  else
+		m->valid = true;
 	}	
 
       //For each master tag that isn't directly visible, infer the 3D position of its corners from other visible tags
@@ -642,7 +646,7 @@ void getPointCloudCallback (const sensor_msgs::PointCloud2ConstPtr &msg)
 	    for(int j=0; j<n_bundles; j++){
 	      if(id == master_id[j]) should_draw = false;
 	    }
-	    if(should_draw){
+	    if(should_draw && (*(marker_detector.markers))[i].valid){
 	      Pose p = (*(marker_detector.markers))[i].pose;
 	      makeMarkerMsgs(VISIBLE_MARKER, id, p, image_msg, CamToOutput, &rvizMarker, &ar_pose_marker);
 	      rvizMarkerPub_.publish (rvizMarker);
