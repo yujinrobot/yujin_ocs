@@ -64,12 +64,12 @@
 
 #include <LinearMath/btMatrix3x3.h>
 #include <ar_track_alvar/kinect_filtering.h>
+#include <ar_track_alvar/medianFilter.h>
+
 
 #define MAIN_MARKER 1
 #define VISIBLE_MARKER 2
 #define GHOST_MARKER 3
-
-using std::cerr;
 
 namespace gm=geometry_msgs;
 namespace ata=ar_track_alvar;
@@ -80,21 +80,6 @@ typedef pcl::PointCloud<ARPoint> ARCloud;
 using namespace alvar;
 using namespace std;
 using boost::make_shared;
-
-// Pixel coordinates in an image
-struct Pixel
-{
-  unsigned r, c;
-  Pixel (unsigned r=0, unsigned c=0) : r(r), c(c) {}
-};
-
-// Result of plane fit: inliers and the plane equation
-struct PlaneFitResult
-{
-  PlaneFitResult () : inliers(make_shared<ARCloud>()) {}
-  ARCloud::Ptr inliers;
-  pcl::ModelCoefficients coeffs;
-};
 
 Camera *cam;
 IplImage *capture_;
@@ -116,11 +101,7 @@ bool *bundles_seen;
 bool *master_visible;
 std::vector<int> *bundle_indices; 	
 bool init = true;
-
-int median_n;  
-Pose **median_poses;
-int *median_ind;
-bool *median_init;
+ata::MedianFilter **med_filts;
 
 double marker_size;
 double max_new_marker_error;
@@ -391,45 +372,6 @@ int PlaneFitPoseImprovement(int id, const ARCloud &corners_3D, ARCloud::Ptr sele
 }
 
 
-void medianFilter(int bund, const Pose &new_pose, Pose &ret_pose){
-  median_poses[bund][median_ind[bund]] = new_pose;
-  
-  if(!median_init[bund]){
-    if(median_ind[bund] == (median_n-1))
-      median_init[bund] = true;
-    ret_pose = new_pose;
-  }
-
-  else{
-    double min_dist = 0;
-    int min_ind = 0;
-    for(int i=0; i<median_n; i++){
-      double total_dist = 0;
-      for(int j=0; j<median_n; j++){
-	total_dist += pow(median_poses[bund][i].translation[0] - median_poses[bund][j].translation[0], 2);
-	total_dist += pow(median_poses[bund][i].translation[1] - median_poses[bund][j].translation[1], 2);
-	total_dist += pow(median_poses[bund][i].translation[2] - median_poses[bund][j].translation[2], 2);
-	total_dist += pow(median_poses[bund][i].quaternion[0] - median_poses[bund][j].quaternion[0], 2);
-	total_dist += pow(median_poses[bund][i].quaternion[1] - median_poses[bund][j].quaternion[1], 2);
-	total_dist += pow(median_poses[bund][i].quaternion[2] - median_poses[bund][j].quaternion[2], 2);
-	total_dist += pow(median_poses[bund][i].quaternion[3] - median_poses[bund][j].quaternion[3], 2);
-      }
-      if(i==0) min_dist = total_dist;
-      else{
-	if(total_dist < min_dist){
-	  min_dist = total_dist;
-	  min_ind = i;
-	}
-      }
-    }
-    ret_pose = median_poses[bund][min_ind];
-    //cout << median_ind[bund] << " min " << min_dist << " " << min_ind << endl;
-  }
-
-  median_ind[bund] = (median_ind[bund]+1) % median_n;
-}
-
-
 // Updates the bundlePoses of the multi_marker_bundles by detecting markers and
 // using all markers in a bundle to infer the master tag's position
 void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
@@ -547,7 +489,8 @@ void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
 	    } 
 	  }
 	  Pose ret_pose;
-	  medianFilter(i,bundlePoses[i], ret_pose);
+	  med_filts[i]->addPose(bundlePoses[i]);
+	  med_filts[i]->getMedian(ret_pose);
 	  bundlePoses[i] = ret_pose;   
 	}		
       }
@@ -758,15 +701,10 @@ int main(int argc, char *argv[])
   bundles_seen = new bool[n_bundles]; 
   master_visible = new bool[n_bundles];
 	
-  median_n = 10;
-  median_ind = new int[n_bundles];
-  median_init = new bool[n_bundles];
-  median_poses = new Pose*[n_bundles];
-  for(int i=0; i<n_bundles; i++){
-    median_init[i] = false;
-    median_ind[i] = 0;
-    median_poses[i] = new Pose[median_n];
-  }
+  //Create median filters
+  med_filts = new ata::MedianFilter*[n_bundles];
+  for(int i=0; i<n_bundles; i++)
+    med_filts[i] = new ata::MedianFilter(10);
 
   // Load the marker bundle XML files
   for(int i=0; i<n_bundles; i++){	
@@ -799,8 +737,6 @@ int main(int argc, char *argv[])
 	 
   //Subscribe to topics and set up callbacks
   ROS_INFO ("Subscribing to image topic");
-  //image_transport::ImageTransport it_(n);
-  //cam_sub_ = it_.subscribe (cam_image_topic, 1, &getCapCallback);
   cloud_sub_ = n.subscribe("/kinect_head/depth_registered/points", 1, &getPointCloudCallback);
 
   ros::spin();

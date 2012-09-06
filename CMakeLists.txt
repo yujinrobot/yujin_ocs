@@ -40,6 +40,7 @@ TARGET_LINK_LIBRARIES(ar_track_alvar ${OpenCV_LIBS} )
 
 # Kinect filtering code
 rosbuild_add_library(kinect_filtering src/kinect_filtering.cpp)
+rosbuild_add_library(medianFilter src/medianFilter.cpp)
 rosbuild_add_compile_flags(kinect_filtering -std=c++0x)
 
 set(ALVAR_TARGETS individualMarkers trainMarkerBundle findMarkerBundles createMarker ar_track_alvar)
@@ -50,7 +51,7 @@ rosbuild_add_executable(trainMarkerBundle nodes/TrainMarkerBundle.cpp)
 target_link_libraries(trainMarkerBundle ar_track_alvar)
 
 rosbuild_add_executable(findMarkerBundles nodes/FindMarkerBundles.cpp)
-target_link_libraries(findMarkerBundles ar_track_alvar kinect_filtering)
+target_link_libraries(findMarkerBundles ar_track_alvar kinect_filtering medianFilter)
 
 rosbuild_add_executable(findMarkerBundlesNoKinect nodes/FindMarkerBundlesNoKinect.cpp)
 target_link_libraries(findMarkerBundlesNoKinect ar_track_alvar)
