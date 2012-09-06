@@ -43,9 +43,13 @@ rosbuild_add_library(kinect_filtering src/kinect_filtering.cpp)
 rosbuild_add_library(medianFilter src/medianFilter.cpp)
 rosbuild_add_compile_flags(kinect_filtering -std=c++0x)
 
-set(ALVAR_TARGETS individualMarkers trainMarkerBundle findMarkerBundles createMarker ar_track_alvar)
+set(ALVAR_TARGETS individualMarkers individualMarkersNoKinect trainMarkerBundle findMarkerBundles findMarkerBundlesNoKinect createMarker ar_track_alvar)
+
 rosbuild_add_executable(individualMarkers nodes/IndividualMarkers.cpp)
-target_link_libraries(individualMarkers ar_track_alvar)
+target_link_libraries(individualMarkers ar_track_alvar kinect_filtering)
+
+rosbuild_add_executable(individualMarkersNoKinect nodes/IndividualMarkersNoKinect.cpp)
+target_link_libraries(individualMarkersNoKinect ar_track_alvar)
 
 rosbuild_add_executable(trainMarkerBundle nodes/TrainMarkerBundle.cpp)
 target_link_libraries(trainMarkerBundle ar_track_alvar)

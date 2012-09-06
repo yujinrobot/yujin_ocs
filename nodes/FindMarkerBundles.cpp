@@ -687,7 +687,7 @@ int main(int argc, char *argv[])
   marker_size = atof(argv[1]);
   max_new_marker_error = atof(argv[2]);
   max_track_error = atof(argv[3]);
-  cam_image_topic = argv[4];
+  cam_image_topic = argv[4]; 
   cam_info_topic = argv[5];
   output_frame = argv[6];
   int n_args_before_list = 7;
