@@ -102,6 +102,7 @@ bool *master_visible;
 std::vector<int> *bundle_indices; 	
 bool init = true;
 ata::MedianFilter **med_filts;
+int med_filt_size;
 
 double marker_size;
 double max_new_marker_error;
@@ -493,12 +494,14 @@ void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
 	    } 
 	  }
 	  Pose ret_pose;
-	  med_filts[i]->addPose(bundlePoses[i]);
-	  med_filts[i]->getMedian(ret_pose);
-	  bundlePoses[i] = ret_pose;   
+      if(med_filt_size > 0){
+	    med_filts[i]->addPose(bundlePoses[i]);
+	    med_filts[i]->getMedian(ret_pose);
+	    bundlePoses[i] = ret_pose;
+      }   
 	}		
-      }
-    }
+   }
+  }
 }
 
 
@@ -679,10 +682,10 @@ int main(int argc, char *argv[])
   ros::init (argc, argv, "marker_detect");
   ros::NodeHandle n;
 
-  if(argc < 8){
+  if(argc < 9){
     std::cout << std::endl;
     cout << "Not enough arguments provided." << endl;
-    cout << "Usage: ./findMarkerBundles <marker size in cm> <max new marker error> <max track error> <cam image topic> <cam info topic> <output frame> <list of bundle XML files...>" << endl;
+    cout << "Usage: ./findMarkerBundles <marker size in cm> <max new marker error> <max track error> <cam image topic> <cam info topic> <output frame> <median filt size> <list of bundle XML files...>" << endl;
     std::cout << std::endl;
     return 0;
   }
@@ -694,7 +697,8 @@ int main(int argc, char *argv[])
   cam_image_topic = argv[4]; 
   cam_info_topic = argv[5];
   output_frame = argv[6];
-  int n_args_before_list = 7;
+  med_filt_size = atoi(argv[7]);
+  int n_args_before_list = 8;
   n_bundles = argc - n_args_before_list;
 
   marker_detector.SetMarkerSize(marker_size);
@@ -708,7 +712,7 @@ int main(int argc, char *argv[])
   //Create median filters
   med_filts = new ata::MedianFilter*[n_bundles];
   for(int i=0; i<n_bundles; i++)
-    med_filts[i] = new ata::MedianFilter(10);
+    med_filts[i] = new ata::MedianFilter(med_filt_size);
 
   // Load the marker bundle XML files
   for(int i=0; i<n_bundles; i++){	
