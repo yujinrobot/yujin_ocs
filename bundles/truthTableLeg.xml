@@ -76,9 +76,9 @@
     </marker>
 
     <marker index="15" status="1">
-        <corner x="-2.2" y="35.5" z="-5.0" />
-        <corner x="2.2" y="35.5" z="-5.0" />
-        <corner x="2.2" y="35.5" z="-5.0" />
-        <corner x="-2.2" y="35.5" z="-5.0" />
+        <corner x="-2.2" y="35.5" z="-0.3" />
+        <corner x="2.2" y="35.5" z="-0.3" />
+        <corner x="2.2" y="35.5" z="-4.7" />
+        <corner x="-2.2" y="35.5" z="-4.7" />
     </marker>
 </multimarker>
