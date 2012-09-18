@@ -18,4 +18,18 @@
         <corner x="2.2" y="-6.8" z="0" />
         <corner x="-2.2" y="-6.8" z="0" />
     </marker>
+
+    <marker index="16" status="1">
+        <corner x="6.8" y="-2.2" z="0" />
+        <corner x="11.2" y="-2.2" z="0" />
+        <corner x="11.2" y="2.2" z="0" />
+        <corner x="6.8" y="2.2" z="0" />
+    </marker>
+    <marker index="17" status="1">
+        <corner x="15.8" y="-2.2" z="0" />
+        <corner x="20.2" y="-2.2" z="0" />
+        <corner x="20.2" y="2.2" z="0" />
+        <corner x="15.8" y="2.2" z="0" />
+    </marker>
+
 </multimarker>
