@@ -40,6 +40,7 @@
 #include <ros/ros.h>
 #include <ar_track_alvar/kinect_filtering.h>
 #include <tf/transform_datatypes.h>
+#include <Eigen/Core>
 
 namespace ar_track_alvar
 {
@@ -223,13 +224,28 @@ namespace ar_track_alvar
   {
     if(m.determinant() <= 0)
       return -1;
-    btScalar y=0, p=0, r=0;
-    m.getEulerZYX(y, p, r);
-    retQ.setEulerZYX(y, p, r);
-    btMatrix3x3 m2;
-    m2.setRotation(retQ);
-    //ROS_INFO_STREAM("(y, p, r) are " << y << ", " << p << ", " << r <<
-    //                " and quaternion is " << q << " and frame is " << m2);
+    
+    //btScalar y=0, p=0, r=0;
+    //m.getEulerZYX(y, p, r);
+    //retQ.setEulerZYX(y, p, r);
+
+    //Use Eigen for this part instead, because the ROS version of bullet appears to have a bug
+    Eigen::Matrix3f eig_m;
+    for(int i=0; i<3; i++){
+        for(int j=0; j<3; j++){
+            eig_m(i,j) = m[i][j];
+        }
+    }
+    Eigen::Quaternion<float> eig_quat(eig_m);
+    
+    // Translate back to bullet
+    btScalar ex = eig_quat.x();
+    btScalar ey = eig_quat.y();
+    btScalar ez = eig_quat.z();
+    btScalar ew = eig_quat.w();
+    btQuaternion quat(ex,ey,ez,ew);
+    retQ = quat.normalized();
+    
     return 0;
   }
 
