@@ -6,12 +6,11 @@
   <url>http://www.ros.org/wiki/ar_track_alvar</url>
   <depend stack="common_msgs" /> <!-- nav_msgs, sensor_msgs, geometry_msgs -->
   <depend stack="geometry" /> <!-- tf -->
-  <depend stack="common_rosdeps"/>
   <depend stack="image_common" />
   <depend stack="ros" />
   <depend stack="ros_comm" /> <!-- rospy, roscpp -->
   <depend stack="robot_model"/>
   <depend stack="vision_opencv"/>  
 
-  <version>0.2.0</version>
+  <version>0.3.0</version>
 </stack>
