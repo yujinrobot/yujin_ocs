@@ -76,5 +76,5 @@ foreach(t ${ALVAR_TARGETS})
     -Wno-type-limits)
 endforeach(t)
 
-rosbuild_make_distribution(0.2.0)
+rosbuild_make_distribution(0.3.0)
 

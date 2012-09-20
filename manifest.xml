@@ -12,7 +12,6 @@
   <depend package="std_msgs"/>
   <depend package="rospy"/>
   <depend package="roscpp"/>
-  <depend package="common_rosdeps" />
   <depend package="tf" />
   <depend package="image_transport" />
   <depend package="sensor_msgs" />
