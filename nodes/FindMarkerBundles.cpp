@@ -214,7 +214,7 @@ void drawArrow(gm::Point start, btMatrix3x3 mat, string frame, int color, int id
 
 
 // Infer the master tag corner positons from the other observed tags
-// Also does some of the bookkeeping for tracking that MultiMarker::_GetPose does in the non-kinect case
+// Also does some of the bookkeeping for tracking that MultiMarker::_GetPose does 
 int InferCorners(const ARCloud &cloud, MultiMarkerBundle &master, ARCloud &bund_corners){
   bund_corners.clear();
   bund_corners.resize(4);
@@ -224,7 +224,7 @@ int InferCorners(const ARCloud &cloud, MultiMarkerBundle &master, ARCloud &bund_
     bund_corners[i].z = 0;
   }
 
-  // Reset the marker_status to 1 for all markers in point_cloud
+  // Reset the marker_status to 1 for all markers in point_cloud for tracking purposes
   for (size_t i=0; i<master.marker_status.size(); i++) {
     if (master.marker_status[i] > 0) master.marker_status[i]=1;
   }
@@ -237,56 +237,59 @@ int InferCorners(const ARCloud &cloud, MultiMarkerBundle &master, ARCloud &bund_
       const Marker* marker = &((*marker_detector.markers)[i]);
       int id = marker->GetId();
       int index = master.get_id_index(id);
-      if (index < 0) continue;
+      int mast_id = master.master_id;
+      if (index < 0 || id==mast_id) continue;
 
       // But only if we have corresponding points in the pointcloud
       if (master.marker_status[index] > 0 && marker->valid) {
-	n_est++;
+        n_est++;
 
-	std::string marker_frame = "ar_marker_";
-	std::stringstream out;
-	out << id;
-	std::string id_string = out.str();
-	marker_frame += id_string;
+        std::string marker_frame = "ar_marker_";
+        std::stringstream mark_out;
+        mark_out << id;
+        std::string id_string = mark_out.str();
+        marker_frame += id_string;
 
-	for(int j = 0; j < marker->marker_corners.size(); ++j)
-	  {
-	    //Get the estimated coords of the master marker corner in the cam frame and average the estimates 
-	    //Note: the coords of the master tag in marker frame are just the neg coords of the marker in master frame, except opposite corners
-	    CvPoint3D64f Xnew = master.pointcloud[master.pointcloud_index(id, (int)j)];
-	    gm::PointStamped p, output_p;
-	    p.point.y = Xnew.x / 100.0;
-	    p.point.x = -Xnew.y / 100.0;
-	    p.point.z = Xnew.z / 100.0;
-	    p.header.frame_id = marker_frame; 	
-	    p.header.stamp = ros::Time(0);
+        //Grab the precomputed corner coords and correct for the weird Alvar coord system
+        cout << id << endl;
+        for(int j = 0; j < 4; ++j)
+        {
+            btVector3 corner_coord = master.rel_corners[index][j];
+            gm::PointStamped p, output_p;
+            p.header.frame_id = marker_frame;
+            p.point.x = corner_coord.y()/100.0;  
+            p.point.y = -corner_coord.x()/100.0;
+            p.point.z = corner_coord.z()/100.0;
+            printf("P: %f %f %f\n", p.point.x, p.point.y, p.point.z);
+            
+            try{
+                tf_listener->waitForTransform(cloud.header.frame_id, marker_frame, ros::Time(0), ros::Duration(0.1));
+                tf_listener->transformPoint(cloud.header.frame_id, p, output_p);			
+            }
+            catch (tf::TransformException ex){
+                ROS_ERROR("ERROR InferCorners: %s",ex.what());
+                return -1;
+            }
 
-	    try{
-	      tf_listener->waitForTransform(cloud.header.frame_id, marker_frame, ros::Time(0), ros::Duration(0.1));
-	      tf_listener->transformPoint(cloud.header.frame_id, p, output_p);			
-	    }
-	    catch (tf::TransformException ex){
-	      ROS_ERROR("%s",ex.what());
-	      return -1;
-	    }
-
-	    //Account for the diagonal "corner switching" that occurs when calculating the master corners from the current marker corners
-	    int opp_ind = (j+2)%4;
-	    bund_corners[opp_ind].x += output_p.point.x;
-	    bund_corners[opp_ind].y += output_p.point.y;
-	    bund_corners[opp_ind].z += output_p.point.z;
-	    //printf("corner %i    %f %f %f   |   %f %f %f\n",j,p.point.x,p.point.y,p.point.z,output_p.point.x,output_p.point.y,output_p.point.z);  
-	  }
-	master.marker_status[index] = 2; // Used for tracking
+            bund_corners[j].x += output_p.point.x;
+            bund_corners[j].y += output_p.point.y;
+            bund_corners[j].z += output_p.point.z;
+            //printf("corner %i    %f %f %f   |   %f %f %f\n",j,p.point.x,p.point.y,p.point.z,output_p.point.x,output_p.point.y,output_p.point.z);  
+        }
+        master.marker_status[index] = 2; // Used for tracking
+        cout << endl;
       }
     }
   
   //Divide to take the average of the summed estimates
-  for(int i=0; i<4; i++){
-    bund_corners[i].x /= n_est;
-    bund_corners[i].y /= n_est;
-    bund_corners[i].z /= n_est;
-    //cout << "Infer corners " << i << ": " << bund_corners[i].x << " " << bund_corners[i].y << " " << bund_corners[i].z << " " << endl;
+  if(n_est > 0){
+    for(int i=0; i<4; i++){
+        bund_corners[i].x /= n_est;
+        bund_corners[i].y /= n_est;
+        bund_corners[i].z /= n_est;
+        printf("\n OP: %f %f %f\n", bund_corners[i].x, bund_corners[i].y, bund_corners[i].z);
+        //cout << "Infer corners " << i << ": " << bund_corners[i].x << " " << bund_corners[i].y << " " << bund_corners[i].z << " " << endl;
+    }
   }
 
   return 0;
@@ -677,6 +680,96 @@ void getPointCloudCallback (const sensor_msgs::PointCloud2ConstPtr &msg)
 }
 
 
+//Create a ROS frame out of the known corners of a tag in the weird marker coord frame used by Alvar
+//p1-->p2 should point in ROS's pos X direction
+//p1-->p0 should point in ROS's pos Y direction
+int makeMasterTransform (const CvPoint3D64f& p0, const CvPoint3D64f& p1,
+                         const CvPoint3D64f& p2, const CvPoint3D64f& p3,
+                         btTransform &retT)
+  {
+    const btVector3 q0(p0.x, p0.y, p0.z);
+    const btVector3 q1(p1.x, p1.y, p1.z);
+    const btVector3 q2(p2.x, p2.y, p2.z);
+    const btVector3 q3(p3.x, p3.y, p3.z);
+  
+    // (inverse) matrix with the given properties
+    const btVector3 v = (q1-q0).normalized();
+    const btVector3 w = (q2-q1).normalized();
+    const btVector3 n = v.cross(w); 
+    btMatrix3x3 m(v[0], v[1], v[2], w[0], w[1], w[2], n[0], n[1], n[2]);
+    m = m.inverse();
+    
+    printf("M %f %f %f    %f %f %f    %f %f %f \n",v[0], v[1], v[2], w[0], w[1], w[2], n[0], n[1], n[2]);
+    
+    //Translate to quaternion
+    btQuaternion quat;
+    //if(m.determinant() <= 0)
+    //  return -1;
+    btScalar y=0, p=0, r=0;
+    m.getEulerZYX(y, p, r);
+    quat.setEulerZYX(y, p, r);
+    btMatrix3x3 m2;
+    m2.setRotation(quat);
+    
+    double qx = (q0.x() + q1.x() + q2.x() + q3.x()) / 4.0;
+    double qy = (q0.y() + q1.y() + q2.y() + q3.y()) / 4.0;
+    double qz = (q0.z() + q1.z() + q2.z() + q3.z()) / 4.0;
+    btVector3 origin (qx,qy,qz);
+    
+    cout << "O " << qx << " " << qy << " " << qz << endl;
+    printf("R %f %f %f %f\n",quat.getAxis().x(),quat.getAxis().y(),quat.getAxis().z(),quat.getW());
+    
+    btTransform tform (quat, origin);  //transform from master to marker
+    retT = tform;
+    
+    return 0;
+  }
+
+
+//Find the coordinates of the Master marker with respect to the coord frame of each of it's child markers
+//This data is used for later estimation of the Master marker pose from the child poses
+int calcAndSaveMasterCoords(MultiMarkerBundle &master)
+{
+    int mast_id = master.master_id;
+    std::vector<btVector3> rel_corner_coords;
+    
+    //Go through all the markers associated with this bundle
+    for (size_t i=0; i<master.marker_indices.size(); i++){
+        int mark_id = master.marker_indices[i];
+        rel_corner_coords.clear();
+        
+        //Get the coords of the corners of the child marker in the master frame
+        CvPoint3D64f mark_corners[4];
+        for(int j=0; j<4; j++){
+            mark_corners[j] = master.pointcloud[master.pointcloud_index(mark_id, j)];
+        }
+        
+        //Use them to find a transform from the master frame to the child frame
+        btTransform tform; 
+        makeMasterTransform(mark_corners[0], mark_corners[1], mark_corners[2], mark_corners[3], tform);
+    
+        //Finally, find the coords of the corners of the master in the child frame
+        for(int j=0; j<4; j++){
+            
+            CvPoint3D64f corner_coord = master.pointcloud[master.pointcloud_index(mast_id, j)];
+            double px = corner_coord.x;
+            double py = corner_coord.y;
+            double pz = corner_coord.z;
+        
+            btVector3 corner_vec (px, py, pz);
+            btVector3 ans = (tform.inverse()) * corner_vec;
+            cout << mark_id << "  " << ans.x() << " " << ans.y() << " " << ans.z() << endl;
+            rel_corner_coords.push_back(ans);
+        }
+        
+        cout << endl;
+        master.rel_corners.push_back(rel_corner_coords);
+    }
+    
+    return 0;
+}
+
+
 int main(int argc, char *argv[])
 {
   ros::init (argc, argv, "marker_detect");
@@ -724,6 +817,7 @@ int main(int argc, char *argv[])
       multi_marker_bundles[i]->Load(argv[i + n_args_before_list], FILE_FORMAT_XML);
       master_id[i] = multi_marker_bundles[i]->getMasterId();
       bundle_indices[i] = multi_marker_bundles[i]->getIndices();
+      calcAndSaveMasterCoords(*(multi_marker_bundles[i]));
     }
     else{
       cout<<"Cannot load file "<< argv[i + n_args_before_list] << endl;	

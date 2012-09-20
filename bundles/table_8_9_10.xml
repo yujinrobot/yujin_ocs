@@ -21,9 +21,9 @@
 
     <marker index="16" status="1">
         <corner x="-2.2" y="6.8" z="0" />
+        <corner x="2.2" y="6.8" z="0" />
         <corner x="2.2" y="11.2" z="0" />
-        <corner x="2.2" y="11.2" z="0" />
-        <corner x="-2.2" y="6.8" z="0" />
+        <corner x="-2.2" y="11.2" z="0" />
     </marker>
 
 
