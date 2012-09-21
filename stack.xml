@@ -1,4 +1,5 @@
 <stack>
+
   <description brief="ar_track_alvar">Wraps the Alvar library for AR tag tracking</description>
   <author>Maintained by Scott Niekum</author>
   <license>BSD</license>
@@ -11,6 +12,7 @@
   <depend stack="ros_comm" /> <!-- rospy, roscpp -->
   <depend stack="robot_model"/>
   <depend stack="vision_opencv"/>  
+  <depend stack="perception_pcl"/>
 
   <version>0.3.0</version>
 </stack>
