@@ -391,7 +391,7 @@ void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
 	  vector<cv::Point> pixels;
 	  Marker *m = &((*marker_detector.markers)[i]);
 	  int id = m->GetId();
-	  cout << "******* ID: " << id;
+	  cout << "******* ID: " << id << endl;
       
 	  //Get the 3D points of the outer corners
           /*
