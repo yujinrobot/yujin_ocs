@@ -325,10 +325,10 @@ int PlaneFitPoseImprovement(int id, const ARCloud &corners_3D, ARCloud::Ptr sele
   int i3,i4;
   if(isnan(corners_3D[0].x) || isnan(corners_3D[0].y) || isnan(corners_3D[0].z) || 
      isnan(corners_3D[1].x) || isnan(corners_3D[1].y) || isnan(corners_3D[1].z))
-    {
+    {   
       if(isnan(corners_3D[3].x) || isnan(corners_3D[3].y) || isnan(corners_3D[3].z) || 
 	 isnan(corners_3D[2].x) || isnan(corners_3D[2].y) || isnan(corners_3D[2].z))
-	{
+	{   
 	  return -1;
 	}
       else{
@@ -391,7 +391,7 @@ void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
 	  vector<cv::Point> pixels;
 	  Marker *m = &((*marker_detector.markers)[i]);
 	  int id = m->GetId();
-	  cout << "******* ID: " << id << endl;
+	  cout << "******* ID: " << id;
       
 	  //Get the 3D points of the outer corners
           /*
