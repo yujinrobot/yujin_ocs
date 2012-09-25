@@ -98,7 +98,7 @@ MultiMarkerBundle **multi_marker_bundles=NULL;
 
 Pose *bundlePoses;
 int *master_id;
-bool *bundles_seen;
+int *bundles_seen;
 bool *master_visible;
 std::vector<int> *bundle_indices; 	
 bool init = true;
@@ -375,12 +375,11 @@ int PlaneFitPoseImprovement(int id, const ARCloud &corners_3D, ARCloud::Ptr sele
 // using all markers in a bundle to infer the master tag's position
 void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
 
-  for(int i=0; i<n_bundles; i++)
+  for(int i=0; i<n_bundles; i++){
     master_visible[i] = false;
-
-  for(int i=0; i<n_bundles; i++)
-    bundles_seen[i] = false;
-
+    bundles_seen[i] = 0;
+  }
+  
   //Detect and track the markers
   if (marker_detector.Detect(image, cam, true, false, max_new_marker_error,
 			     max_track_error, CVSEQ, true)) 
@@ -441,13 +440,12 @@ void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
 	  for(int j=0; j<n_bundles; j++){
 	    for(int k=0; k<bundle_indices[j].size(); k++){
 	      if(bundle_indices[j][k] == id){
-		if(bundles_seen[j] == false)  //Check if it was already seen before
-		  bundle_ind = j;
-		bundles_seen[j] = true;
-		break;
-	      }
-	    }
-	  }
+            bundle_ind = j;
+            bundles_seen[j] += 1;
+            break;
+          }
+        }
+      }
 
 	  //Get the 3D marker points
 	  BOOST_FOREACH (const PointDouble& p, m->ros_marker_points_img)
@@ -464,9 +462,9 @@ void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
 	    //If this was a master tag, reset its visibility
 	    if(master_ind >= 0)
 	      master_visible[master_ind] = false;
-	    //If this was the only observed tag in the bundle, the bundle is no longer "seen"
-	    if(bundle_ind >= 0)
-	      bundles_seen[bundle_ind] = false;
+	    //decrement the number of markers seen in this bundle
+	    bundles_seen[bundle_ind] -= 1;
+	      
 	  }
 	  else
 		m->valid = true;
@@ -476,7 +474,7 @@ void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
       //Then, do a plane fit to those new corners   	
       ARCloud inferred_corners;
       for(int i=0; i<n_bundles; i++){
-        if(bundles_seen[i] == true){
+        if(bundles_seen[i] > 0){
             if(InferCorners(cloud, *(multi_marker_bundles[i]), inferred_corners) >= 0){
                 ARCloud::Ptr inferred_cloud(new ARCloud(inferred_corners));
                 PlaneFitPoseImprovement(i+5000, inferred_corners, inferred_cloud, cloud, bundlePoses[i]);
@@ -495,7 +493,7 @@ void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
 
 
 // Given the pose of a marker, builds the appropriate ROS messages for later publishing 
-void makeMarkerMsgs(int type, int id, Pose &p, sensor_msgs::ImageConstPtr image_msg, tf::StampedTransform &CamToOutput, visualization_msgs::Marker *rvizMarker, ar_track_alvar::AlvarMarker *ar_pose_marker){
+void makeMarkerMsgs(int type, int id, Pose &p, sensor_msgs::ImageConstPtr image_msg, tf::StampedTransform &CamToOutput, visualization_msgs::Marker *rvizMarker, ar_track_alvar::AlvarMarker *ar_pose_marker, int confidence){
   double px,py,pz,qx,qy,qz,qw;
 	
   px = p.translation[0]/100.0;
@@ -575,6 +573,7 @@ void makeMarkerMsgs(int type, int id, Pose &p, sensor_msgs::ImageConstPtr image_
     ar_pose_marker->header.frame_id = output_frame;
     ar_pose_marker->header.stamp = image_msg->header.stamp;
     ar_pose_marker->id = id;
+    ar_pose_marker->confidence = confidence;
   }
   else
     ar_pose_marker = NULL;
@@ -640,7 +639,7 @@ void getPointCloudCallback (const sensor_msgs::PointCloud2ConstPtr &msg)
 	    }
 	    if(should_draw && (*(marker_detector.markers))[i].valid){
 	      Pose p = (*(marker_detector.markers))[i].pose;
-	      makeMarkerMsgs(VISIBLE_MARKER, id, p, image_msg, CamToOutput, &rvizMarker, &ar_pose_marker);
+	      makeMarkerMsgs(VISIBLE_MARKER, id, p, image_msg, CamToOutput, &rvizMarker, &ar_pose_marker, 1);
 	      rvizMarkerPub_.publish (rvizMarker);
 	    }
 	  }
@@ -649,8 +648,8 @@ void getPointCloudCallback (const sensor_msgs::PointCloud2ConstPtr &msg)
       //Draw the main markers, whether they are visible or not -- but only if at least 1 marker from their bundle is currently seen
       for(int i=0; i<n_bundles; i++)
 	{
-	  if(bundles_seen[i] == true){
-	    makeMarkerMsgs(MAIN_MARKER, master_id[i], bundlePoses[i], image_msg, CamToOutput, &rvizMarker, &ar_pose_marker);
+	  if(bundles_seen[i] > 0){
+	    makeMarkerMsgs(MAIN_MARKER, master_id[i], bundlePoses[i], image_msg, CamToOutput, &rvizMarker, &ar_pose_marker, bundles_seen[i]);
 	    rvizMarkerPub_.publish (rvizMarker);
 	    arPoseMarkers_.markers.push_back (ar_pose_marker);
 	  }
@@ -789,7 +788,7 @@ int main(int argc, char *argv[])
   bundlePoses = new Pose[n_bundles];
   master_id = new int[n_bundles]; 
   bundle_indices = new std::vector<int>[n_bundles]; 
-  bundles_seen = new bool[n_bundles]; 
+  bundles_seen = new int[n_bundles]; 
   master_visible = new bool[n_bundles];
 	
   //Create median filters
