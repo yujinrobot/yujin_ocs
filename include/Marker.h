@@ -167,7 +167,6 @@ namespace alvar {
     CvMat *marker_content;
 
   public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
       
     /** \brief Marker color points in marker coordinates */
     std::vector<PointDouble> marker_points;
