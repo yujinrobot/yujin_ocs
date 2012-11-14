@@ -57,6 +57,7 @@ namespace alvar {
     bool UpdateContentBasic(std::vector<Point<CvPoint2D64f> > &_marker_corners_img, IplImage *gray, Camera *cam, int frame_no = 0);
 
   public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW  
     bool valid;
 
     /** \brief Compares the marker corners with the previous match. 
@@ -166,7 +167,7 @@ namespace alvar {
     CvMat *marker_content;
 
   public:
-
+      
     /** \brief Marker color points in marker coordinates */
     std::vector<PointDouble> marker_points;
     /** \brief Marker corners in marker coordinates */
@@ -196,6 +197,7 @@ namespace alvar {
     double default_margin() { return 1.5; }
 
   public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW  
     /** \brief \e MarkerArtoolkit supports only 'id' as data type */
     unsigned long id;
     /** \brief Constructor */
@@ -227,6 +229,7 @@ namespace alvar {
     bool DetectResolution(std::vector<Point<CvPoint2D64f> > &_marker_corners_img, IplImage *gray, Camera *cam);
 
   public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW  
     static const int MAX_MARKER_STRING_LEN=2048;
     enum MarkerContentType {
       MARKER_CONTENT_TYPE_NUMBER,
@@ -289,6 +292,7 @@ namespace alvar {
   template<typename T>
     class ALVAR_EXPORT MarkerIteratorImpl : public MarkerIterator {
   public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW    
   MarkerIteratorImpl(typename std::vector<T>::const_iterator i) : _begin(i), _i(i) {
       _data = this;
     }

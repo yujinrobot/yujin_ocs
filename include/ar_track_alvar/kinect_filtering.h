@@ -68,6 +68,7 @@ typedef pcl::PointCloud<ARPoint> ARCloud;
 // Result of plane fit: inliers and the plane equation
 struct PlaneFitResult
 {
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW  
   PlaneFitResult () : inliers(boost::make_shared<ARCloud>()) {}
   ARCloud::Ptr inliers;
   pcl::ModelCoefficients coeffs;
