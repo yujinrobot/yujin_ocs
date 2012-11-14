@@ -475,20 +475,20 @@ void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
       ARCloud inferred_corners;
       for(int i=0; i<n_bundles; i++){
         if(bundles_seen[i] > 0){
-            if(master_visible[i] == false){
+            //if(master_visible[i] == false){
                 if(InferCorners(cloud, *(multi_marker_bundles[i]), inferred_corners) >= 0){
                     ARCloud::Ptr inferred_cloud(new ARCloud(inferred_corners));
                     PlaneFitPoseImprovement(i+5000, inferred_corners, inferred_cloud, cloud, bundlePoses[i]);
                 }
-            }
+            //}
             //If master is visible, use it directly instead of inferring pose
-            else{
-                for (size_t j=0; j<marker_detector.markers->size(); j++){
-                    Marker *m = &((*marker_detector.markers)[j]);                     
-                    if(m->GetId() == master_id[i])
-                        bundlePoses[i] = m->pose;
-                } 
-            }
+            //else{
+            //    for (size_t j=0; j<marker_detector.markers->size(); j++){
+            //        Marker *m = &((*marker_detector.markers)[j]);                     
+            //        if(m->GetId() == master_id[i])
+            //            bundlePoses[i] = m->pose;
+            //    } 
+            //}
             Pose ret_pose;
             if(med_filt_size > 0){
                 med_filts[i]->addPose(bundlePoses[i]);
