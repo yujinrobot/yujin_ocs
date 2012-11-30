@@ -1,0 +1,15 @@
+<package>
+  <description brief="velocity_smoother">
+
+     velocity_smoother
+
+  </description>
+  <author>Marcus Liebhardt</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/velocity_smoother</url>
+  <depend package="roscpp"/>
+
+</package>
+
+
