@@ -40,11 +40,11 @@ public:
   virtual bool init() = 0;
 
   /**
-   * @brief Enable the controller
+   * @brief Enables the controller
    *
    * @return Returns true, if controller was inactive, false otherwise
    */
-  bool enableController()
+  bool enable()
   {
     if (controller_active_)
     {
@@ -58,11 +58,11 @@ public:
   };
 
   /**
-   * @brief Disable the controller
+   * @brief Disables the controller
    *
    * @return Returns true, if controller was active, false otherwise
    */
-  bool disableController()
+  bool disable()
   {
     if (!controller_active_)
     {
@@ -76,9 +76,18 @@ public:
   };
 
   /**
+   * @brief Returns the current state of the controller
+   *
+   * @return controller state variable
+   */
+  bool getState()
+  {
+    return controller_active_;
+  }
+  /**
    * @brief For complex controlling work
    *
-   * If need, implement your complex algorithm here.
+   * If needed, implement your complex algorithm here.
    */
   virtual void spin()
   {
