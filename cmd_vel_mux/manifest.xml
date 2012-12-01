@@ -1,0 +1,20 @@
+<package>
+  <description brief="cmd_vel_mux">
+
+     cmd_vel_mux
+
+  </description>
+  <author>Jorge Santos</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/cmd_vel_mux</url>
+
+  <depend package="roscpp"/>
+  <depend package="nodelet"/>
+
+  <rosdep name="yaml-cpp"/>
+
+  <export>
+    <nodelet plugin="${prefix}/plugins/nodelet_plugins.xml" />
+  </export>
+</package>

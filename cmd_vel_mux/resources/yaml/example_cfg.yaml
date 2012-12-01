@@ -1,0 +1,34 @@
+# Created on: Oct 29, 2012
+#     Author: jorge
+# Configuration for subscribers to cmd_vel sources. This file is provided just as an example.
+# Typically automatic controllers, as ROS navigation stack should have the minimum priority
+#
+# Individual subscriber configuration:
+#   name:           Source name
+#   topic:          The topic that provides cmd_vel messages
+#   timeout:        Time in seconds without incoming messages to consider this topic inactive
+#   priority:       Priority: an UNIQUE unsigned integer from 0 (lowest) to MAX_INT 
+#   short_desc:     Short description (optional)
+
+subscribers:
+  - name:        "Navigation stack"
+    topic:       "nav_cmd_vel"
+    timeout:     0.5
+    priority:    0
+    short_desc:  "ROS navigation stack controller"
+  - name:        "Onboard joystick"
+    topic:       "joy_cmd_vel"
+    timeout:     0.1
+    priority:    10
+  - name:        "Remote control"
+    topic:       "rem_cmd_vel"
+    timeout:     0.1
+    priority:    9
+  - name:        "Web application"
+    topic:       "web_cmd_vel"
+    timeout:     0.3
+    priority:    8
+  - name:        "Keyboard operation"
+    topic:       "key_cmd_vel"
+    timeout:     0.1
+    priority:    7
