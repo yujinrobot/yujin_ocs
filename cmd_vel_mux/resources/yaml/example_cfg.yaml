@@ -11,10 +11,15 @@
 #   short_desc:     Short description (optional)
 
 subscribers:
+  - name:        "Default input"
+    topic:       "cmd_vel"
+    timeout:     0.1
+    priority:    0
+    short_desc:  "Default velocity topic; controllers unaware that we are multiplexing cmd_vel will come here"
   - name:        "Navigation stack"
     topic:       "nav_cmd_vel"
     timeout:     0.5
-    priority:    0
+    priority:    1
     short_desc:  "ROS navigation stack controller"
   - name:        "Onboard joystick"
     topic:       "joy_cmd_vel"
