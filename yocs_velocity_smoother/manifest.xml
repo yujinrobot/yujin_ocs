@@ -1,5 +1,5 @@
 <package>
-  <description brief="velocity_smoother">
+  <description brief="yocs_velocity_smoother">
 
      Bound incoming velocity messages according to robot acceleration limits
 
@@ -7,7 +7,7 @@
   <author>Jorge Santos</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
-  <url>http://ros.org/wiki/cmd_vel_mux</url>
+  <url>http://ros.org/wiki/yocs_velocity_smoother</url>
 
   <depend package="roscpp"/>
   <depend package="nodelet"/>

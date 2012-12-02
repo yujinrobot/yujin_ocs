@@ -1,7 +1,7 @@
 /*
  * velocity_smoother_nodelet.h
  *
- *  Created on: Oct 25, 2012
+ *  Created on: Dec 2, 2012
  *      Author: jorge
  */
 
@@ -27,13 +27,16 @@ private:
   double accel_lim_t, decel_lim_t;
   double decel_factor;
 
+  geometry_msgs::Twist odometry_vel;
   geometry_msgs::Twist last_cmd_vel;
   ros::Time           last_cmd_time;
 
+  ros::Subscriber cur_vel_sub;  /**< Current velocity from odometry */
   ros::Subscriber raw_vel_sub;  /**< Incoming raw velocity commands */
   ros::Publisher  lim_vel_pub;  /**< Outgoing smoothed velocity commands */
 
   void velocityCB(const geometry_msgs::Twist::ConstPtr& msg);
+  void odometryCB(const nav_msgs::Odometry::ConstPtr& msg);
 
   double sign(double x)  { return x < 0.0 ? -1.0 : +1.0; }
 };
