@@ -28,7 +28,7 @@
  */
 
 /**
- * @file /ocl_controllers/include/ocl_controllers/default_controller.hpp
+ * @file /yocs_controllers/include/yocs_controllers/default_controller.hpp
  *
  * @brief Definition of a simple controller
  *
@@ -46,7 +46,7 @@
 ** Includes
 *****************************************************************************/
 
-namespace ocl
+namespace yocs
 {
 
 /**
@@ -128,6 +128,6 @@ private:
   bool controller_active_;
 };
 
-} // namespace ocl
+} // namespace yocs
 
 #endif /* DEFAULT_CONTROLLER_HPP_ */
