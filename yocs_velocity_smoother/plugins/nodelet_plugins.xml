@@ -1,7 +1,7 @@
-<library path="lib/libcmd_vel_mux_nodelet">
-  <class name="cmd_vel_mux/CmdVelMuxNodelet" type="CmdVelMuxNodelet" base_class_type="nodelet::Nodelet">
+<library path="lib/libvelocity_smoother_nodelet">
+  <class name="yocs_velocity_smoother/VelSmootherNodelet" type="VelSmootherNodelet" base_class_type="nodelet::Nodelet">
     <description>
-      Implementation for the command velocity multiplexer as a nodelet.
+      Implementation for the command velocity smoother as a nodelet.
     </description>
   </class>
 </library>
