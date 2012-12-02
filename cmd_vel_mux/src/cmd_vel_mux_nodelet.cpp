@@ -96,11 +96,16 @@ void CmdVelMux::timerCallback(const ros::TimerEvent& event, unsigned int idx)
   cmd_vel_sub[idx].active = false;
 }
 
+/**
+ * Initialise from a nodelet's private nodehandle.
+ * @param nh : private nodehandle
+ * @return bool : success or failure
+ */
 bool CmdVelMux::init(ros::NodeHandle& nh)
 {
   // Load subscribers configuration file
   std::string subscribers_cfg_file;
-  nh.getParam("cmd_vel_mux/subscribers_cfg_file", subscribers_cfg_file);
+  nh.getParam("subscribers_cfg_file", subscribers_cfg_file);
 
   if (cmd_vel_sub.loadSubscribersCfg(subscribers_cfg_file) == false)
   {
