@@ -1,15 +1,18 @@
 <package>
   <description brief="velocity_smoother">
 
-     velocity_smoother
+     Bound incoming velocity messages according to robot acceleration limits
 
   </description>
-  <author>Marcus Liebhardt</author>
+  <author>Jorge Santos</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
-  <url>http://ros.org/wiki/velocity_smoother</url>
+  <url>http://ros.org/wiki/cmd_vel_mux</url>
+
   <depend package="roscpp"/>
+  <depend package="nodelet"/>
 
+  <export>
+    <nodelet plugin="${prefix}/plugins/nodelet_plugins.xml" />
+  </export>
 </package>
-
-
