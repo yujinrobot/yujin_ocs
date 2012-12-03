@@ -56,10 +56,15 @@
 
 void VelSmoother::velocityCB(const geometry_msgs::Twist::ConstPtr& msg)
 {
-  if ((ros::Time::now() - last_cmd_time).toSec() > 2.0*median(period_record))
+  double period = median(period_record);
+
+  if (((ros::Time::now() - last_cmd_time).toSec() > 3.0*period) ||
+      (std::abs(odometry_vel.linear.x  - last_cmd_vel.linear.x)  > 3.0*accel_lim_x*period) ||
+      (std::abs(odometry_vel.linear.y  - last_cmd_vel.linear.y)  > 3.0*accel_lim_y*period) ||
+      (std::abs(odometry_vel.angular.z - last_cmd_vel.angular.z) > 3.0*accel_lim_t*period))
   {
-    // At startup or if the publisher has been inactive for a while, we
-    // cannot trust the content of last_cmd_vel; we use odometry instead
+    // If the publisher has been inactive for a while, or if odometry velocity has diverged
+    // significatively from last_cmd_vel, we cannot trust the latter; relay on odometry instead
     last_cmd_vel = odometry_vel;
   }
   else
@@ -73,10 +78,10 @@ void VelSmoother::velocityCB(const geometry_msgs::Twist::ConstPtr& msg)
 
     pr_next++;
     pr_next %= period_record.size();
+    period = median(period_record);  // recalculate with latest input
   }
 
   last_cmd_time = ros::Time::now();
-  double period = median(period_record);
 
   // Ensure we don't exceed the acceleration limits; for each dof, we calculate the
   // commanded velocity increment and the maximum allowed increment (i.e. acceleration)
