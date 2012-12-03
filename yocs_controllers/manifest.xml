@@ -1,13 +1,13 @@
 <package>
-  <description brief="ocl_controllers">
+  <description brief="yocs_controllers">
 
-     ocl_controllers
+     Library for various controller types and algorithms
 
   </description>
   <author>Marcus Liebhardt</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
-  <url>http://ros.org/wiki/ocl_controllers</url>
+  <url>http://ros.org/wiki/yocs_controllers</url>
   <depend package="roscpp"/>
   
   <export>
