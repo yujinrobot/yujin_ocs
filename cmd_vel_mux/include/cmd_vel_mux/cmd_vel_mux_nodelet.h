@@ -27,7 +27,7 @@ private:
   CmdVelSubscribers  cmd_vel_sub;  /**< Pool of cmd_vel topics subscribers */
 
   ros::Publisher mux_cmd_vel_pub;  /**< Multiplexed command velocity topic */
-  ros::Publisher act_cmd_vel_pub;  /**< Currently active cmd_vel publisher */
+  ros::Publisher allowed_sub_pub;  /**< Currently allowed cmd_vel subscriber */
 
   void timerCallback(const ros::TimerEvent& event, unsigned int idx);
   void cmdVelCallback(const geometry_msgs::Twist::ConstPtr& msg, unsigned int idx);
