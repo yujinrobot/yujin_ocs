@@ -73,7 +73,7 @@ void CmdVelMux::cmdVelCallback(const geometry_msgs::Twist::ConstPtr& msg, unsign
       // Notify the world that a new cmd_vel source took the control
       std_msgs::String acv_msg;
       acv_msg.data = cmd_vel_sub[idx].name;
-      act_cmd_vel_pub.publish(acv_msg);
+      allowed_sub_pub.publish(acv_msg);
     }
 
     mux_cmd_vel_pub.publish(msg);
@@ -90,7 +90,7 @@ void CmdVelMux::timerCallback(const ros::TimerEvent& event, unsigned int idx)
     // ...notify the world that nobody is publishing on cmd_vel; its vacant
     std_msgs::String acv_msg;
     acv_msg.data = "Vacant";
-    act_cmd_vel_pub.publish(acv_msg);
+    allowed_sub_pub.publish(acv_msg);
   }
 
   cmd_vel_sub[idx].active = false;
@@ -133,7 +133,12 @@ bool CmdVelMux::init(ros::NodeHandle& nh)
   }
 
   mux_cmd_vel_pub = nh.advertise <geometry_msgs::Twist> ("mux_cmd_vel", 10);
-  act_cmd_vel_pub = nh.advertise <std_msgs::String> ("act_cmd_vel", 1, true); // latched topic
+  allowed_sub_pub = nh.advertise <std_msgs::String> ("allowed_cmd_vel", 1, true); // latched topic
+
+  // Notify the world that by now nobody is publishing on cmd_vel; its vacant
+  std_msgs::String acv_msg;
+  acv_msg.data = "Vacant";
+  allowed_sub_pub.publish(acv_msg);
 
   ROS_INFO("Command velocity multiplexer successfully initialized");
 
