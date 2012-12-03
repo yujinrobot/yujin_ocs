@@ -20,16 +20,23 @@ public:
   ~VelSmoother() { };
 
   bool init(ros::NodeHandle& nh);
+  void spin();
 
 private:
-  double accel_lim_x, decel_lim_x;
-  double accel_lim_y, decel_lim_y;
-  double accel_lim_t, decel_lim_t;
+  double accel_lim_x,  decel_lim_x;
+  double accel_lim_y,  decel_lim_y;
+  double accel_lim_th, decel_lim_th;
   double decel_factor;
+
+  double frequency;
+
+  bool active;
 
   geometry_msgs::Twist odometry_vel;
   geometry_msgs::Twist last_cmd_vel;
-  ros::Time           last_cmd_time;
+  geometry_msgs::Twist   target_vel;
+
+  ros::Time            last_cb_time;
   std::vector<double> period_record; /**< Historic of latest periods between velocity commands */
   unsigned int              pr_next; /**< Next position to fill in the periods record buffer */
 

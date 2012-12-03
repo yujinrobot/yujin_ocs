@@ -45,6 +45,8 @@
 #include <nodelet/nodelet.h>
 #include <pluginlib/class_list_macros.h>
 
+#include <ecl/threads/thread.hpp>
+
 #include "velocity_smoother/velocity_smoother_nodelet.h"
 
 #define PERIOD_RECORD_SIZE   5
@@ -56,88 +58,110 @@
 
 void VelSmoother::velocityCB(const geometry_msgs::Twist::ConstPtr& msg)
 {
-  double period = median(period_record);
-
-  if (((ros::Time::now() - last_cmd_time).toSec() > 3.0*period) ||
-      (std::abs(odometry_vel.linear.x  - last_cmd_vel.linear.x)  > 3.0*accel_lim_x*period) ||
-      (std::abs(odometry_vel.linear.y  - last_cmd_vel.linear.y)  > 3.0*accel_lim_y*period) ||
-      (std::abs(odometry_vel.angular.z - last_cmd_vel.angular.z) > 3.0*accel_lim_t*period))
-  {
-    // If the publisher has been inactive for a while, or if odometry velocity has diverged
-    // significatively from last_cmd_vel, we cannot trust the latter; relay on odometry instead
-    last_cmd_vel = odometry_vel;
-  }
-  else
-  {
-    // Estimate commands frequency; we do continuously as it can be very different depending on the
-    // publisher type, and we don't want to impose extra constraints to keep this package flexible
-    if (period_record.size() < PERIOD_RECORD_SIZE)
-      period_record.push_back((ros::Time::now() - last_cmd_time).toSec());
-    else
-      period_record[pr_next] = (ros::Time::now() - last_cmd_time).toSec();
-
-    pr_next++;
-    pr_next %= period_record.size();
-    period = median(period_record);  // recalculate with latest input
-  }
-
-  last_cmd_time = ros::Time::now();
-
-  // Ensure we don't exceed the acceleration limits; for each dof, we calculate the
-  // commanded velocity increment and the maximum allowed increment (i.e. acceleration)
-  geometry_msgs::Twist cmd_vel = *msg;
-  double cmd_vel_inc, max_vel_inc;
-
-  cmd_vel_inc = cmd_vel.linear.x - last_cmd_vel.linear.x;
-  if (odometry_vel.linear.x*cmd_vel.linear.x < 0.0)
-  {
-    max_vel_inc = decel_lim_x*period;   // countermarch
-  }
-  else
-  {
-    max_vel_inc = ((cmd_vel_inc*cmd_vel.linear.x > 0.0)?accel_lim_x:decel_lim_x)*period;
-  }
-  if (std::abs(cmd_vel_inc) > max_vel_inc)
-  {
-    cmd_vel.linear.x = last_cmd_vel.linear.x + sign(cmd_vel_inc)*max_vel_inc;
-  }
-
-  cmd_vel_inc = cmd_vel.linear.y - last_cmd_vel.linear.y;
-  if (odometry_vel.linear.y*cmd_vel.linear.y < 0.0)
-  {
-    max_vel_inc = decel_lim_y*period;   // countermarch
-  }
-  else
-  {
-    max_vel_inc = ((cmd_vel_inc*cmd_vel.linear.y > 0.0)?accel_lim_y:decel_lim_y)*period;
-  }
-  if (std::abs(cmd_vel_inc) > max_vel_inc)
-  {
-    cmd_vel.linear.y = last_cmd_vel.linear.y + sign(cmd_vel_inc)*max_vel_inc;
-  }
-
-  cmd_vel_inc = cmd_vel.angular.z - last_cmd_vel.angular.z;
-  if (odometry_vel.angular.z*cmd_vel.angular.z < 0.0)
-  {
-    max_vel_inc = decel_lim_t*period;   // countermarch
-  }
-  else
-  {
-    max_vel_inc = ((cmd_vel_inc*cmd_vel.angular.z > 0.0)?accel_lim_t:decel_lim_t)*period;
-
-  }
-  if (std::abs(cmd_vel_inc) > max_vel_inc)
-  {
-    cmd_vel.angular.z = last_cmd_vel.angular.z + sign(cmd_vel_inc)*max_vel_inc;
-  }
-
-  lim_vel_pub.publish(cmd_vel);
-  last_cmd_vel = cmd_vel;
+  active = true;
+  target_vel = *msg;
+  last_cb_time = ros::Time::now();
 }
 
 void VelSmoother::odometryCB(const nav_msgs::Odometry::ConstPtr& msg)
 {
   odometry_vel = msg->twist.twist;
+}
+
+void VelSmoother::spin()
+{
+  double period = 1.0/frequency;
+  ros::Rate spin_rate(frequency);
+
+  while (ros::ok())
+  {
+    double cb_avg_time = median(period_record);
+
+    if ((active == true) && ((ros::Time::now() - last_cb_time).toSec() > 2.0*cb_avg_time))
+    {
+      // Velocity input no active anymore; normally last command is a zero-velocity one, but reassure
+      // this, just in case something went wrong with our input, or he just forgot good manners...
+      active = false;
+      target_vel = geometry_msgs::Twist();
+    }
+
+    if ((active == true) &&
+        (((ros::Time::now() - last_cb_time).toSec() > 3.0*cb_avg_time)      ||
+         (std::abs(odometry_vel.linear.x  - last_cmd_vel.linear.x)  > 0.05) ||
+         (std::abs(odometry_vel.linear.y  - last_cmd_vel.linear.y)  > 0.05) ||
+         (std::abs(odometry_vel.angular.z - last_cmd_vel.angular.z) > 0.2)))
+    {
+      // If the publisher has been inactive for a while, or if odometry velocity has diverged
+      // significatively from last_cmd_vel, we cannot trust the latter; relay on odometry instead
+      // TODO: these thresholds are very arbitrary; should be proportional to the max v and w...
+      last_cmd_vel = odometry_vel;
+    }
+
+    if ((target_vel.linear.x  != last_cmd_vel.linear.x) ||
+        (target_vel.linear.y  != last_cmd_vel.linear.y) ||
+        (target_vel.angular.z != last_cmd_vel.angular.z))
+    {
+      // Try to reach target velocity but...
+      geometry_msgs::Twist cmd_vel = target_vel;
+
+      // ...ensure we don't exceed the acceleration limits: for each dof, we calculate the
+      // commanded velocity increment and the maximum allowed increment (i.e. acceleration)
+      double cmd_vel_inc, max_vel_inc;
+
+      cmd_vel_inc = target_vel.linear.x - last_cmd_vel.linear.x;
+      if (odometry_vel.linear.x*target_vel.linear.x < 0.0)
+      {
+        max_vel_inc = decel_lim_x*period;   // countermarch
+      }
+      else
+      {
+        max_vel_inc = ((cmd_vel_inc*target_vel.linear.x > 0.0)?accel_lim_x:decel_lim_x)*period;
+      }
+      if (std::abs(cmd_vel_inc) > max_vel_inc)
+      {
+        cmd_vel.linear.x = last_cmd_vel.linear.x + sign(cmd_vel_inc)*max_vel_inc;
+      }
+
+      cmd_vel_inc = target_vel.linear.y - last_cmd_vel.linear.y;
+      if (odometry_vel.linear.y*target_vel.linear.y < 0.0)
+      {
+        max_vel_inc = decel_lim_y*period;   // countermarch
+      }
+      else
+      {
+        max_vel_inc = ((cmd_vel_inc*target_vel.linear.y > 0.0)?accel_lim_y:decel_lim_y)*period;
+      }
+      if (std::abs(cmd_vel_inc) > max_vel_inc)
+      {
+        cmd_vel.linear.y = last_cmd_vel.linear.y + sign(cmd_vel_inc)*max_vel_inc;
+      }
+
+      cmd_vel_inc = target_vel.angular.z - last_cmd_vel.angular.z;
+      if (odometry_vel.angular.z*target_vel.angular.z < 0.0)
+      {
+        max_vel_inc = decel_lim_th*period;  // countermarch
+      }
+      else
+      {
+        max_vel_inc = ((cmd_vel_inc*target_vel.angular.z > 0.0)?accel_lim_th:decel_lim_th)*period;
+
+      }
+      if (std::abs(cmd_vel_inc) > max_vel_inc)
+      {
+        cmd_vel.angular.z = last_cmd_vel.angular.z + sign(cmd_vel_inc)*max_vel_inc;
+      }
+
+      lim_vel_pub.publish(cmd_vel);
+      last_cmd_vel = cmd_vel;
+    }
+    else if (active == true)
+    {
+      // We already reached target velocity; just keep resending last command while input is active
+      lim_vel_pub.publish(last_cmd_vel);
+    }
+
+    spin_rate.sleep();
+  }
 }
 
 /**
@@ -147,22 +171,28 @@ void VelSmoother::odometryCB(const nav_msgs::Odometry::ConstPtr& msg)
  */
 bool VelSmoother::init(ros::NodeHandle& nh)
 {
-  nh.getParam("accel_lim_x",  accel_lim_x);
-  nh.getParam("accel_lim_y",  accel_lim_y);
-  nh.getParam("accel_lim_t",  accel_lim_t);
-  nh.getParam("decel_factor", decel_factor);
+  // Optional parameters
+  nh.param("frequency",    frequency,   20.0);
+  nh.param("decel_factor", decel_factor, 1.0);
+
+  // Mandatory parameters
+  if ((nh.getParam("accel_lim_x",  accel_lim_x)  == false) ||
+      (nh.getParam("accel_lim_y",  accel_lim_y)  == false) ||
+      (nh.getParam("accel_lim_th", accel_lim_th) == false))
+  {
+    ROS_ERROR("Missing acceleration limit parameter(s)");
+    return false;
+  }
 
   // Deceleration can be more aggressive, if necessary
-  decel_lim_x = decel_factor*accel_lim_x;
-  decel_lim_y = decel_factor*accel_lim_y;
-  decel_lim_t = decel_factor*accel_lim_t;
+  decel_lim_x  = decel_factor*accel_lim_x;
+  decel_lim_y  = decel_factor*accel_lim_y;
+  decel_lim_th = decel_factor*accel_lim_th;
 
   // Publishers and subscribers
   cur_vel_sub = nh.subscribe("odometry",    1, &VelSmoother::odometryCB, this);
   raw_vel_sub = nh.subscribe("raw_cmd_vel", 1, &VelSmoother::velocityCB, this);
   lim_vel_pub = nh.advertise <geometry_msgs::Twist> ("smooth_cmd_vel", 1);
-
-  last_cmd_time = ros::Time::now();
 
   ROS_INFO("Velocity smoother nodelet successfully initialized");
 
@@ -178,16 +208,21 @@ class VelSmootherNodelet : public nodelet::Nodelet
 {
 public:
   VelSmootherNodelet()  { }
-  ~VelSmootherNodelet() { }
+  ~VelSmootherNodelet()
+  {
+    NODELET_DEBUG("Waiting for worker thread to finish...");
+    worker_thread_.join();
+  }
 
   virtual void onInit()
   {
     NODELET_DEBUG("Initialising nodelet...");
 
-    vs_.reset(new VelSmoother);
-    if (vs_->init(this->getPrivateNodeHandle()))
+    vel_smoother_.reset(new VelSmoother);
+    if (vel_smoother_->init(this->getPrivateNodeHandle()))
     {
       NODELET_DEBUG("Command velocity smoother nodelet initialised");
+      worker_thread_.start(&VelSmoother::spin, *vel_smoother_);
     }
     else
     {
@@ -196,7 +231,8 @@ public:
   }
 
 private:
-  boost::shared_ptr<VelSmoother> vs_;
+  boost::shared_ptr<VelSmoother> vel_smoother_;
+  ecl::Thread                   worker_thread_;
 };
 
 PLUGINLIB_DECLARE_CLASS(velocity_smoother, VelSmootherNodelet, VelSmootherNodelet, nodelet::Nodelet);

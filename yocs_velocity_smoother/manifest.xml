@@ -12,6 +12,8 @@
   <depend package="roscpp"/>
   <depend package="nodelet"/>
 
+  <depend package="ecl_threads"/>
+
   <export>
     <nodelet plugin="${prefix}/plugins/nodelet_plugins.xml" />
   </export>
