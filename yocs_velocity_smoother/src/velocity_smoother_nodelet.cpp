@@ -47,32 +47,46 @@
 
 #include "velocity_smoother/velocity_smoother_nodelet.h"
 
+#define PERIOD_RECORD_SIZE   5
+
+
 /*********************
-** Inplementation
+** Implementation
 **********************/
-
-VelSmoother::VelSmoother() { }
-
-VelSmoother::~VelSmoother() { }
 
 void VelSmoother::velocityCB(const geometry_msgs::Twist::ConstPtr& msg)
 {
-  // Estimate commands frequency; it can be very different depending on the publisher type
-  double frequency = 1.0/(ros::Time::now() - last_cmd_time).toSec();
-  double period = (ros::Time::now() - last_cmd_time).toSec();
+  if ((ros::Time::now() - last_cmd_time).toSec() > 2.0*median(period_record))
+  {
+    // At startup or if the publisher has been inactive for a while, we
+    // cannot trust the content of last_cmd_vel; we use odometry instead
+    last_cmd_vel = odometry_vel;
+  }
+  else
+  {
+    // Estimate commands frequency; we do continuously as it can be very different depending on the
+    // publisher type, and we don't want to impose extra constraints to keep this package flexible
+    if (period_record.size() < PERIOD_RECORD_SIZE)
+      period_record.push_back((ros::Time::now() - last_cmd_time).toSec());
+    else
+      period_record[pr_next] = (ros::Time::now() - last_cmd_time).toSec();
+
+    pr_next++;
+    pr_next %= period_record.size();
+  }
+
   last_cmd_time = ros::Time::now();
+  double period = median(period_record);
 
   // Ensure we don't exceed the acceleration limits; for each dof, we calculate the
   // commanded velocity increment and the maximum allowed increment (i.e. acceleration)
   geometry_msgs::Twist cmd_vel = *msg;
   double cmd_vel_inc, max_vel_inc;
-  //double period = 1.0/frequency;
 
   cmd_vel_inc = cmd_vel.linear.x - last_cmd_vel.linear.x;
   if (odometry_vel.linear.x*cmd_vel.linear.x < 0.0)
   {
     max_vel_inc = decel_lim_x*period;   // countermarch
-    ROS_ERROR("countermarch  X");
   }
   else
   {
@@ -142,6 +156,8 @@ bool VelSmoother::init(ros::NodeHandle& nh)
   cur_vel_sub = nh.subscribe("odometry",    1, &VelSmoother::odometryCB, this);
   raw_vel_sub = nh.subscribe("raw_cmd_vel", 1, &VelSmoother::velocityCB, this);
   lim_vel_pub = nh.advertise <geometry_msgs::Twist> ("smooth_cmd_vel", 1);
+
+  last_cmd_time = ros::Time::now();
 
   ROS_INFO("Velocity smoother nodelet successfully initialized");
 
