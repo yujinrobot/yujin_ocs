@@ -32,6 +32,7 @@ private:
   void timerCallback(const ros::TimerEvent& event, unsigned int idx);
   void cmdVelCallback(const geometry_msgs::Twist::ConstPtr& msg, unsigned int idx);
 
+
   // Functor assigned to each incoming velocity topic to bind it to cmd_vel callback
   class CmdVelFunctor
   {
@@ -48,7 +49,6 @@ private:
       node->cmdVelCallback(msg, idx);
     }
   };
-
 
   // Functor assigned to each velocity messages source to bind it to timer callback
   class TimerFunctor
