@@ -1,0 +1,12 @@
+<!--
+  Example standalone launcher for the velocity multiplexer
+ -->
+<launch>
+  <node pkg="nodelet" type="nodelet" name="nodelet_manager" args="manager"/>
+  <node pkg="nodelet" type="nodelet" name="velocity_multiplexer" args="load cmd_vel_mux/CmdVelMuxNodelet nodelet_manager">
+    <param name="velocity_multiplexer/subscribers_cfg_file" value="$(find cmd_vel_mux)/param/example_cfg.yaml"/>
+    <remap from="cmd_vel_mux/mux_cmd_vel" to="mobile_base/commands/velocity"/>
+    <remap from="cmd_vel_mux/web_cmd_vel" to="web_app_teleop"/>
+    <remap from="cmd_vel_mux/key_cmd_vel" to="key_cmd_vel"/>
+  </node>
+</launch>
