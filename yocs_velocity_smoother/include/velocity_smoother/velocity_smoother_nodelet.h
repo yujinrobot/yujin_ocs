@@ -13,11 +13,11 @@
 #include <nav_msgs/Odometry.h>
 
 
-class VelSmoother
+class VelocitySmoother
 {
 public:
-  VelSmoother() : period_record(1, 0.1), pr_next(1) { };
-  ~VelSmoother() { };
+  VelocitySmoother() : period_record(1, 0.1), pr_next(1) { };
+  ~VelocitySmoother() { };
 
   bool init(ros::NodeHandle& nh);
   void spin();

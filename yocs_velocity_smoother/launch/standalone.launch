@@ -1,5 +1,5 @@
 <!--
-  Standalone launcher for the velocity smoother
+  Example standalone launcher for the velocity smoother
  -->
 <launch>
   <node pkg="nodelet" type="nodelet" name="nodelet_manager"  args="manager"/>

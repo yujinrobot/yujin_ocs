@@ -49,40 +49,57 @@
 
 #include "velocity_smoother/velocity_smoother_nodelet.h"
 
-#define PERIOD_RECORD_SIZE   5
+#define PERIOD_RECORD_SIZE    5
+#define ZERO_VEL_COMMAND      geometry_msgs::Twist();
+#define IS_ZERO_VEOCITY(a)   ((a.linear.x == 0.0) && (a.linear.y == 0.0) && (a.angular.z == 0.0))
 
 
 /*********************
 ** Implementation
 **********************/
 
-void VelSmoother::velocityCB(const geometry_msgs::Twist::ConstPtr& msg)
+void VelocitySmoother::velocityCB(const geometry_msgs::Twist::ConstPtr& msg)
 {
+  // Estimate commands frequency; we do continuously as it can be very different depending on the
+  // publisher type, and we don't want to impose extra constraints to keep this package flexible
+  if (period_record.size() < PERIOD_RECORD_SIZE)
+    period_record.push_back((ros::Time::now() - last_cb_time).toSec());
+  else
+    period_record[pr_next] = (ros::Time::now() - last_cb_time).toSec();
+
+  pr_next++;
+  pr_next %= period_record.size();
+
   active = true;
   target_vel = *msg;
   last_cb_time = ros::Time::now();
 }
 
-void VelSmoother::odometryCB(const nav_msgs::Odometry::ConstPtr& msg)
+void VelocitySmoother::odometryCB(const nav_msgs::Odometry::ConstPtr& msg)
 {
   odometry_vel = msg->twist.twist;
 }
 
-void VelSmoother::spin()
+void VelocitySmoother::spin()
 {
   double period = 1.0/frequency;
   ros::Rate spin_rate(frequency);
 
   while (ros::ok())
   {
-    double cb_avg_time = median(period_record);
+    double cb_avg_time = median(period_record);  // recalculate with latest input
 
     if ((active == true) && ((ros::Time::now() - last_cb_time).toSec() > 2.0*cb_avg_time))
     {
       // Velocity input no active anymore; normally last command is a zero-velocity one, but reassure
       // this, just in case something went wrong with our input, or he just forgot good manners...
       active = false;
-      target_vel = geometry_msgs::Twist();
+      if (IS_ZERO_VEOCITY(target_vel) == false)
+      {
+        ROS_WARN("Input got inactive letting us a non-zero target velocity (%f, %f, %f); zeroing...",
+                 target_vel.linear.x, target_vel.linear.y, target_vel.angular.z);
+        target_vel = ZERO_VEL_COMMAND;
+      }
     }
 
     if ((active == true) &&
@@ -93,7 +110,12 @@ void VelSmoother::spin()
     {
       // If the publisher has been inactive for a while, or if odometry velocity has diverged
       // significatively from last_cmd_vel, we cannot trust the latter; relay on odometry instead
-      // TODO: these thresholds are very arbitrary; should be proportional to the max v and w...
+      // TODO: these thresholds are 진짜 arbitrary; should be proportional to the max v and w...
+      ROS_DEBUG("Using odometry instead of last command: %f, %f, %f, %f",
+                (ros::Time::now()      - last_cb_time).toSec(),
+                odometry_vel.linear.x  - last_cmd_vel.linear.x,
+                odometry_vel.linear.y  - last_cmd_vel.linear.y,
+                odometry_vel.angular.z - last_cmd_vel.angular.z);
       last_cmd_vel = odometry_vel;
     }
 
@@ -172,7 +194,7 @@ void VelSmoother::spin()
  * @param nh : private nodehandle
  * @return bool : success or failure
  */
-bool VelSmoother::init(ros::NodeHandle& nh)
+bool VelocitySmoother::init(ros::NodeHandle& nh)
 {
   // Optional parameters
   nh.param("frequency",    frequency,   20.0);
@@ -193,8 +215,8 @@ bool VelSmoother::init(ros::NodeHandle& nh)
   decel_lim_th = decel_factor*accel_lim_th;
 
   // Publishers and subscribers
-  cur_vel_sub = nh.subscribe("odometry",    1, &VelSmoother::odometryCB, this);
-  raw_vel_sub = nh.subscribe("raw_cmd_vel", 1, &VelSmoother::velocityCB, this);
+  cur_vel_sub = nh.subscribe("odometry",    1, &VelocitySmoother::odometryCB, this);
+  raw_vel_sub = nh.subscribe("raw_cmd_vel", 1, &VelocitySmoother::velocityCB, this);
   lim_vel_pub = nh.advertise <geometry_msgs::Twist> ("smooth_cmd_vel", 1);
 
   ROS_INFO("Velocity smoother nodelet successfully initialized");
@@ -207,11 +229,11 @@ bool VelSmoother::init(ros::NodeHandle& nh)
 ** Nodelet
 **********************/
 
-class VelSmootherNodelet : public nodelet::Nodelet
+class VelocitySmootherNodelet : public nodelet::Nodelet
 {
 public:
-  VelSmootherNodelet()  { }
-  ~VelSmootherNodelet()
+  VelocitySmootherNodelet()  { }
+  ~VelocitySmootherNodelet()
   {
     NODELET_DEBUG("Waiting for worker thread to finish...");
     worker_thread_.join();
@@ -221,11 +243,11 @@ public:
   {
     NODELET_DEBUG("Initialising nodelet...");
 
-    vel_smoother_.reset(new VelSmoother);
+    vel_smoother_.reset(new VelocitySmoother);
     if (vel_smoother_->init(this->getPrivateNodeHandle()))
     {
       NODELET_DEBUG("Command velocity smoother nodelet initialised");
-      worker_thread_.start(&VelSmoother::spin, *vel_smoother_);
+      worker_thread_.start(&VelocitySmoother::spin, *vel_smoother_);
     }
     else
     {
@@ -234,8 +256,8 @@ public:
   }
 
 private:
-  boost::shared_ptr<VelSmoother> vel_smoother_;
-  ecl::Thread                   worker_thread_;
+  boost::shared_ptr<VelocitySmoother> vel_smoother_;
+  ecl::Thread                        worker_thread_;
 };
 
-PLUGINLIB_DECLARE_CLASS(velocity_smoother, VelSmootherNodelet, VelSmootherNodelet, nodelet::Nodelet);
+PLUGINLIB_DECLARE_CLASS(velocity_smoother, VelocitySmootherNodelet, VelocitySmootherNodelet, nodelet::Nodelet);
