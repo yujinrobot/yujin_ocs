@@ -97,12 +97,14 @@ void VelSmoother::spin()
       last_cmd_vel = odometry_vel;
     }
 
+    geometry_msgs::TwistPtr cmd_vel;
+
     if ((target_vel.linear.x  != last_cmd_vel.linear.x) ||
         (target_vel.linear.y  != last_cmd_vel.linear.y) ||
         (target_vel.angular.z != last_cmd_vel.angular.z))
     {
       // Try to reach target velocity but...
-      geometry_msgs::Twist cmd_vel = target_vel;
+      cmd_vel.reset(new geometry_msgs::Twist(target_vel));
 
       // ...ensure we don't exceed the acceleration limits: for each dof, we calculate the
       // commanded velocity increment and the maximum allowed increment (i.e. acceleration)
@@ -119,7 +121,7 @@ void VelSmoother::spin()
       }
       if (std::abs(cmd_vel_inc) > max_vel_inc)
       {
-        cmd_vel.linear.x = last_cmd_vel.linear.x + sign(cmd_vel_inc)*max_vel_inc;
+        cmd_vel->linear.x = last_cmd_vel.linear.x + sign(cmd_vel_inc)*max_vel_inc;
       }
 
       cmd_vel_inc = target_vel.linear.y - last_cmd_vel.linear.y;
@@ -133,7 +135,7 @@ void VelSmoother::spin()
       }
       if (std::abs(cmd_vel_inc) > max_vel_inc)
       {
-        cmd_vel.linear.y = last_cmd_vel.linear.y + sign(cmd_vel_inc)*max_vel_inc;
+        cmd_vel->linear.y = last_cmd_vel.linear.y + sign(cmd_vel_inc)*max_vel_inc;
       }
 
       cmd_vel_inc = target_vel.angular.z - last_cmd_vel.angular.z;
@@ -148,16 +150,17 @@ void VelSmoother::spin()
       }
       if (std::abs(cmd_vel_inc) > max_vel_inc)
       {
-        cmd_vel.angular.z = last_cmd_vel.angular.z + sign(cmd_vel_inc)*max_vel_inc;
+        cmd_vel->angular.z = last_cmd_vel.angular.z + sign(cmd_vel_inc)*max_vel_inc;
       }
 
       lim_vel_pub.publish(cmd_vel);
-      last_cmd_vel = cmd_vel;
+      last_cmd_vel = *cmd_vel;
     }
     else if (active == true)
     {
       // We already reached target velocity; just keep resending last command while input is active
-      lim_vel_pub.publish(last_cmd_vel);
+      cmd_vel.reset(new geometry_msgs::Twist(last_cmd_vel));
+      lim_vel_pub.publish(cmd_vel);
     }
 
     spin_rate.sleep();
