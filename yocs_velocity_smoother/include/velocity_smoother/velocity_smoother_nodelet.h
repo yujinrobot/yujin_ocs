@@ -16,7 +16,7 @@
 class VelocitySmoother
 {
 public:
-  VelocitySmoother() : period_record(1, 0.1), pr_next(1) { };
+  VelocitySmoother() : input_active(false), pr_next(0) { };
   ~VelocitySmoother() { };
 
   bool init(ros::NodeHandle& nh);
@@ -30,12 +30,12 @@ private:
 
   double frequency;
 
-  bool active;
-
   geometry_msgs::Twist odometry_vel;
   geometry_msgs::Twist last_cmd_vel;
   geometry_msgs::Twist   target_vel;
 
+  bool                 input_active;
+  double                cb_avg_time;
   ros::Time            last_cb_time;
   std::vector<double> period_record; /**< Historic of latest periods between velocity commands */
   unsigned int              pr_next; /**< Next position to fill in the periods record buffer */

@@ -69,10 +69,14 @@ void VelocitySmoother::velocityCB(const geometry_msgs::Twist::ConstPtr& msg)
 
   pr_next++;
   pr_next %= period_record.size();
-
-  active = true;
-  target_vel = *msg;
   last_cb_time = ros::Time::now();
+
+  if (period_record.size() <= PERIOD_RECORD_SIZE/2)  // wait until we have an acceptable estimate
+    return;
+
+  cb_avg_time  = median(period_record);              // enough; recalculate with the latest input
+  input_active = true;
+  target_vel   = *msg;
 }
 
 void VelocitySmoother::odometryCB(const nav_msgs::Odometry::ConstPtr& msg)
@@ -87,13 +91,11 @@ void VelocitySmoother::spin()
 
   while (ros::ok())
   {
-    double cb_avg_time = median(period_record);  // recalculate with latest input
-
-    if ((active == true) && ((ros::Time::now() - last_cb_time).toSec() > 2.0*cb_avg_time))
+    if ((input_active == true) && ((ros::Time::now() - last_cb_time).toSec() > 3.0*cb_avg_time))
     {
       // Velocity input no active anymore; normally last command is a zero-velocity one, but reassure
       // this, just in case something went wrong with our input, or he just forgot good manners...
-      active = false;
+      input_active = false;
       if (IS_ZERO_VEOCITY(target_vel) == false)
       {
         ROS_WARN("Input got inactive letting us a non-zero target velocity (%f, %f, %f); zeroing...",
@@ -102,15 +104,15 @@ void VelocitySmoother::spin()
       }
     }
 
-    if ((active == true) &&
-        (((ros::Time::now() - last_cb_time).toSec() > 3.0*cb_avg_time)      ||
-         (std::abs(odometry_vel.linear.x  - last_cmd_vel.linear.x)  > 0.05) ||
-         (std::abs(odometry_vel.linear.y  - last_cmd_vel.linear.y)  > 0.05) ||
-         (std::abs(odometry_vel.angular.z - last_cmd_vel.angular.z) > 0.2)))
+    if ((input_active == true) &&
+        (((ros::Time::now() - last_cb_time).toSec() > 3.0*cb_avg_time)     || // 3 missing msgs
+         (std::abs(odometry_vel.linear.x  - last_cmd_vel.linear.x)  > 0.1) ||
+         (std::abs(odometry_vel.linear.y  - last_cmd_vel.linear.y)  > 0.1) ||
+         (std::abs(odometry_vel.angular.z - last_cmd_vel.angular.z) > 0.5)))
     {
       // If the publisher has been inactive for a while, or if odometry velocity has diverged
       // significatively from last_cmd_vel, we cannot trust the latter; relay on odometry instead
-      // TODO: these thresholds are 진짜 arbitrary; should be proportional to the max v and w...
+      // TODO: odometry thresholds are 진짜 arbitrary; should be proportional to the max v and w...
       ROS_DEBUG("Using odometry instead of last command: %f, %f, %f, %f",
                 (ros::Time::now()      - last_cb_time).toSec(),
                 odometry_vel.linear.x  - last_cmd_vel.linear.x,
@@ -178,7 +180,7 @@ void VelocitySmoother::spin()
       lim_vel_pub.publish(cmd_vel);
       last_cmd_vel = *cmd_vel;
     }
-    else if (active == true)
+    else if (input_active == true)
     {
       // We already reached target velocity; just keep resending last command while input is active
       cmd_vel.reset(new geometry_msgs::Twist(last_cmd_vel));
