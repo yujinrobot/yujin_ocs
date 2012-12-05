@@ -9,4 +9,5 @@
   <depend stack="ros_comm" /> <!-- roscpp -->
   <depend stack="nodelet_core" /> <!-- nodelet -->
   <depend stack="ecl_core" /> <!-- ecl_threads -->
+  <depend stack="common_msgs" /> <!-- nav_msgs -->
 </stack>
