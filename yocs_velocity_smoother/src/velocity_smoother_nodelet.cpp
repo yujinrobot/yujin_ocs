@@ -89,7 +89,7 @@ void VelocitySmoother::spin()
   double period = 1.0/frequency;
   ros::Rate spin_rate(frequency);
 
-  while (ros::ok())
+  while (! shutdown_req && ros::ok())
   {
     if ((input_active == true) && ((ros::Time::now() - last_cb_time).toSec() > 3.0*cb_avg_time))
     {
@@ -238,6 +238,7 @@ public:
   ~VelocitySmootherNodelet()
   {
     NODELET_DEBUG("Waiting for worker thread to finish...");
+    vel_smoother_->shutdown();
     worker_thread_.join();
   }
 

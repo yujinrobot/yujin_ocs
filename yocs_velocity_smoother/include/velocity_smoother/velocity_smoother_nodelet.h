@@ -16,11 +16,12 @@
 class VelocitySmoother
 {
 public:
-  VelocitySmoother() : input_active(false), pr_next(0) { };
+  VelocitySmoother() : shutdown_req(false), input_active(false), pr_next(0) { };
   ~VelocitySmoother() { };
 
   bool init(ros::NodeHandle& nh);
   void spin();
+  void shutdown() { shutdown_req = true; };
 
 private:
   double accel_lim_x,  decel_lim_x;
@@ -34,6 +35,7 @@ private:
   geometry_msgs::Twist last_cmd_vel;
   geometry_msgs::Twist   target_vel;
 
+  bool                 shutdown_req; /**< Shutdown requested by nodelet; kill worker thread */
   bool                 input_active;
   double                cb_avg_time;
   ros::Time            last_cb_time;
