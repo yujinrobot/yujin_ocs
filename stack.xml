@@ -1,0 +1,12 @@
+<stack>
+  <description brief="Open source control software from Yujin.">
+    Open source control software from Yujin Robot.
+  </description>
+  <author>Maintained by Daniel Stonier</author>
+  <license>BSD</license>  
+  <review status="experimental" notes=""/>
+  <url>http://ros.org/wiki/yujin_ocs</url>
+  <depend stack="ros_comm" /> <!-- roscpp -->
+  <depend stack="nodelet_core" /> <!-- nodelet -->
+  <depend stack="ecl_core" /> <!-- ecl_threads -->
+</stack>
