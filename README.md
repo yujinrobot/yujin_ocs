@@ -1,4 +1,4 @@
-open_control_library
-====================
+yujin_open_control_system (yocs)
+================================
 
-Yujin Robot's open-source control libraries
+Yujin Robot's open-source control system including libraries and exectuables
