@@ -1,7 +1,15 @@
+# Example configuration:
+# - velocity limits are around a 10% above the phisical limits
+# - acceleration limits are just low enough to avoid jerking
+
 # Mandatory parameters
-accel_lim_x: 1.0
-accel_lim_y: 1.0
-accel_lim_th: 4.0
+speed_lim_x:  0.8
+speed_lim_y:  0.8
+speed_lim_th: 5.4
+
+accel_lim_x:  1.0
+accel_lim_y:  1.0
+accel_lim_th: 7.0
 
 # Optional parameters
 frequency: 20.0

@@ -63,20 +63,38 @@ void VelocitySmoother::velocityCB(const geometry_msgs::Twist::ConstPtr& msg)
   // Estimate commands frequency; we do continuously as it can be very different depending on the
   // publisher type, and we don't want to impose extra constraints to keep this package flexible
   if (period_record.size() < PERIOD_RECORD_SIZE)
+  {
     period_record.push_back((ros::Time::now() - last_cb_time).toSec());
+  }
   else
+  {
     period_record[pr_next] = (ros::Time::now() - last_cb_time).toSec();
+  }
 
   pr_next++;
   pr_next %= period_record.size();
   last_cb_time = ros::Time::now();
 
-  if (period_record.size() <= PERIOD_RECORD_SIZE/2)  // wait until we have an acceptable estimate
-    return;
+  if (period_record.size() <= PERIOD_RECORD_SIZE/2)
+  {
+    // wait until we have some values; make a reasonable assumption meanwhile
+    cb_avg_time = 0.05;
+  }
+  else
+  {
+    // enough; recalculate with the latest input
+    cb_avg_time = median(period_record);
+  }
 
-  cb_avg_time  = median(period_record);              // enough; recalculate with the latest input
   input_active = true;
-  target_vel   = *msg;
+
+  // Bound speed with the maximum values
+  target_vel.linear.x  =
+      msg->linear.x  > 0.0 ? std::min(msg->linear.x,  speed_lim_x)  : std::max(msg->linear.x,  -speed_lim_x);
+  target_vel.linear.y  =
+      msg->linear.y  > 0.0 ? std::min(msg->linear.y,  speed_lim_y)  : std::max(msg->linear.y,  -speed_lim_y);
+  target_vel.angular.z =
+      msg->angular.z > 0.0 ? std::min(msg->angular.z, speed_lim_th) : std::max(msg->angular.z, -speed_lim_th);
 }
 
 void VelocitySmoother::odometryCB(const nav_msgs::Odometry::ConstPtr& msg)
@@ -91,10 +109,12 @@ void VelocitySmoother::spin()
 
   while (! shutdown_req && ros::ok())
   {
-    if ((input_active == true) && ((ros::Time::now() - last_cb_time).toSec() > 3.0*cb_avg_time))
+    if ((input_active == true) &&
+        ((ros::Time::now() - last_cb_time).toSec() > std::min(3.0*cb_avg_time, 0.5)))
     {
       // Velocity input no active anymore; normally last command is a zero-velocity one, but reassure
       // this, just in case something went wrong with our input, or he just forgot good manners...
+      // Issue #2, extra check in case cb_avg_time is very bit, for example with several atomic commands
       input_active = false;
       if (IS_ZERO_VEOCITY(target_vel) == false)
       {
@@ -106,15 +126,17 @@ void VelocitySmoother::spin()
 
     if ((input_active == true) &&
         (((ros::Time::now() - last_cb_time).toSec() > 3.0*cb_avg_time)     || // 3 missing msgs
-         (std::abs(odometry_vel.linear.x  - last_cmd_vel.linear.x)  > 0.1) ||
-         (std::abs(odometry_vel.linear.y  - last_cmd_vel.linear.y)  > 0.1) ||
-         (std::abs(odometry_vel.angular.z - last_cmd_vel.angular.z) > 0.5)))
+         (std::abs(odometry_vel.linear.x  - last_cmd_vel.linear.x)  > 0.2) ||
+         (std::abs(odometry_vel.linear.y  - last_cmd_vel.linear.y)  > 0.2) ||
+         (std::abs(odometry_vel.angular.z - last_cmd_vel.angular.z) > 2.0)))
     {
       // If the publisher has been inactive for a while, or if odometry velocity has diverged
       // significatively from last_cmd_vel, we cannot trust the latter; relay on odometry instead
       // TODO: odometry thresholds are 진짜 arbitrary; should be proportional to the max v and w...
+      // The one for angular velocity is very big because is it's less necessary (for example the
+      // reactive controller will never make the robot spin) and because the gyro has a 15 ms delay
       ROS_DEBUG("Using odometry instead of last command: %f, %f, %f, %f",
-                (ros::Time::now()      - last_cb_time).toSec(),
+		(ros::Time::now()      - last_cb_time).toSec(),
                 odometry_vel.linear.x  - last_cmd_vel.linear.x,
                 odometry_vel.linear.y  - last_cmd_vel.linear.y,
                 odometry_vel.angular.z - last_cmd_vel.angular.z);
@@ -203,6 +225,14 @@ bool VelocitySmoother::init(ros::NodeHandle& nh)
   nh.param("decel_factor", decel_factor, 1.0);
 
   // Mandatory parameters
+  if ((nh.getParam("speed_lim_x",  speed_lim_x)  == false) ||
+      (nh.getParam("speed_lim_y",  speed_lim_y)  == false) ||
+      (nh.getParam("speed_lim_th", speed_lim_th) == false))
+  {
+    ROS_ERROR("Missing velocity limit parameter(s)");
+    return false;
+  }
+
   if ((nh.getParam("accel_lim_x",  accel_lim_x)  == false) ||
       (nh.getParam("accel_lim_y",  accel_lim_y)  == false) ||
       (nh.getParam("accel_lim_th", accel_lim_th) == false))
