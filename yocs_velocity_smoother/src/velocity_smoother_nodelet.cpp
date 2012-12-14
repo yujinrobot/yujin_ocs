@@ -51,7 +51,7 @@
 
 #define PERIOD_RECORD_SIZE    5
 #define ZERO_VEL_COMMAND      geometry_msgs::Twist();
-#define IS_ZERO_VEOCITY(a)   ((a.linear.x == 0.0) && (a.linear.y == 0.0) && (a.angular.z == 0.0))
+#define IS_ZERO_VEOCITY(a)   ((a.linear.x == 0.0) && (a.angular.z == 0.0))
 
 
 /*********************
@@ -90,11 +90,9 @@ void VelocitySmoother::velocityCB(const geometry_msgs::Twist::ConstPtr& msg)
 
   // Bound speed with the maximum values
   target_vel.linear.x  =
-      msg->linear.x  > 0.0 ? std::min(msg->linear.x,  speed_lim_x)  : std::max(msg->linear.x,  -speed_lim_x);
-  target_vel.linear.y  =
-      msg->linear.y  > 0.0 ? std::min(msg->linear.y,  speed_lim_y)  : std::max(msg->linear.y,  -speed_lim_y);
+      msg->linear.x  > 0.0 ? std::min(msg->linear.x,  speed_lim_v) : std::max(msg->linear.x,  -speed_lim_v);
   target_vel.angular.z =
-      msg->angular.z > 0.0 ? std::min(msg->angular.z, speed_lim_th) : std::max(msg->angular.z, -speed_lim_th);
+      msg->angular.z > 0.0 ? std::min(msg->angular.z, speed_lim_w) : std::max(msg->angular.z, -speed_lim_w);
 }
 
 void VelocitySmoother::odometryCB(const nav_msgs::Odometry::ConstPtr& msg)
@@ -118,8 +116,8 @@ void VelocitySmoother::spin()
       input_active = false;
       if (IS_ZERO_VEOCITY(target_vel) == false)
       {
-        ROS_WARN("Input got inactive letting us a non-zero target velocity (%f, %f, %f); zeroing...",
-                 target_vel.linear.x, target_vel.linear.y, target_vel.angular.z);
+        ROS_WARN("Input got inactive letting us a non-zero target velocity (%f, %f); zeroing...",
+                 target_vel.linear.x, target_vel.angular.z);
         target_vel = ZERO_VEL_COMMAND;
       }
     }
@@ -127,7 +125,6 @@ void VelocitySmoother::spin()
     if ((input_active == true) &&
         (((ros::Time::now() - last_cb_time).toSec() > 3.0*cb_avg_time)     || // 3 missing msgs
          (std::abs(odometry_vel.linear.x  - last_cmd_vel.linear.x)  > 0.2) ||
-         (std::abs(odometry_vel.linear.y  - last_cmd_vel.linear.y)  > 0.2) ||
          (std::abs(odometry_vel.angular.z - last_cmd_vel.angular.z) > 2.0)))
     {
       // If the publisher has been inactive for a while, or if odometry velocity has diverged
@@ -135,10 +132,9 @@ void VelocitySmoother::spin()
       // TODO: odometry thresholds are 진짜 arbitrary; should be proportional to the max v and w...
       // The one for angular velocity is very big because is it's less necessary (for example the
       // reactive controller will never make the robot spin) and because the gyro has a 15 ms delay
-      ROS_DEBUG("Using odometry instead of last command: %f, %f, %f, %f",
+      ROS_DEBUG("Using odometry instead of last command: %f, %f, %f",
 		(ros::Time::now()      - last_cb_time).toSec(),
                 odometry_vel.linear.x  - last_cmd_vel.linear.x,
-                odometry_vel.linear.y  - last_cmd_vel.linear.y,
                 odometry_vel.angular.z - last_cmd_vel.angular.z);
       last_cmd_vel = odometry_vel;
     }
@@ -146,58 +142,48 @@ void VelocitySmoother::spin()
     geometry_msgs::TwistPtr cmd_vel;
 
     if ((target_vel.linear.x  != last_cmd_vel.linear.x) ||
-        (target_vel.linear.y  != last_cmd_vel.linear.y) ||
         (target_vel.angular.z != last_cmd_vel.angular.z))
     {
       // Try to reach target velocity but...
       cmd_vel.reset(new geometry_msgs::Twist(target_vel));
 
-      // ...ensure we don't exceed the acceleration limits: for each dof, we calculate the
-      // commanded velocity increment and the maximum allowed increment (i.e. acceleration)
-      double cmd_vel_inc, max_vel_inc;
+      // ...ensure we don't exceed the acceleration limits: calculate raw to limited
+      // velocity ratios and apply the highest one to both linear and angular speeds
+      double cmd_vel_inc, max_vel_inc, raw_lim_ratio_v = 1.0, raw_lim_ratio_w = 1.0;
 
       cmd_vel_inc = target_vel.linear.x - last_cmd_vel.linear.x;
       if (odometry_vel.linear.x*target_vel.linear.x < 0.0)
       {
-        max_vel_inc = decel_lim_x*period;   // countermarch
+        max_vel_inc = decel_lim_v*period;   // countermarch
       }
       else
       {
-        max_vel_inc = ((cmd_vel_inc*target_vel.linear.x > 0.0)?accel_lim_x:decel_lim_x)*period;
+        max_vel_inc = ((cmd_vel_inc*target_vel.linear.x > 0.0)?accel_lim_v:decel_lim_v)*period;
       }
       if (std::abs(cmd_vel_inc) > max_vel_inc)
       {
-        cmd_vel->linear.x = last_cmd_vel.linear.x + sign(cmd_vel_inc)*max_vel_inc;
-      }
-
-      cmd_vel_inc = target_vel.linear.y - last_cmd_vel.linear.y;
-      if (odometry_vel.linear.y*target_vel.linear.y < 0.0)
-      {
-        max_vel_inc = decel_lim_y*period;   // countermarch
-      }
-      else
-      {
-        max_vel_inc = ((cmd_vel_inc*target_vel.linear.y > 0.0)?accel_lim_y:decel_lim_y)*period;
-      }
-      if (std::abs(cmd_vel_inc) > max_vel_inc)
-      {
-        cmd_vel->linear.y = last_cmd_vel.linear.y + sign(cmd_vel_inc)*max_vel_inc;
+        raw_lim_ratio_v =
+            std::max(1.0, target_vel.linear.x/(last_cmd_vel.linear.x + sign(cmd_vel_inc)*max_vel_inc));
       }
 
       cmd_vel_inc = target_vel.angular.z - last_cmd_vel.angular.z;
       if (odometry_vel.angular.z*target_vel.angular.z < 0.0)
       {
-        max_vel_inc = decel_lim_th*period;  // countermarch
+        max_vel_inc = decel_lim_w*period;  // countermarch
       }
       else
       {
-        max_vel_inc = ((cmd_vel_inc*target_vel.angular.z > 0.0)?accel_lim_th:decel_lim_th)*period;
+        max_vel_inc = ((cmd_vel_inc*target_vel.angular.z > 0.0)?accel_lim_w:decel_lim_w)*period;
 
       }
       if (std::abs(cmd_vel_inc) > max_vel_inc)
       {
-        cmd_vel->angular.z = last_cmd_vel.angular.z + sign(cmd_vel_inc)*max_vel_inc;
+        raw_lim_ratio_w =
+            std::max(1.0, target_vel.angular.z/(last_cmd_vel.angular.z + sign(cmd_vel_inc)*max_vel_inc));
       }
+
+      cmd_vel->linear.x  = target_vel.linear.x  / std::max(raw_lim_ratio_v, raw_lim_ratio_w);
+      cmd_vel->angular.z = target_vel.angular.z / std::max(raw_lim_ratio_v, raw_lim_ratio_w);
 
       lim_vel_pub.publish(cmd_vel);
       last_cmd_vel = *cmd_vel;
@@ -225,26 +211,23 @@ bool VelocitySmoother::init(ros::NodeHandle& nh)
   nh.param("decel_factor", decel_factor, 1.0);
 
   // Mandatory parameters
-  if ((nh.getParam("speed_lim_x",  speed_lim_x)  == false) ||
-      (nh.getParam("speed_lim_y",  speed_lim_y)  == false) ||
-      (nh.getParam("speed_lim_th", speed_lim_th) == false))
+  if ((nh.getParam("speed_lim_v", speed_lim_v) == false) ||
+      (nh.getParam("speed_lim_w", speed_lim_w) == false))
   {
     ROS_ERROR("Missing velocity limit parameter(s)");
     return false;
   }
 
-  if ((nh.getParam("accel_lim_x",  accel_lim_x)  == false) ||
-      (nh.getParam("accel_lim_y",  accel_lim_y)  == false) ||
-      (nh.getParam("accel_lim_th", accel_lim_th) == false))
+  if ((nh.getParam("accel_lim_v", accel_lim_v) == false) ||
+      (nh.getParam("accel_lim_w", accel_lim_w) == false))
   {
     ROS_ERROR("Missing acceleration limit parameter(s)");
     return false;
   }
 
   // Deceleration can be more aggressive, if necessary
-  decel_lim_x  = decel_factor*accel_lim_x;
-  decel_lim_y  = decel_factor*accel_lim_y;
-  decel_lim_th = decel_factor*accel_lim_th;
+  decel_lim_v = decel_factor*accel_lim_v;
+  decel_lim_w = decel_factor*accel_lim_w;
 
   // Publishers and subscribers
   cur_vel_sub = nh.subscribe("odometry",    1, &VelocitySmoother::odometryCB, this);

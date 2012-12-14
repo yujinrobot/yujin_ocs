@@ -24,9 +24,8 @@ public:
   void shutdown() { shutdown_req = true; };
 
 private:
-  double speed_lim_x,  accel_lim_x,  decel_lim_x;
-  double speed_lim_y,  accel_lim_y,  decel_lim_y;
-  double speed_lim_th, accel_lim_th, decel_lim_th;
+  double speed_lim_v, accel_lim_v, decel_lim_v;
+  double speed_lim_w, accel_lim_w, decel_lim_w;
   double decel_factor;
 
   double frequency;
