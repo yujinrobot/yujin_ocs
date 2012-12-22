@@ -10,4 +10,5 @@
   <depend stack="nodelet_core" /> <!-- nodelet -->
   <depend stack="ecl_core" /> <!-- ecl_threads -->
   <depend stack="common_msgs" /> <!-- nav_msgs -->
+  <depend stack="dynamic_reconfigure" /> <!-- dynamic_reconfigure -->
 </stack>
