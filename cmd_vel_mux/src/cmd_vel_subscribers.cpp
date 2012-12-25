@@ -1,15 +1,23 @@
-/*
- * cmd_vel_subscribers.cpp
+/**
+ * @file /src/cmd_vel_subscribers.cpp
  *
- *  Created on: Oct 31, 2012
- *      Author: jorge
- */
+ * @brief  Subscriber handlers for the cmd_vel_mux
+ *
+ * License: BSD
+ *   https://raw.github.com/yujinrobot/yujin_ocs/master/cmd_vel_mux/LICENSE
+ **/
+/*****************************************************************************
+ ** Includes
+ *****************************************************************************/
 
 #include <fstream>
 #include <iostream>
 
-#include "cmd_vel_mux/cmd_vel_subscribers.h"
+#include "cmd_vel_mux/cmd_vel_subscribers.hpp"
 
+/*****************************************************************************
+ ** Implementation
+ *****************************************************************************/
 
 void CmdVelSubscribers::CmdVelSubs::operator << (const YAML::Node& node)
 {

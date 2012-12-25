@@ -1,13 +1,21 @@
-/*
- * cmd_vel_subscribers.hpp
+/**
+ * @file /include/cmd_vel_mux/cmd_vel_subscribers.hpp
  *
- *  Created on: Oct 31, 2012
- *      Author: jorge
- */
+ * @brief Structure for the cmd_vel_mux.
+ *
+ * License: BSD
+ *   https://raw.github.com/yujinrobot/yujin_ocs/master/cmd_vel_mux/LICENSE
+ **/
+/*****************************************************************************
+** Ifdefs
+*****************************************************************************/
 
-#ifndef CMD_VEL_SUBSCRIBERS_H_
-#define CMD_VEL_SUBSCRIBERS_H_
+#ifndef CMD_VEL_SUBSCRIBERS_HPP_
+#define CMD_VEL_SUBSCRIBERS_HPP_
 
+/*****************************************************************************
+** Includes
+*****************************************************************************/
 
 #include <ros/ros.h>
 #include <geometry_msgs/Twist.h>
@@ -60,4 +68,4 @@ private:
   std::vector<CmdVelSubs> list;
 };
 
-#endif /* CMD_VEL_SUBSCRIBERS_H_ */
+#endif /* CMD_VEL_SUBSCRIBERS_HPP_ */

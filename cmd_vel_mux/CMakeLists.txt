@@ -26,7 +26,7 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 ##############################################################################
 
 find_package(catkin REQUIRED dynamic_reconfigure)
-generate_dynamic_reconfigure_options(cfg/reload.cfg)
+generate_dynamic_reconfigure_options(cfg/Reload.cfg)
 
 ##############################################################################
 # Nodelet
