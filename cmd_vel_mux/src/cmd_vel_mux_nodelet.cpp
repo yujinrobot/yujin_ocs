@@ -78,6 +78,12 @@ void CmdVelMux::timerCallback(const ros::TimerEvent& event, unsigned int idx)
  */
 bool CmdVelMux::init(ros::NodeHandle& nh)
 {
+  /*********************
+  ** Dynamic Reconfigure
+  **********************/
+  dynamic_reconfigure_cb = boost::bind(&CmdVelMux::reloadConfiguration, this, _1, _2);
+  dynamic_reconfigure_server.setCallback(dynamic_reconfigure_cb);
+
   // Load subscribers configuration file
   std::string subscribers_cfg_file;
   nh.getParam("subscribers_cfg_file", subscribers_cfg_file);

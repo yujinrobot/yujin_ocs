@@ -19,11 +19,18 @@
 
 #include <ros/ros.h>
 #include <geometry_msgs/Twist.h>
-
 #include <yaml-cpp/yaml.h>
 
+/*****************************************************************************
+** Preprocessing
+*****************************************************************************/
+
+// move to a static const?
 #define VACANT  std::numeric_limits<unsigned int>::max()
 
+/*****************************************************************************
+** CmdVelSubscribers
+*****************************************************************************/
 
 /**
  * Pool of cmd_vel topics subscribers
@@ -53,16 +60,14 @@ public:
     void operator << (const YAML::Node& node);
   };
 
-  unsigned int allowed;
-
   CmdVelSubscribers() : allowed(VACANT) { }
   ~CmdVelSubscribers() { }
 
   std::vector<CmdVelSubs>::size_type size() { return list.size(); };
-
   CmdVelSubs& operator [] (unsigned int idx) { return list[idx]; };
-
   bool loadSubscribersCfg(std::string path);
+
+  unsigned int allowed;
 
 private:
   std::vector<CmdVelSubs> list;
