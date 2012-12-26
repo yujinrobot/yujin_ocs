@@ -87,8 +87,10 @@ bool CmdVelMux::init(ros::NodeHandle& nh)
   /*********************
   ** Dynamic Reconfigure
   **********************/
+  std::cout << "CmdVelMux: setting up the dynamic reconfiguration server" << std::endl;
   dynamic_reconfigure_cb = boost::bind(&CmdVelMux::reloadConfiguration, this, _1, _2);
   dynamic_reconfigure_server.setCallback(dynamic_reconfigure_cb);
+  std::cout << "CmdVelMux: done" << std::endl;
 
   // Load subscribers configuration file
   std::string subscribers_cfg_file;
@@ -127,7 +129,7 @@ bool CmdVelMux::init(ros::NodeHandle& nh)
   acv_msg->data = "Vacant";
   allowed_sub_pub.publish(acv_msg);
 
-  ROS_INFO("Command velocity multiplexer successfully initialized");
+  ROS_INFO("Command velocity multiplexer successfully initialised");
 
   return true;
 }

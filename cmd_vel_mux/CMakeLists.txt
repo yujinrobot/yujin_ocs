@@ -3,6 +3,7 @@
 ##############################################################################
 
 cmake_minimum_required(VERSION 2.4.6)
+set(CMAKE_VERBOSE_MAKEFILE TRUE) # useful for eclipse indexing
 
 ##############################################################################
 # Ros
@@ -19,12 +20,12 @@ include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 #set(ROS_BUILD_TYPE RelWithDebInfo)
 
 rosbuild_init()
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 ##############################################################################
 # Dynamic Reconfigure
 ##############################################################################
 
+# Note, this initialises CMAKE_LIBRARY_OUTPUT_DIRECTORY, take care below.
 find_package(catkin REQUIRED dynamic_reconfigure)
 generate_dynamic_reconfigure_options(cfg/Reload.cfg)
 
@@ -32,5 +33,9 @@ generate_dynamic_reconfigure_options(cfg/Reload.cfg)
 # Nodelet
 ##############################################################################
 
+# No good since CMAKE_LIBRARY_OUTPUT_DIRECTORY is initialised, do directly
+#set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
+
 rosbuild_add_library(cmd_vel_mux_nodelet src/cmd_vel_mux_nodelet.cpp src/cmd_vel_subscribers.cpp)
 target_link_libraries(cmd_vel_mux_nodelet yaml-cpp)
+set_target_properties(cmd_vel_mux_nodelet PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
