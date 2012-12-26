@@ -10,8 +10,8 @@
  ** Ifdefs
  *****************************************************************************/
 
-#ifndef CMD_VEL_MUX_HPP_
-#define CMD_VEL_MUX_HPP_
+#ifndef YUJIN_OCS_CMD_VEL_MUX_HPP_
+#define YUJIN_OCS_CMD_VEL_MUX_HPP_
 
 /*****************************************************************************
  ** Includes
@@ -104,4 +104,4 @@ private:
 
 } // namespace cmd_vel_mux
 
-#endif /* CMD_VEL_MUX_HPP_ */
+#endif /* YUJIN_OCS_CMD_VEL_MUX_HPP_ */
