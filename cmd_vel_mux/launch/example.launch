@@ -8,6 +8,6 @@
 <launch>
   <node pkg="nodelet" type="nodelet" name="nodelet_manager" args="manager"/>
   <node pkg="nodelet" type="nodelet" name="cmd_vel_mux" args="load cmd_vel_mux/CmdVelMux nodelet_manager">
-    <param name="subscribers_cfg_file" value="$(find cmd_vel_mux)/param/example.yaml"/>
+    <param name="yaml_cfg_file" value="$(find cmd_vel_mux)/param/example.yaml"/>
   </node>
 </launch>

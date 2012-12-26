@@ -10,6 +10,7 @@
  ** Includes
  *****************************************************************************/
 
+#include <fstream>
 #include <std_msgs/String.h>
 #include <pluginlib/class_list_macros.h>
 #include "../include/cmd_vel_mux/cmd_vel_mux_nodelet.hpp"
@@ -79,7 +80,6 @@ void CmdVelMux::onInit() {
 
   ros::NodeHandle &nh = this->getPrivateNodeHandle();
 
-  mux_cmd_vel_pub = nh.advertise <geometry_msgs::Twist> ("output", 10);
   active_subscriber = nh.advertise <std_msgs::String> ("active", 1, true); // latched topic
 
   // Notify the world that by now nobody is publishing on cmd_vel yet
@@ -92,21 +92,43 @@ void CmdVelMux::onInit() {
 }
 
 void CmdVelMux::reloadConfiguration(cmd_vel_mux::reloadConfig &config, uint32_t unused_level) {
-  std::cout << "reloadConfiguration: " << config.subscribers_cfg_file << std::endl;
-  std::string subscribers_cfg_file;
+  std::string yaml_cfg_file;
   ros::NodeHandle &nh = this->getPrivateNodeHandle();
-  if( config.subscribers_cfg_file == "" ) {  // typically fired on startup, so look for a parameter to set a default
-    std::cout << "looking for parameter" << std::endl;
-    nh.getParam("subscribers_cfg_file", subscribers_cfg_file);
+  if( config.yaml_cfg_file == "" ) {  // typically fired on startup, so look for a parameter to set a default
+    nh.getParam("yaml_cfg_file", yaml_cfg_file);
   } else {
-    subscribers_cfg_file = config.subscribers_cfg_file;
+    yaml_cfg_file = config.yaml_cfg_file;
   }
 
-  try {
-    cmd_vel_sub.configure(subscribers_cfg_file);
+  /*********************
+  ** Yaml File Parsing
+  **********************/
+  std::ifstream ifs(yaml_cfg_file.c_str(), std::ifstream::in);
+  if (ifs.good() == false)
+  {
+    NODELET_ERROR_STREAM("CmdVelMux : configuration file not found [" << yaml_cfg_file << "]");
+    return;
   }
-  catch(FileNotFoundException& e) {
-    NODELET_ERROR_STREAM("CmdVelMux : configuration file not found [" << std::string(e.what()) << "]");
+  // probably need to bring the try catches back here
+  YAML::Parser parser(ifs);
+  YAML::Node doc;
+  parser.GetNextDocument(doc);
+
+  /*********************
+  ** Output Publisher
+  **********************/
+  std::string output_name("output");
+  const YAML::Node *node = doc.FindValue("publisher");
+  if ( node != NULL ) {
+    *node >> output_name;
+  }
+  mux_cmd_vel_pub = nh.advertise <geometry_msgs::Twist> (output_name, 10);
+
+  /*********************
+  ** Input Subscribers
+  **********************/
+  try {
+    cmd_vel_sub.configure(doc["subscribers"]);
   }
   catch(EmptyCfgException& e) {
     NODELET_WARN("CmdVelMux : yaml configured zero subscribers, check yaml content.");
@@ -130,7 +152,8 @@ void CmdVelMux::reloadConfiguration(cmd_vel_mux::reloadConfig &config, uint32_t 
               cmd_vel_sub[i].priority, cmd_vel_sub[i].timeout);
   }
 
-  NODELET_INFO_STREAM("CmdVelMux : (re)configured [" << subscribers_cfg_file << "]");
+  NODELET_INFO_STREAM("CmdVelMux : (re)configured [" << yaml_cfg_file << "]");
+  ifs.close();
 }
 
 } // namespace cmd_vel_mux

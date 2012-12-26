@@ -78,9 +78,9 @@ public:
    * @exception FileNotFoundException : yaml file not found
    * @exception YamlException : problem parsing the yaml
    * @exception EmptyCfgException : empty configuration file
-   * @param yaml_configuration_file : path to the yaml file
+   * @param node : node holding all the subscriber configuration
    */
-  void configure(const std::string &yaml_configuration_file);
+  void configure(const YAML::Node& node);
 
   unsigned int allowed;
 

@@ -41,7 +41,6 @@ public:
 
 private:
   CmdVelSubscribers cmd_vel_sub; /**< Pool of cmd_vel topics subscribers */
-
   ros::Publisher mux_cmd_vel_pub; /**< Multiplexed command velocity topic */
   ros::Publisher active_subscriber; /**< Currently allowed cmd_vel subscriber */
 

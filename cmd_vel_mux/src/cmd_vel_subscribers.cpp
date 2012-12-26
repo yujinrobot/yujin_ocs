@@ -35,34 +35,20 @@ void CmdVelSubscribers::CmdVelSubs::operator << (const YAML::Node& node)
   }
 }
 
-void CmdVelSubscribers::configure(const std::string &yaml_configuration_file) {
+void CmdVelSubscribers::configure(const YAML::Node& node) {
 
   list.clear();
-
-  /*********************
-  ** Yaml File Parsing
-  **********************/
-  std::ifstream ifs(yaml_configuration_file.c_str(), std::ifstream::in);
-  if (ifs.good() == false)
-  {
-    throw FileNotFoundException(yaml_configuration_file);
-  }
   try
   {
-    YAML::Parser parser(ifs);
-
-    YAML::Node doc;
-    parser.GetNextDocument(doc);
-
-    if ( doc["subscribers"].size() == 0 ) {
+    if ( node.size() == 0 ) {
       throw EmptyCfgException();
     }
 
-    for (unsigned int i = 0; i < doc["subscribers"].size(); i++)
+    for (unsigned int i = 0; i < node.size(); i++)
     {
       // Parse every entries on YAML
       CmdVelSubs subscriber(i);
-      subscriber << doc["subscribers"][i];
+      subscriber << node[i];
       list.push_back(subscriber);
     }
   }
@@ -77,7 +63,6 @@ void CmdVelSubscribers::configure(const std::string &yaml_configuration_file) {
   {
     throw YamlException(e.what());
   }
-  ifs.close();
 }
 
 

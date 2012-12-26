@@ -3,6 +3,6 @@
  -->
 <launch>
   <node name="$(anon dynparam)" pkg="dynamic_reconfigure" type="dynparam" args="set_from_parameters nodelet_manager">
-    <param name="subscribers_cfg_file" type="string" value="$(find cmd_vel_mux)/param/reconfigure.yaml" />
+    <param name="yaml_cfg_file" type="string" value="$(find cmd_vel_mux)/param/reconfigure.yaml" />
   </node>
 </launch>
