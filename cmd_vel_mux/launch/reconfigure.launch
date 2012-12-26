@@ -1,0 +1,8 @@
+<!--
+  Test the dynamic reconfiguration of the cmd_vel_mux. Run this after running the example launcher.
+ -->
+<launch>
+  <node name="$(anon dynparam)" pkg="dynamic_reconfigure" type="dynparam" args="set_from_parameters nodelet_manager">
+    <param name="configuration_yaml" type="string" value="$(find cmd_vel_mux)/param/reconfigure.yaml" />
+  </node>
+</launch>
