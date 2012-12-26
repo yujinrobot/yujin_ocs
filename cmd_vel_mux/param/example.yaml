@@ -12,28 +12,28 @@
 
 subscribers:
   - name:        "Default input"
-    topic:       "cmd_vel"
+    topic:       "default/cmd_vel"
     timeout:     0.1
     priority:    0
     short_desc:  "Default velocity topic; controllers unaware that we are multiplexing cmd_vel will come here"
   - name:        "Navigation stack"
-    topic:       "nav_cmd_vel"
+    topic:       "navigation/cmd_vel"
     timeout:     0.5
     priority:    1
     short_desc:  "ROS navigation stack controller"
   - name:        "Onboard joystick"
-    topic:       "joy_cmd_vel"
+    topic:       "joystick/cmd_vel"
     timeout:     0.1
     priority:    10
   - name:        "Remote control"
-    topic:       "rem_cmd_vel"
+    topic:       "remote/cmd_vel"
     timeout:     0.1
     priority:    9
   - name:        "Web application"
-    topic:       "web_cmd_vel"
+    topic:       "webapp/cmd_vel"
     timeout:     0.3
     priority:    8
   - name:        "Keyboard operation"
-    topic:       "key_cmd_vel"
+    topic:       "keyop/cmd_vel"
     timeout:     0.1
     priority:    7
