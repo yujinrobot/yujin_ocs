@@ -30,7 +30,7 @@
 ** Namespaces
 *****************************************************************************/
 
-namespace velocity_smoother {
+namespace yocs_velocity_smoother {
 
 /*********************
 ** Implementation
@@ -254,6 +254,6 @@ private:
   ecl::Thread                        worker_thread_;
 };
 
-} // namespace velocity_smoother
+} // namespace yocs_velocity_smoother
 
-PLUGINLIB_EXPORT_CLASS(velocity_smoother::VelocitySmootherNodelet, nodelet::Nodelet);
+PLUGINLIB_EXPORT_CLASS(yocs_velocity_smoother::VelocitySmootherNodelet, nodelet::Nodelet);

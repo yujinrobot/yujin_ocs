@@ -24,7 +24,7 @@
 ** Namespaces
 *****************************************************************************/
 
-namespace velocity_smoother {
+namespace yocs_velocity_smoother {
 
 /*****************************************************************************
 ** VelocitySmoother
@@ -74,6 +74,6 @@ private:
   };
 };
 
-} // namespace velocity_smoother
+} // yocs_namespace velocity_smoother
 
 #endif /* YUJIN_OCS_VELOCITY_SMOOTHER_HPP_ */

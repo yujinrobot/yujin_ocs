@@ -1,5 +1,5 @@
 <library path="lib/libvelocity_smoother_nodelet">
-  <class name="yocs_velocity_smoother/VelocitySmootherNodelet" type="VelocitySmootherNodelet" base_class_type="nodelet::Nodelet">
+  <class name="yocs_velocity_smoother/VelocitySmootherNodelet" type="yocs_velocity_smoother::VelocitySmootherNodelet" base_class_type="nodelet::Nodelet">
     <description>
       Implementation for the command velocity smoother as a nodelet.
     </description>
