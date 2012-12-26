@@ -1,13 +1,21 @@
-/*
- * velocity_smoother_nodelet.h
+/**
+ * @file /include/velocity_smoother/velocity_smoother_nodelet.hpp
  *
- *  Created on: Dec 2, 2012
- *      Author: jorge
- */
+ * @brief Velocity smoother interface
+ *
+ * License: BSD
+ *   https://raw.github.com/yujinrobot/yujin_ocs/master/velocity_smoother/LICENSE
+ **/
+/*****************************************************************************
+ ** Ifdefs
+ *****************************************************************************/
 
 #ifndef YUJIN_OCS_VELOCITY_SMOOTHER_HPP_
 #define YUJIN_OCS_VELOCITY_SMOOTHER_HPP_
 
+/*****************************************************************************
+ ** Includes
+ *****************************************************************************/
 
 #include <ros/ros.h>
 #include <nav_msgs/Odometry.h>
