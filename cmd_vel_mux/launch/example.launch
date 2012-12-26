@@ -7,8 +7,7 @@
  -->
 <launch>
   <node pkg="nodelet" type="nodelet" name="nodelet_manager" args="manager"/>
-  <node pkg="nodelet" type="nodelet" name="cmd_vel_mux" args="load cmd_vel_mux/CmdVelMuxNodelet nodelet_manager">
+  <node pkg="nodelet" type="nodelet" name="cmd_vel_mux" args="load cmd_vel_mux/CmdVelMux nodelet_manager">
     <param name="subscribers_cfg_file" value="$(find cmd_vel_mux)/param/example.yaml"/>
-    <remap from="cmd_vel_mux/mux_cmd_vel" to="cmd_vel_mux/output/cmd_vel"/>
   </node>
 </launch>

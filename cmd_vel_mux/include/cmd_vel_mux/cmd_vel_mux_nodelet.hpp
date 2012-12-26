@@ -18,6 +18,7 @@
  *****************************************************************************/
 
 #include <ros/ros.h>
+#include <nodelet/nodelet.h>
 #include "cmd_vel_subscribers.hpp"
 #include <dynamic_reconfigure/server.h>
 #include <cmd_vel_mux/reloadConfig.h>
@@ -32,21 +33,17 @@ namespace cmd_vel_mux {
  ** CmdVelMux
  *****************************************************************************/
 
-class CmdVelMux
+class CmdVelMux : public nodelet::Nodelet
 {
 public:
-
-  CmdVelMux();
-  ~CmdVelMux();
-
+  virtual void onInit();
   bool init(ros::NodeHandle& nh);
-
 
 private:
   CmdVelSubscribers cmd_vel_sub; /**< Pool of cmd_vel topics subscribers */
 
   ros::Publisher mux_cmd_vel_pub; /**< Multiplexed command velocity topic */
-  ros::Publisher allowed_sub_pub; /**< Currently allowed cmd_vel subscriber */
+  ros::Publisher active_subscriber; /**< Currently allowed cmd_vel subscriber */
 
   void timerCallback(const ros::TimerEvent& event, unsigned int idx);
   void cmdVelCallback(const geometry_msgs::Twist::ConstPtr& msg, unsigned int idx);
@@ -56,9 +53,7 @@ private:
   **********************/
   dynamic_reconfigure::Server<cmd_vel_mux::reloadConfig> dynamic_reconfigure_server;
   dynamic_reconfigure::Server<cmd_vel_mux::reloadConfig>::CallbackType dynamic_reconfigure_cb;
-  void reloadConfiguration(cmd_vel_mux::reloadConfig &config, uint32_t level) {
-    std::cout << "Load configuration" << std::endl;
-  }
+  void reloadConfiguration(cmd_vel_mux::reloadConfig &config, uint32_t unused_level);
 
   /*********************
    ** Private Classes

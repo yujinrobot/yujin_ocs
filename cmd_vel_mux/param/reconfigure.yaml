@@ -3,17 +3,17 @@
 
 subscribers:
   - name:        "Default input"
-    topic:       "default/cmd_vel"
+    topic:       "input/default"
     timeout:     0.1
     priority:    0
     short_desc:  "The default cmd_vel, controllers unaware that we are multiplexing cmd_vel should come here"
   - name:        "Navigation stack"
-    topic:       "navigation/cmd_vel"
+    topic:       "input/navigation"
     timeout:     0.5
     priority:    1
     short_desc:  "Navigation stack controller"
   - name:        "Safety controller"
-    topic:       "safety/cmd_vel"
+    topic:       "input/safety"
     timeout:     0.1
     priority:    10
     short_desc:  "Used with the reactive velocity control provided by the bumper/cliff sensor safety controller"

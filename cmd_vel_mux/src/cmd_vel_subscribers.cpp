@@ -36,6 +36,9 @@ void CmdVelSubscribers::CmdVelSubs::operator << (const YAML::Node& node)
 }
 
 void CmdVelSubscribers::configure(const std::string &yaml_configuration_file) {
+
+  list.clear();
+
   /*********************
   ** Yaml File Parsing
   **********************/
@@ -62,7 +65,6 @@ void CmdVelSubscribers::configure(const std::string &yaml_configuration_file) {
       subscriber << doc["subscribers"][i];
       list.push_back(subscriber);
     }
-    ROS_DEBUG("Subscribers configuration file %s successfully parsed", yaml_configuration_file.c_str());
   }
   catch(EmptyCfgException& e) {
     throw e;

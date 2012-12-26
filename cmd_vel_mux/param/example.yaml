@@ -14,28 +14,29 @@
 
 subscribers:
   - name:        "Default input"
-    topic:       "default/cmd_vel"
+    topic:       "input/default"
     timeout:     0.1
     priority:    0
     short_desc:  "The default cmd_vel, controllers unaware that we are multiplexing cmd_vel should come here"
   - name:        "Navigation stack"
-    topic:       "navigation/cmd_vel"
+    topic:       "input/navigation"
     timeout:     0.5
     priority:    1
     short_desc:  "Navigation stack controller"
   - name:        "Onboard joystick"
-    topic:       "joystick/cmd_vel"
+    topic:       "input/joystick"
     timeout:     0.1
     priority:    10
   - name:        "Remote control"
-    topic:       "remote/cmd_vel"
+    topic:       "input/remote"
     timeout:     0.1
     priority:    9
   - name:        "Web application"
-    topic:       "webapp/cmd_vel"
+    topic:       "input/webapp"
     timeout:     0.3
     priority:    8
   - name:        "Keyboard operation"
-    topic:       "keyop/cmd_vel"
+    topic:       "input/keyop"
     timeout:     0.1
     priority:    7
+publisher:       "output/cmd_vel"
