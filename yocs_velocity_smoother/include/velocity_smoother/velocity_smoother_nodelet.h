@@ -5,8 +5,8 @@
  *      Author: jorge
  */
 
-#ifndef VELOCITY_SMOOTHER_H_
-#define VELOCITY_SMOOTHER_H_
+#ifndef YUJIN_OCS_VELOCITY_SMOOTHER_HPP_
+#define YUJIN_OCS_VELOCITY_SMOOTHER_HPP_
 
 
 #include <ros/ros.h>
@@ -68,4 +68,4 @@ private:
 
 } // namespace velocity_smoother
 
-#endif /* VELOCITY_SMOOTHER_H_ */
+#endif /* YUJIN_OCS_VELOCITY_SMOOTHER_HPP_ */
