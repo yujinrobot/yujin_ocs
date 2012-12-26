@@ -16,7 +16,7 @@
 
 #include <ecl/threads/thread.hpp>
 
-#include "velocity_smoother/velocity_smoother_nodelet.hpp"
+#include "../include/velocity_smoother/velocity_smoother_nodelet.hpp"
 
 /*****************************************************************************
  ** Preprocessing
