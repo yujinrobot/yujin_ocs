@@ -53,6 +53,11 @@
 #define ZERO_VEL_COMMAND      geometry_msgs::Twist();
 #define IS_ZERO_VEOCITY(a)   ((a.linear.x == 0.0) && (a.angular.z == 0.0))
 
+/*****************************************************************************
+** Namespaces
+*****************************************************************************/
+
+namespace velocity_smoother {
 
 /*********************
 ** Implementation
@@ -276,4 +281,6 @@ private:
   ecl::Thread                        worker_thread_;
 };
 
-PLUGINLIB_DECLARE_CLASS(velocity_smoother, VelocitySmootherNodelet, VelocitySmootherNodelet, nodelet::Nodelet);
+} // namespace velocity_smoother
+
+PLUGINLIB_EXPORT_CLASS(velocity_smoother::VelocitySmootherNodelet, nodelet::Nodelet);

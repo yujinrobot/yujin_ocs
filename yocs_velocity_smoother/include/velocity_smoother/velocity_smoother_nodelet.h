@@ -12,6 +12,15 @@
 #include <ros/ros.h>
 #include <nav_msgs/Odometry.h>
 
+/*****************************************************************************
+** Namespaces
+*****************************************************************************/
+
+namespace velocity_smoother {
+
+/*****************************************************************************
+** VelocitySmoother
+*****************************************************************************/
 
 class VelocitySmoother
 {
@@ -56,5 +65,7 @@ private:
     return values[values.size()/2];
   };
 };
+
+} // namespace velocity_smoother
 
 #endif /* VELOCITY_SMOOTHER_H_ */
