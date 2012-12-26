@@ -3,6 +3,8 @@
 # Configuration for subscribers to cmd_vel sources. This file is provided just as an example.
 # Typically automatic controllers, as ROS navigation stack should have the minimum priority
 #
+# Used with example.launch
+#
 # Individual subscriber configuration:
 #   name:           Source name
 #   topic:          The topic that provides cmd_vel messages
@@ -15,12 +17,12 @@ subscribers:
     topic:       "default/cmd_vel"
     timeout:     0.1
     priority:    0
-    short_desc:  "Default velocity topic; controllers unaware that we are multiplexing cmd_vel will come here"
+    short_desc:  "The default cmd_vel, controllers unaware that we are multiplexing cmd_vel should come here"
   - name:        "Navigation stack"
     topic:       "navigation/cmd_vel"
     timeout:     0.5
     priority:    1
-    short_desc:  "ROS navigation stack controller"
+    short_desc:  "Navigation stack controller"
   - name:        "Onboard joystick"
     topic:       "joystick/cmd_vel"
     timeout:     0.1

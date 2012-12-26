@@ -1,5 +1,9 @@
 <!--
-  Example standalone launcher for the velocity multiplexer
+  Example standalone launcher for the velocity multiplexer.
+  
+  For best results you would usually load this into the core control system
+  to avoid latency for reactive controllers. However for other apps, running
+  it standalone with a similar configuration will also work.
  -->
 <launch>
   <node pkg="nodelet" type="nodelet" name="nodelet_manager" args="manager"/>
