@@ -33,7 +33,7 @@ namespace cmd_vel_mux {
  ** CmdVelMux
  *****************************************************************************/
 
-class CmdVelMux : public nodelet::Nodelet
+class CmdVelMuxNodelet : public nodelet::Nodelet
 {
 public:
   virtual void onInit();
@@ -62,10 +62,10 @@ private:
   {
   private:
     unsigned int idx;
-    CmdVelMux* node;
+    CmdVelMuxNodelet* node;
 
   public:
-    CmdVelFunctor(unsigned int idx, CmdVelMux* node) :
+    CmdVelFunctor(unsigned int idx, CmdVelMuxNodelet* node) :
         idx(idx), node(node)
     {
     }
@@ -81,10 +81,10 @@ private:
   {
   private:
     unsigned int idx;
-    CmdVelMux* node;
+    CmdVelMuxNodelet* node;
 
   public:
-    TimerFunctor(unsigned int idx, CmdVelMux* node) :
+    TimerFunctor(unsigned int idx, CmdVelMuxNodelet* node) :
         idx(idx), node(node)
     {
     }

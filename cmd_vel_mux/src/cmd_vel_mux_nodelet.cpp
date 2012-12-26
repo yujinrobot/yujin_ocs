@@ -26,7 +26,7 @@ namespace cmd_vel_mux {
  ** Implementation
  *****************************************************************************/
 
-void CmdVelMux::cmdVelCallback(const geometry_msgs::Twist::ConstPtr& msg, unsigned int idx)
+void CmdVelMuxNodelet::cmdVelCallback(const geometry_msgs::Twist::ConstPtr& msg, unsigned int idx)
 {
   // Reset timer for this source
   cmd_vel_sub[idx].timer.stop();
@@ -54,7 +54,7 @@ void CmdVelMux::cmdVelCallback(const geometry_msgs::Twist::ConstPtr& msg, unsign
   }
 }
 
-void CmdVelMux::timerCallback(const ros::TimerEvent& event, unsigned int idx)
+void CmdVelMuxNodelet::timerCallback(const ros::TimerEvent& event, unsigned int idx)
 {
   if (cmd_vel_sub.allowed == idx)
   {
@@ -70,12 +70,12 @@ void CmdVelMux::timerCallback(const ros::TimerEvent& event, unsigned int idx)
   cmd_vel_sub[idx].active = false;
 }
 
-void CmdVelMux::onInit() {
+void CmdVelMuxNodelet::onInit() {
 
   /*********************
   ** Dynamic Reconfigure
   **********************/
-  dynamic_reconfigure_cb = boost::bind(&CmdVelMux::reloadConfiguration, this, _1, _2);
+  dynamic_reconfigure_cb = boost::bind(&CmdVelMuxNodelet::reloadConfiguration, this, _1, _2);
   dynamic_reconfigure_server.setCallback(dynamic_reconfigure_cb);
 
   ros::NodeHandle &nh = this->getPrivateNodeHandle();
@@ -91,7 +91,7 @@ void CmdVelMux::onInit() {
   NODELET_DEBUG("CmdVelMux : successfully initialised");
 }
 
-void CmdVelMux::reloadConfiguration(cmd_vel_mux::reloadConfig &config, uint32_t unused_level) {
+void CmdVelMuxNodelet::reloadConfiguration(cmd_vel_mux::reloadConfig &config, uint32_t unused_level) {
   std::string yaml_cfg_file;
   ros::NodeHandle &nh = this->getPrivateNodeHandle();
   if( config.yaml_cfg_file == "" ) {  // typically fired on startup, so look for a parameter to set a default
@@ -158,4 +158,4 @@ void CmdVelMux::reloadConfiguration(cmd_vel_mux::reloadConfig &config, uint32_t 
 
 } // namespace cmd_vel_mux
 
-PLUGINLIB_EXPORT_CLASS(cmd_vel_mux::CmdVelMux, nodelet::Nodelet);
+PLUGINLIB_EXPORT_CLASS(cmd_vel_mux::CmdVelMuxNodelet, nodelet::Nodelet);

@@ -1,5 +1,5 @@
 <library path="lib/libcmd_vel_mux_nodelet">
-  <class name="cmd_vel_mux/CmdVelMux" type="cmd_vel_mux::CmdVelMux" base_class_type="nodelet::Nodelet">
+  <class name="cmd_vel_mux/CmdVelMuxNodelet" type="cmd_vel_mux::CmdVelMuxNodelet" base_class_type="nodelet::Nodelet">
     <description>
       Implementation for the command velocity multiplexer as a nodelet.
     </description>
