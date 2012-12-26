@@ -1,7 +1,7 @@
 <package>
-  <description brief="cmd_vel_mux">
+  <description brief="A multiplexer for command velocity inputs">
 
-     cmd_vel_mux
+     Configures a multiplexer for cmd_vel, complete with priorities and timeouts.
 
   </description>
   <author>Jorge Santos</author>

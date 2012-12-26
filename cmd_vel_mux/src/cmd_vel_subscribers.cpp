@@ -11,9 +11,8 @@
  *****************************************************************************/
 
 #include <fstream>
-#include <iostream>
-
-#include "cmd_vel_mux/cmd_vel_subscribers.hpp"
+#include "../include/cmd_vel_mux/cmd_vel_subscribers.hpp"
+#include "../include/cmd_vel_mux/exceptions.hpp"
 
 /*****************************************************************************
 ** Namespaces
@@ -30,28 +29,31 @@ void CmdVelSubscribers::CmdVelSubs::operator << (const YAML::Node& node)
   node["name"]       >> name;
   node["topic"]      >> topic;
   node["timeout"]    >> timeout;
-  node["priority"]   >> priority;   if (node.FindValue("short_desc") != NULL)
-  node["short_desc"] >> short_desc;
+  node["priority"]   >> priority;
+  if (node.FindValue("short_desc") != NULL) {
+    node["short_desc"] >> short_desc;
+  }
 }
 
-
-bool CmdVelSubscribers::loadSubscribersCfg(std::string path)
-{
-  std::ifstream ifs(path.c_str(), std::ifstream::in);
+void CmdVelSubscribers::configure(const std::string &yaml_configuration_file) {
+  /*********************
+  ** Yaml File Parsing
+  **********************/
+  std::ifstream ifs(yaml_configuration_file.c_str(), std::ifstream::in);
   if (ifs.good() == false)
   {
-    ROS_ERROR("Unable to read subscribers configuration file '%s'", path.c_str());
-    return false;
+    throw FileNotFoundException(yaml_configuration_file);
   }
-
-  bool result = true;
-
   try
   {
     YAML::Parser parser(ifs);
 
     YAML::Node doc;
     parser.GetNextDocument(doc);
+
+    if ( doc["subscribers"].size() == 0 ) {
+      throw EmptyCfgException();
+    }
 
     for (unsigned int i = 0; i < doc["subscribers"].size(); i++)
     {
@@ -60,22 +62,21 @@ bool CmdVelSubscribers::loadSubscribersCfg(std::string path)
       subscriber << doc["subscribers"][i];
       list.push_back(subscriber);
     }
-
-    ROS_DEBUG("Subscribers configuration file %s successfully parsed", path.c_str());
+    ROS_DEBUG("Subscribers configuration file %s successfully parsed", yaml_configuration_file.c_str());
+  }
+  catch(EmptyCfgException& e) {
+    throw e;
   }
   catch(YAML::ParserException& e)
   {
-    ROS_ERROR("Subscribers configuration file parse failed: %s", e.what());
-    result = false;
+    throw YamlException(e.what());
   }
   catch(YAML::RepresentationException& e)
   {
-    ROS_ERROR("Subscribers configuration file wrong format: %s", e.what());
-    result = false;
+    throw YamlException(e.what());
   }
-
   ifs.close();
-  return result;
 }
+
 
 } // namespace cmd_vel_mux

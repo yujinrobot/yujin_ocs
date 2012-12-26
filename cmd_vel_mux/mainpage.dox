@@ -10,5 +10,20 @@ Provide an overview of your package.
 
 -->
 
+Good Habits
+
+- namespace everything - avoids possible future conflicts
+- use static constants instead of preprocessor macros - avoids name conflict, type safe.
+- input arguments should always be const __type__ &__name__ (e.g. 'const std::string &path', instead of 'const std::string path')
+- include guards should always be very very unique (e.g. not VELOCITY_SMOOTHER)! avoids obscure bugs that take time in the future
+- one line 'ifs' should use '{' '}'. These are not so bad for the author, but when another person updates the code
+  it's very easy to miss adding in the {}'s when you add one extra line of code to the if statement. 
+  This causes hard bugs sometimes. Do a google - it's one of th top 10 bug problems with c/c++.
+
+Yujin Conventions
+
+- .h to signify a c file, .hpp to signify a cpp file
+- license everything! One way we started doing it for rocon was to put LICENSE in the root dir of a package and refer to
+  the url address. Avoids source and headers files from annoyingly using the first page of every view.
 
 */

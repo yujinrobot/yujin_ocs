@@ -13,7 +13,8 @@
 #include <nodelet/nodelet.h>
 #include <std_msgs/String.h>
 #include <pluginlib/class_list_macros.h>
-#include "cmd_vel_mux/cmd_vel_mux_nodelet.hpp"
+#include "../include/cmd_vel_mux/cmd_vel_mux_nodelet.hpp"
+#include "../include/cmd_vel_mux/exceptions.hpp"
 
 /*****************************************************************************
 ** Namespaces
@@ -94,14 +95,20 @@ bool CmdVelMux::init(ros::NodeHandle& nh)
   std::string subscribers_cfg_file;
   nh.getParam("subscribers_cfg_file", subscribers_cfg_file);
 
-  if (cmd_vel_sub.loadSubscribersCfg(subscribers_cfg_file) == false)
-  {
+  try {
+    cmd_vel_sub.configure(subscribers_cfg_file);
+  }
+  catch(FileNotFoundException& e) {
+    ROS_ERROR_STREAM("CmdVelMux : configuration file not found [%" << std::string(e.what()) << "]");
     return false;
   }
-
-  if (cmd_vel_sub.size() == 0)
-  {
-    ROS_WARN("No input cmd_vel configured; check subscribers configuration yaml file content");
+  catch(EmptyCfgException& e) {
+    ROS_WARN("CmdVelMux : yaml configured zero subscribers, check yaml content.");
+    return false;
+  }
+  catch(YamlException& e) {
+    ROS_ERROR_STREAM("CmdVelMux : yaml parsing problem [" << std::string(e.what()) + "]");
+    return false;
   }
 
   // Publishers and subscribers

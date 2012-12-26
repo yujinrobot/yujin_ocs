@@ -71,7 +71,16 @@ public:
 
   std::vector<CmdVelSubs>::size_type size() { return list.size(); };
   CmdVelSubs& operator [] (unsigned int idx) { return list[idx]; };
-  bool loadSubscribersCfg(std::string path);
+
+  /**
+   * @brief Configures the subscribers from a yaml file.
+   *
+   * @exception FileNotFoundException : yaml file not found
+   * @exception YamlException : problem parsing the yaml
+   * @exception EmptyCfgException : empty configuration file
+   * @param yaml_configuration_file : path to the yaml file
+   */
+  void configure(const std::string &yaml_configuration_file);
 
   unsigned int allowed;
 
