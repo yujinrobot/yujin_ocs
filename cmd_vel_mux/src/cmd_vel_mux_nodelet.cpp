@@ -71,7 +71,7 @@ void CmdVelMux::timerCallback(const ros::TimerEvent& event, unsigned int idx)
 
     // ...notify the world that nobody is publishing on cmd_vel; its vacant
     std_msgs::StringPtr acv_msg(new std_msgs::String);
-    acv_msg->data = "Vacant";
+    acv_msg->data = "idle";
     allowed_sub_pub.publish(acv_msg);
   }
 
