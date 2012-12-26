@@ -131,7 +131,7 @@ bool CmdVelMux::init(ros::NodeHandle& nh)
 
   // Notify the world that by now nobody is publishing on cmd_vel; its vacant
   std_msgs::StringPtr acv_msg(new std_msgs::String);
-  acv_msg->data = "Vacant";
+  acv_msg->data = "idle";
   allowed_sub_pub.publish(acv_msg);
 
   ROS_INFO("Command velocity multiplexer successfully initialised");
