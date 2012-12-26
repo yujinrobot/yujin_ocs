@@ -16,6 +16,12 @@
 #include "cmd_vel_mux/cmd_vel_mux_nodelet.hpp"
 
 /*****************************************************************************
+** Namespaces
+*****************************************************************************/
+
+namespace cmd_vel_mux {
+
+/*****************************************************************************
  ** Implementation
  *****************************************************************************/
 
@@ -156,4 +162,6 @@ private:
   boost::shared_ptr<CmdVelMux> cvm_;
 };
 
-PLUGINLIB_DECLARE_CLASS(cmd_vel_mux, CmdVelMuxNodelet, CmdVelMuxNodelet, nodelet::Nodelet);
+} // namespace cmd_vel_mux
+
+PLUGINLIB_EXPORT_CLASS(cmd_vel_mux::CmdVelMuxNodelet, nodelet::Nodelet);

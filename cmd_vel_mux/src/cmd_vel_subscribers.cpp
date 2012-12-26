@@ -16,6 +16,12 @@
 #include "cmd_vel_mux/cmd_vel_subscribers.hpp"
 
 /*****************************************************************************
+** Namespaces
+*****************************************************************************/
+
+namespace cmd_vel_mux {
+
+/*****************************************************************************
  ** Implementation
  *****************************************************************************/
 
@@ -71,3 +77,5 @@ bool CmdVelSubscribers::loadSubscribersCfg(std::string path)
   ifs.close();
   return result;
 }
+
+} // namespace cmd_vel_mux
