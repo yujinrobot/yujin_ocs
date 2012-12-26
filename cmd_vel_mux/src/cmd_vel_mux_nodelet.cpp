@@ -87,10 +87,8 @@ bool CmdVelMux::init(ros::NodeHandle& nh)
   /*********************
   ** Dynamic Reconfigure
   **********************/
-  std::cout << "CmdVelMux: setting up the dynamic reconfiguration server" << std::endl;
   dynamic_reconfigure_cb = boost::bind(&CmdVelMux::reloadConfiguration, this, _1, _2);
   dynamic_reconfigure_server.setCallback(dynamic_reconfigure_cb);
-  std::cout << "CmdVelMux: done" << std::endl;
 
   // Load subscribers configuration file
   std::string subscribers_cfg_file;
