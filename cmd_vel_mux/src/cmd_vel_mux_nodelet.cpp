@@ -147,7 +147,7 @@ void CmdVelMuxNodelet::reloadConfiguration(cmd_vel_mux::reloadConfig &config, ui
     cmd_vel_sub[i].timer =
         nh.createTimer(ros::Duration(cmd_vel_sub[i].timeout), TimerFunctor(i, this), true, false);
 
-    NODELET_DEBUG("CmdVelMux : subscribed to %s on topic %s. pr: %d, to: %.2f",
+    NODELET_DEBUG("CmdVelMux : subscribed to '%s' on topic '%s'. pr: %d, to: %.2f",
               cmd_vel_sub[i].name.c_str(), cmd_vel_sub[i].topic.c_str(),
               cmd_vel_sub[i].priority, cmd_vel_sub[i].timeout);
   }
