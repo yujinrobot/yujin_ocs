@@ -33,7 +33,7 @@ namespace yocs_velocity_smoother {
 class VelocitySmoother
 {
 public:
-  VelocitySmoother() : shutdown_req(false), input_active(false), pr_next(0) { };
+  VelocitySmoother(const std::string &name) : name(name), shutdown_req(false), input_active(false), pr_next(0) { };
   ~VelocitySmoother() { };
 
   bool init(ros::NodeHandle& nh);
@@ -41,6 +41,7 @@ public:
   void shutdown() { shutdown_req = true; };
 
 private:
+  std::string name;
   double speed_lim_v, accel_lim_v, decel_lim_v;
   double speed_lim_w, accel_lim_w, decel_lim_w;
   double decel_factor;

@@ -94,8 +94,7 @@ void VelocitySmoother::spin()
       input_active = false;
       if (IS_ZERO_VEOCITY(target_vel) == false)
       {
-        ROS_WARN("Input got inactive letting us a non-zero target velocity (%f, %f); zeroing...",
-                 target_vel.linear.x, target_vel.angular.z);
+        ROS_WARN_STREAM("Velocity Smoother : input got inactive leaving us a non-zero target velocity (" << target_vel.linear.x << ", " << target_vel.angular.z << "), zeroing...[" << name << "]");
         target_vel = ZERO_VEL_COMMAND;
       }
     }
@@ -212,8 +211,6 @@ bool VelocitySmoother::init(ros::NodeHandle& nh)
   raw_vel_sub = nh.subscribe("raw_cmd_vel", 1, &VelocitySmoother::velocityCB, this);
   lim_vel_pub = nh.advertise <geometry_msgs::Twist> ("smooth_cmd_vel", 1);
 
-  ROS_INFO("Velocity smoother nodelet successfully initialized");
-
   return true;
 }
 
@@ -228,24 +225,32 @@ public:
   VelocitySmootherNodelet()  { }
   ~VelocitySmootherNodelet()
   {
-    NODELET_DEBUG("Waiting for worker thread to finish...");
+    NODELET_DEBUG("Velocity Smoother : waiting for worker thread to finish...");
     vel_smoother_->shutdown();
     worker_thread_.join();
   }
 
+  std::string unresolvedName(const std::string &name) const {
+    size_t pos = name.find_last_of('/');
+    return name.substr(pos + 1);
+  }
+
+
   virtual void onInit()
   {
-    NODELET_DEBUG("Initialising nodelet...");
-
-    vel_smoother_.reset(new VelocitySmoother);
-    if (vel_smoother_->init(this->getPrivateNodeHandle()))
+    ros::NodeHandle ph = getPrivateNodeHandle();
+    std::string resolved_name = ph.getUnresolvedNamespace(); // this always returns like /robosem/goo_arm - why not unresolved?
+    std::string name = unresolvedName(resolved_name); // unresolve it ourselves
+    NODELET_DEBUG_STREAM("Velocity Smoother : initialising nodelet...[" << name << "]");
+    vel_smoother_.reset(new VelocitySmoother(name));
+    if (vel_smoother_->init(ph))
     {
-      NODELET_DEBUG("Command velocity smoother nodelet initialised");
+      NODELET_DEBUG_STREAM("Velocity Smoother : nodelet initialised [" << name << "]");
       worker_thread_.start(&VelocitySmoother::spin, *vel_smoother_);
     }
     else
     {
-      NODELET_ERROR("Command velocity smoother nodelet initialisation failed");
+      NODELET_ERROR_STREAM("Velocity Smoother : nodelet initialisation failed [" << name << "]");
     }
   }
 
