@@ -13,6 +13,7 @@
   <depend package="nodelet"/>
 
   <depend package="ecl_threads"/>
+  <depend package="geometry_msgs"/>
   <depend package="nav_msgs"/>
 
   <export>
