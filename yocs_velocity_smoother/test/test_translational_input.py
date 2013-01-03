@@ -47,6 +47,14 @@ def main():
     odom.pose.pose.orientation.y = 0.0
     odom.pose.pose.orientation.z = 0.0
     odom.pose.pose.orientation.w = 1.0
+
+    odom.pose.covariance[0]  = 0.1
+    odom.pose.covariance[7]  = 0.1
+    odom.pose.covariance[35] = 0.2
+    odom.pose.covariance[14] = 10.0
+    odom.pose.covariance[21] = 10.0
+    odom.pose.covariance[28] = 10.0
+
     odom.twist.twist.linear.x = 0.0
     odom.twist.twist.linear.y = 0.0
     odom.twist.twist.linear.z = 0.0
