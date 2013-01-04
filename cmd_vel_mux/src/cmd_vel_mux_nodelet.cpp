@@ -70,15 +70,16 @@ void CmdVelMuxNodelet::timerCallback(const ros::TimerEvent& event, unsigned int 
   cmd_vel_sub[idx].active = false;
 }
 
-void CmdVelMuxNodelet::onInit() {
+void CmdVelMuxNodelet::onInit()
+{
+  ros::NodeHandle &nh = this->getPrivateNodeHandle();
 
   /*********************
   ** Dynamic Reconfigure
   **********************/
   dynamic_reconfigure_cb = boost::bind(&CmdVelMuxNodelet::reloadConfiguration, this, _1, _2);
-  dynamic_reconfigure_server.setCallback(dynamic_reconfigure_cb);
-
-  ros::NodeHandle &nh = this->getPrivateNodeHandle();
+  dynamic_reconfigure_server = new dynamic_reconfigure::Server<cmd_vel_mux::reloadConfig>(nh);
+  dynamic_reconfigure_server->setCallback(dynamic_reconfigure_cb);
 
   active_subscriber = nh.advertise <std_msgs::String> ("active", 1, true); // latched topic
 
@@ -91,12 +92,17 @@ void CmdVelMuxNodelet::onInit() {
   NODELET_DEBUG("CmdVelMux : successfully initialised");
 }
 
-void CmdVelMuxNodelet::reloadConfiguration(cmd_vel_mux::reloadConfig &config, uint32_t unused_level) {
+void CmdVelMuxNodelet::reloadConfiguration(cmd_vel_mux::reloadConfig &config, uint32_t unused_level)
+{
   std::string yaml_cfg_file;
   ros::NodeHandle &nh = this->getPrivateNodeHandle();
-  if( config.yaml_cfg_file == "" ) {  // typically fired on startup, so look for a parameter to set a default
+  if( config.yaml_cfg_file == "" )
+  {
+    // typically fired on startup, so look for a parameter to set a default
     nh.getParam("yaml_cfg_file", yaml_cfg_file);
-  } else {
+  }
+  else
+  {
     yaml_cfg_file = config.yaml_cfg_file;
   }
 

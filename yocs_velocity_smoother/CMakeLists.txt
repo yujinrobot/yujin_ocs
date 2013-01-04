@@ -15,7 +15,16 @@ rosbuild_init()
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 ##############################################################################
+# Dynamic Reconfigure
+##############################################################################
+
+# Note, this initialises CMAKE_LIBRARY_OUTPUT_DIRECTORY, take care below.
+find_package(catkin REQUIRED dynamic_reconfigure)
+generate_dynamic_reconfigure_options(cfg/Config.cfg)
+
+##############################################################################
 # NODELET
 ##############################################################################
 
 rosbuild_add_library(velocity_smoother_nodelet src/velocity_smoother_nodelet.cpp)
+set_target_properties(velocity_smoother_nodelet PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)

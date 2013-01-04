@@ -39,6 +39,17 @@ public:
   virtual void onInit();
   bool init(ros::NodeHandle& nh);
 
+  CmdVelMuxNodelet()
+  {
+    dynamic_reconfigure_server = NULL;
+  }
+
+  ~CmdVelMuxNodelet()
+  {
+    if (dynamic_reconfigure_server != NULL)
+      delete dynamic_reconfigure_server;
+  }
+
 private:
   CmdVelSubscribers cmd_vel_sub; /**< Pool of cmd_vel topics subscribers */
   ros::Publisher mux_cmd_vel_pub; /**< Multiplexed command velocity topic */
@@ -50,7 +61,7 @@ private:
   /*********************
   ** Dynamic Reconfigure
   **********************/
-  dynamic_reconfigure::Server<cmd_vel_mux::reloadConfig> dynamic_reconfigure_server;
+  dynamic_reconfigure::Server<cmd_vel_mux::reloadConfig> * dynamic_reconfigure_server;
   dynamic_reconfigure::Server<cmd_vel_mux::reloadConfig>::CallbackType dynamic_reconfigure_cb;
   void reloadConfiguration(cmd_vel_mux::reloadConfig &config, uint32_t unused_level);
 

@@ -33,8 +33,14 @@ namespace yocs_velocity_smoother {
 class VelocitySmoother
 {
 public:
-  VelocitySmoother(const std::string &name) : name(name), shutdown_req(false), input_active(false), pr_next(0) { };
-  ~VelocitySmoother() { };
+  VelocitySmoother(const std::string &name)
+   : name(name), shutdown_req(false), input_active(false), pr_next(0), dynamic_reconfigure_server(NULL) { };
+
+  ~VelocitySmoother()
+  {
+    if (dynamic_reconfigure_server != NULL)
+      delete dynamic_reconfigure_server;
+  }
 
   bool init(ros::NodeHandle& nh);
   void spin();
@@ -73,6 +79,13 @@ private:
     nth_element(values.begin(), values.begin() + values.size()/2, values.end());
     return values[values.size()/2];
   };
+
+  /*********************
+  ** Dynamic Reconfigure
+  **********************/
+  dynamic_reconfigure::Server<yocs_velocity_smoother::reConfig> *             dynamic_reconfigure_server;
+  dynamic_reconfigure::Server<yocs_velocity_smoother::reConfig>::CallbackType dynamic_reconfigure_callback;
+  void reconfigCB(yocs_velocity_smoother::reConfig &config, uint32_t unused_level);
 };
 
 } // yocs_namespace velocity_smoother
