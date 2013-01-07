@@ -1,5 +1,5 @@
 <package>
-  <description brief="A multiplexer for command velocity inputs">
+  <description brief="cmd_vel_mux">
 
      Configures a multiplexer for cmd_vel, complete with priorities and timeouts.
 
