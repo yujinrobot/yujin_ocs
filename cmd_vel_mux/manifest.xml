@@ -1,7 +1,10 @@
 <package>
   <description brief="cmd_vel_mux">
 
-     A multiplexer for command velocity inputs. Arbitrates incoming cmd_vel messages from several topics, allowing just topic at a time to command the robot, based on priorities. It also deallocates current allowed topic if no messages are received after a configured timeout. All topics, together with their priority and timeout are configured through a YAML file, that can be reload at runtime.
+     A multiplexer for command velocity inputs. Arbitrates incoming cmd_vel messages from several topics,
+     allowing just topic at a time to command the robot, based on priorities. It also deallocates current
+     allowed topic if no messages are received after a configured timeout. All topics, together with their
+     priority and timeout are configured through a YAML file, that can be reload at runtime.
 
   </description>
   <author>Jorge Santos</author>
