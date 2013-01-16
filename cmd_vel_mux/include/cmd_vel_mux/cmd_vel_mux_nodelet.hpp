@@ -19,9 +19,10 @@
 
 #include <ros/ros.h>
 #include <nodelet/nodelet.h>
-#include "cmd_vel_subscribers.hpp"
 #include <dynamic_reconfigure/server.h>
 #include <cmd_vel_mux/reloadConfig.h>
+
+#include "cmd_vel_subscribers.hpp"
 
 /*****************************************************************************
 ** Namespaces
@@ -37,7 +38,6 @@ class CmdVelMuxNodelet : public nodelet::Nodelet
 {
 public:
   virtual void onInit();
-  bool init(ros::NodeHandle& nh);
 
   CmdVelMuxNodelet()
   {
