@@ -40,10 +40,11 @@
 #include "MultiMarkerBundle.h"
 #include "MultiMarkerInitializer.h"
 #include "Shared.h"
-#include <cv_bridge/CvBridge.h>
+#include <cv_bridge/cv_bridge.h>
 #include <ar_track_alvar/AlvarMarker.h>
 #include <ar_track_alvar/AlvarMarkers.h>
 #include <tf/transform_listener.h>
+#include <sensor_msgs/image_encodings.h>
 
 using namespace alvar;
 using namespace std;
@@ -53,8 +54,7 @@ using namespace std;
 #define GHOST_MARKER 3
 
 Camera *cam;
-IplImage *capture_;
-sensor_msgs::CvBridge bridge_;
+cv_bridge::CvImagePtr cv_ptr_;
 image_transport::Subscriber cam_sub_;
 ros::Publisher arMarkerPub_;
 ros::Publisher rvizMarkerPub_;
@@ -175,13 +175,13 @@ void makeMarkerMsgs(int type, int id, Pose &p, sensor_msgs::ImageConstPtr image_
 	qw = p.quaternion[0];
 
 	//Get the marker pose in the camera frame
-	btQuaternion rotation (qx,qy,qz,qw);
-	btVector3 origin (px,py,pz);
-	btTransform t (rotation, origin);
+	tf::Quaternion rotation (qx,qy,qz,qw);
+    tf::Vector3 origin (px,py,pz);
+	tf::Transform t (rotation, origin);
 
-	btVector3 markerOrigin (0, 0, 0);
-	btTransform m (btQuaternion::getIdentity (), markerOrigin);
-	btTransform markerPose = t * m;
+    tf::Vector3 markerOrigin (0, 0, 0);
+	tf::Transform m (tf::Quaternion::getIdentity (), markerOrigin);
+	tf::Transform markerPose = t * m;
 
 	//Publish the transform from the camera to the marker		
 	if(type==MAIN_MARKER){
@@ -242,12 +242,6 @@ void makeMarkerMsgs(int type, int id, Pose &p, sensor_msgs::ImageConstPtr image_
 
 void getCapCallback (const sensor_msgs::ImageConstPtr & image_msg)
 {
-	if(init){
-		CvSize sz_ = cvSize (cam->x_res, cam->y_res);
-    	capture_ = cvCreateImage (sz_, IPL_DEPTH_8U, 4);
-		init = false;	
-	}
-
 	//Check if automatic measurement collection should be triggered
 	if(auto_collect){
 		auto_count++;
@@ -273,12 +267,19 @@ void getCapCallback (const sensor_msgs::ImageConstPtr & image_msg)
     		ar_track_alvar::AlvarMarker ar_pose_marker;
     		arPoseMarkers_.markers.clear ();
 
-    		//Convert the image
-      		capture_ = bridge_.imgMsgToCv (image_msg, "rgb8");
+            //Convert the image
+            cv_ptr_ = cv_bridge::toCvCopy(image_msg, sensor_msgs::image_encodings::BGR8);
 
-      		//Get the estimated pose of the main marker using the whole bundle
+            //Get the estimated pose of the main markers by using all the markers in each bundle
+
+            // GetMultiMarkersPoses expects an IplImage*, but as of ros groovy, cv_bridge gives
+            // us a cv::Mat. I'm too lazy to change to cv::Mat throughout right now, so I
+            // do this conversion here -jbinney
+            IplImage ipl_image = cv_ptr_->image;
+
+            //Get the estimated pose of the main marker using the whole bundle
       		static Pose bundlePose;
-    		double error = GetMultiMarkerPose(capture_, bundlePose);
+            double error = GetMultiMarkerPose(&ipl_image, bundlePose);
 
 			if (optimize_done){
     			//Draw the main marker
@@ -301,7 +302,7 @@ void getCapCallback (const sensor_msgs::ImageConstPtr & image_msg)
 			}
 			arMarkerPub_.publish (arPoseMarkers_);
 		}
-    	catch (sensor_msgs::CvBridgeException & e){
+        catch (cv_bridge::Exception& e){
       		ROS_ERROR ("Could not convert from '%s' to 'rgb8'.", image_msg->encoding.c_str ());
     	}
 	}

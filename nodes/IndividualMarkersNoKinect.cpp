@@ -38,18 +38,18 @@
 #include "CvTestbed.h"
 #include "MarkerDetector.h"
 #include "Shared.h"
-#include <cv_bridge/CvBridge.h>
+#include <cv_bridge/cv_bridge.h>
 #include <ar_track_alvar/AlvarMarker.h>
 #include <ar_track_alvar/AlvarMarkers.h>
 #include <tf/transform_listener.h>
+#include <sensor_msgs/image_encodings.h>
 
 using namespace alvar;
 using namespace std;
 
 bool init=true;
 Camera *cam;
-IplImage *capture_;
-sensor_msgs::CvBridge bridge_;
+cv_bridge::CvImagePtr cv_ptr_;
 image_transport::Subscriber cam_sub_;
 ros::Publisher arMarkerPub_;
 ros::Publisher rvizMarkerPub_;
@@ -71,12 +71,6 @@ void getCapCallback (const sensor_msgs::ImageConstPtr & image_msg);
 
 void getCapCallback (const sensor_msgs::ImageConstPtr & image_msg)
 {
-	if(init){
-		CvSize sz_ = cvSize (cam->x_res, cam->y_res);
-    	capture_ = cvCreateImage (sz_, IPL_DEPTH_8U, 4);
-		init = false;	
-	}
-
 	//If we've already gotten the cam info, then go ahead
 	if(cam->getCamInfo_){
 		try{
@@ -89,8 +83,18 @@ void getCapCallback (const sensor_msgs::ImageConstPtr & image_msg)
       				ROS_ERROR("%s",ex.what());
     			}
 
-      		capture_ = bridge_.imgMsgToCv (image_msg, "rgb8");
-			marker_detector.Detect(capture_, cam, true, false, max_new_marker_error, max_track_error, CVSEQ, true);
+
+            //Convert the image
+            cv_ptr_ = cv_bridge::toCvCopy(image_msg, sensor_msgs::image_encodings::BGR8);
+
+            //Get the estimated pose of the main markers by using all the markers in each bundle
+
+            // GetMultiMarkersPoses expects an IplImage*, but as of ros groovy, cv_bridge gives
+            // us a cv::Mat. I'm too lazy to change to cv::Mat throughout right now, so I
+            // do this conversion here -jbinney
+            IplImage ipl_image = cv_ptr_->image;
+
+            marker_detector.Detect(&ipl_image, cam, true, false, max_new_marker_error, max_track_error, CVSEQ, true);
 
 			arPoseMarkers_.markers.clear ();
 			for (size_t i=0; i<marker_detector.markers->size(); i++) 
@@ -106,12 +110,12 @@ void getCapCallback (const sensor_msgs::ImageConstPtr & image_msg)
 				double qz = p.quaternion[3];
 				double qw = p.quaternion[0];
 
-				btQuaternion rotation (qx,qy,qz,qw);
-      			btVector3 origin (px,py,pz);
-      			btTransform t (rotation, origin);
-				btVector3 markerOrigin (0, 0, 0);
-				btTransform m (btQuaternion::getIdentity (), markerOrigin);
-				btTransform markerPose = t * m; // marker pose in the camera frame
+                tf::Quaternion rotation (qx,qy,qz,qw);
+                tf::Vector3 origin (px,py,pz);
+                tf::Transform t (rotation, origin);
+                tf::Vector3 markerOrigin (0, 0, 0);
+                tf::Transform m (tf::Quaternion::getIdentity (), markerOrigin);
+                tf::Transform markerPose = t * m; // marker pose in the camera frame
 
 				//Publish the transform from the camera to the marker		
 				std::string markerFrame = "ar_marker_";
@@ -189,7 +193,7 @@ void getCapCallback (const sensor_msgs::ImageConstPtr & image_msg)
 			}
 			arMarkerPub_.publish (arPoseMarkers_);
 		}
-    	catch (sensor_msgs::CvBridgeException & e){
+        catch (cv_bridge::Exception& e){
       		ROS_ERROR ("Could not convert from '%s' to 'rgb8'.", image_msg->encoding.c_str ());
     	}
 	}

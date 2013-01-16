@@ -36,6 +36,7 @@
 #include "Camera.h"
 #include "Filter.h"
 #include "FileFormat.h"
+#include <tf/LinearMath/Vector3.h>
 
 namespace alvar {
 
@@ -61,7 +62,7 @@ public:
 	std::map<int, CvPoint3D64f> pointcloud;
 	std::vector<int> marker_indices; // The marker id's to be used in marker field (first being the base)
 	std::vector<int> marker_status;  // 0: not in point cloud, 1: in point cloud, 2: used in GetPose()
-	std::vector< std::vector<btVector3> > rel_corners; //The coords of the master marker relative to each child marker in marker_indices
+    std::vector< std::vector<tf::Vector3> > rel_corners; //The coords of the master marker relative to each child marker in marker_indices
 
 	int pointcloud_index(int marker_id, int marker_corner, bool add_if_missing=false);
 	int get_id_index(int id, bool add_if_missing=false);

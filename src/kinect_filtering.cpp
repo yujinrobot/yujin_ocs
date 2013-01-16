@@ -39,6 +39,7 @@
 
 #include <ros/ros.h>
 #include <ar_track_alvar/kinect_filtering.h>
+#include <tf/tf.h>
 #include <tf/transform_datatypes.h>
 #include <Eigen/Core>
 
@@ -149,11 +150,11 @@ namespace ar_track_alvar
   }
 
   // Project point onto plane
-  btVector3 project (const ARPoint& p, const double a, const double b,
+  tf::Vector3 project (const ARPoint& p, const double a, const double b,
 		     const double c, const double d)
   {
     const double t = a*p.x + b*p.y + c*p.z + d;
-    return btVector3(p.x-t*a, p.y-t*b, p.z-t*c);
+    return tf::Vector3(p.x-t*a, p.y-t*b, p.z-t*c);
   }
 
   ostream& operator<< (ostream& str, const btMatrix3x3& m)
@@ -164,14 +165,14 @@ namespace ar_track_alvar
     return str;
   }
 
-  ostream& operator<< (ostream& str, const btQuaternion& q)
+  ostream& operator<< (ostream& str, const tf::Quaternion& q)
   {
     str << "[(" << q.x() << ", " << q.y() << ", " << q.z() <<
       "), " << q.w() << "]";
     return str;
   }
 
-  ostream& operator<< (ostream& str, const btVector3& v)
+  ostream& operator<< (ostream& str, const tf::Vector3& v)
   {
     str << "(" << v.x() << ", " << v.y() << ", " << v.z() << ")";
     return str;
@@ -187,23 +188,23 @@ namespace ar_track_alvar
     if(getCoeffs(coeffs, &a, &b, &c, &d) < 0)
       return -1;
   
-    const btVector3 q1 = project(p1, a, b, c, d);
-    const btVector3 q2 = project(p2, a, b, c, d);
-    const btVector3 q3 = project(p3, a, b, c, d);
-    const btVector3 q4 = project(p4, a, b, c, d);
+    const tf::Vector3 q1 = project(p1, a, b, c, d);
+    const tf::Vector3 q2 = project(p2, a, b, c, d);
+    const tf::Vector3 q3 = project(p3, a, b, c, d);
+    const tf::Vector3 q4 = project(p4, a, b, c, d);
   
     // Make sure points aren't the same so things are well-defined
     if((q2-q1).length() < 1e-3)
       return -1;
   
     // (inverse) matrix with the given properties
-    const btVector3 v = (q2-q1).normalized();
-    const btVector3 n(a, b, c);
-    const btVector3 w = -v.cross(n); 
+    const tf::Vector3 v = (q2-q1).normalized();
+    const tf::Vector3 n(a, b, c);
+    const tf::Vector3 w = -v.cross(n);
     btMatrix3x3 m(v[0], v[1], v[2], w[0], w[1], w[2], n[0], n[1], n[2]);
   
     // Possibly flip things based on third point
-    const btVector3 diff = (q4-q3).normalized();
+    const tf::Vector3 diff = (q4-q3).normalized();
     //ROS_INFO_STREAM("w = " << w << " and d = " << diff);
     if (w.dot(diff)<0)
       {
@@ -220,7 +221,7 @@ namespace ar_track_alvar
   }
 
 
-  int getQuaternion (const btMatrix3x3& m, btQuaternion &retQ)
+  int getQuaternion (const btMatrix3x3& m, tf::Quaternion &retQ)
   {
     if(m.determinant() <= 0)
       return -1;
@@ -243,7 +244,7 @@ namespace ar_track_alvar
     btScalar ey = eig_quat.y();
     btScalar ez = eig_quat.z();
     btScalar ew = eig_quat.w();
-    btQuaternion quat(ex,ey,ez,ew);
+    tf::Quaternion quat(ex,ey,ez,ew);
     retQ = quat.normalized();
     
     return 0;
@@ -258,7 +259,7 @@ namespace ar_track_alvar
     btMatrix3x3 m;
     if(extractFrame(coeffs, p1, p2, p3, p4, m) < 0)
       return -1;
-    btQuaternion q;
+    tf::Quaternion q;
     if(getQuaternion(m,q) < 0)
       return -1;
     retQ.x = q.x();
