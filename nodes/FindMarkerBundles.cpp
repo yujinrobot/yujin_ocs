@@ -40,7 +40,7 @@
 #include "MultiMarkerBundle.h"
 #include "MultiMarkerInitializer.h"
 #include "Shared.h"
-#include <cv_bridge/CvBridge.h>
+#include <cv_bridge/cv_bridge.h>
 #include <ar_track_alvar/AlvarMarker.h>
 #include <ar_track_alvar/AlvarMarkers.h>
 #include <tf/transform_listener.h>
@@ -52,6 +52,7 @@
 #include <pcl/registration/registration.h>
 
 #include <geometry_msgs/PoseStamped.h>
+#include <sensor_msgs/image_encodings.h>
 #include <ros/ros.h>
 #include <pcl/ModelCoefficients.h>
 #include <pcl/point_types.h>
@@ -63,6 +64,7 @@
 #include <boost/lexical_cast.hpp>
 
 #include <LinearMath/btMatrix3x3.h>
+#include <LinearMath/btTransform.h>
 #include <Eigen/Core>
 #include <ar_track_alvar/kinect_filtering.h>
 #include <ar_track_alvar/medianFilter.h>
@@ -83,8 +85,7 @@ using namespace std;
 using boost::make_shared;
 
 Camera *cam;
-IplImage *capture_;
-sensor_msgs::CvBridge bridge_;
+cv_bridge::CvImagePtr cv_ptr_;
 image_transport::Subscriber cam_sub_;
 ros::Subscriber cloud_sub_;
 ros::Publisher arMarkerPub_;
@@ -514,13 +515,13 @@ void makeMarkerMsgs(int type, int id, Pose &p, sensor_msgs::ImageConstPtr image_
   qw = p.quaternion[0];
 
   //Get the marker pose in the camera frame
-  btQuaternion rotation (qx,qy,qz,qw);
-  btVector3 origin (px,py,pz);
-  btTransform t (rotation, origin);  //transform from cam to marker
+  tf::Quaternion rotation (qx,qy,qz,qw);
+  tf::Vector3 origin (px,py,pz);
+  tf::Transform t (rotation, origin);  //transform from cam to marker
 
-  btVector3 markerOrigin (0, 0, 0);
-  btTransform m (btQuaternion::getIdentity (), markerOrigin);
-  btTransform markerPose = t * m;
+  tf::Vector3 markerOrigin (0, 0, 0);
+  tf::Transform m (tf::Quaternion::getIdentity (), markerOrigin);
+  tf::Transform markerPose = t * m;
 
   //Publish the cam to marker transform for each marker
   std::string markerFrame = "ar_marker_";
@@ -595,12 +596,6 @@ void getPointCloudCallback (const sensor_msgs::PointCloud2ConstPtr &msg)
 {
   sensor_msgs::ImagePtr image_msg(new sensor_msgs::Image);
 
-  if(init){
-    CvSize sz_ = cvSize (cam->x_res, cam->y_res);
-    capture_ = cvCreateImage (sz_, IPL_DEPTH_8U, 4);
-    init = false;	
-  }
-
   //If we've already gotten the cam info, then go ahead
   if(cam->getCamInfo_){
     try{
@@ -629,10 +624,15 @@ void getPointCloudCallback (const sensor_msgs::PointCloud2ConstPtr &msg)
       image_msg->header.frame_id = msg->header.frame_id;
             
       //Convert the image
-      capture_ = bridge_.imgMsgToCv (image_msg, "rgb8");
+      cv_ptr_ = cv_bridge::toCvCopy(image_msg, sensor_msgs::image_encodings::BGR8);
 
       //Get the estimated pose of the main markers by using all the markers in each bundle
-      GetMultiMarkerPoses(capture_, cloud);
+
+      // GetMultiMarkersPoses expects an IplImage*, but as of ros groovy, cv_bridge gives
+      // us a cv::Mat. I'm too lazy to change to cv::Mat throughout right now, so I
+      // do this conversion here -jbinney
+      IplImage ipl_image = cv_ptr_->image;
+      GetMultiMarkerPoses(&ipl_image, cloud);
 
       for (size_t i=0; i<marker_detector.markers->size(); i++)
 	{
@@ -667,7 +667,7 @@ void getPointCloudCallback (const sensor_msgs::PointCloud2ConstPtr &msg)
       //Publish the marker messages
       arMarkerPub_.publish (arPoseMarkers_);
     }
-    catch (sensor_msgs::CvBridgeException & e){
+    catch (cv_bridge::Exception& e){
       ROS_ERROR ("ar_track_alvar: Image error: %s", image_msg->encoding.c_str ());
     }
   }

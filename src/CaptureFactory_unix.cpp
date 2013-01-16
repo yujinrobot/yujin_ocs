@@ -24,6 +24,7 @@
 #include "CaptureFactory_private.h"
 
 #include <stdlib.h>
+#include <unistd.h> // for readlink()
 
 namespace alvar {
 

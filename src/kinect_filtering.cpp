@@ -261,7 +261,10 @@ namespace ar_track_alvar
     btQuaternion q;
     if(getQuaternion(m,q) < 0)
       return -1;
-    tf::quaternionTFToMsg(q, retQ);
+    retQ.x = q.x();
+    retQ.y = q.y();
+    retQ.z = q.z();
+    retQ.w = q.w();
     return 0;
   }
 
