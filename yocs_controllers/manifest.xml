@@ -1,7 +1,9 @@
 <package>
   <description brief="yocs_controllers">
 
-     Library for various controller types and algorithms
+     Library for various controller types and algorithms.
+     By now it just contains a Controller class definition with the common interface
+     that controllers intended to work with Yujin's control system must implement.
 
   </description>
   <author>Marcus Liebhardt</author>
