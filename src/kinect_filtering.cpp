@@ -29,19 +29,14 @@
  *
  */
 
-/**
- * \file 
- * 
- * Library to improve ar tag estimate based on depth data
- *
- * \author Bhaskara Marthi
- */
 
-#include <ros/ros.h>
+
+//#include <ros/ros.h>
+#include <Eigen/Core>
 #include <ar_track_alvar/kinect_filtering.h>
 #include <tf/tf.h>
 #include <tf/transform_datatypes.h>
-#include <Eigen/Core>
+
 
 namespace ar_track_alvar
 {

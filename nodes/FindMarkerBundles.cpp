@@ -33,7 +33,7 @@
 
   author: Scott Niekum
 */
-
+#define ROSCONSOLE_DEFAULT_NAME balllalaahaha
 
 #include "CvTestbed.h"
 #include "MarkerDetector.h"
