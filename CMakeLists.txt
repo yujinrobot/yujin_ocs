@@ -88,7 +88,6 @@ add_library(kinect_filtering src/kinect_filtering.cpp)
 target_link_libraries(kinect_filtering ${catkin_LIBRARIES})
 add_library(medianFilter src/medianFilter.cpp)
 target_link_libraries(medianFilter ${catkin_LIBRARIES})
-#add_compile_flags(kinect_filtering -std=c++0x)
 
 set(ALVAR_TARGETS individualMarkers individualMarkersNoKinect trainMarkerBundle findMarkerBundles findMarkerBundlesNoKinect createMarker ar_track_alvar)
 
@@ -109,13 +108,6 @@ target_link_libraries(findMarkerBundlesNoKinect ar_track_alvar ${catkin_LIBRARIE
 
 add_executable(createMarker src/SampleMarkerCreator.cpp)
 target_link_libraries(createMarker ar_track_alvar ${catkin_LIBRARIES})
-
-
-#foreach(t ${ALVAR_TARGETS})
-#  add_compile_flags(${t}
-#    -Wno-unused-variable -Wno-unused-but-set-variable -Wno-missing-braces -Wno-comment -Wno-unused-value -Wno-sign-compare -Wno-comment -Wno-deprecated-declarations
-#    -Wno-type-limits)
-#endforeach(t)
 
 install(TARGETS ${ALVAR_TARGETS}
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
