@@ -152,7 +152,7 @@ namespace ar_track_alvar
     return tf::Vector3(p.x-t*a, p.y-t*b, p.z-t*c);
   }
 
-  ostream& operator<< (ostream& str, const btMatrix3x3& m)
+  ostream& operator<< (ostream& str, const tf::Matrix3x3& m)
   {
     str << "[" << m[0][0] << ", " << m[0][1] << ", " << m[0][2] << "; "
 	<< m[1][0] << ", " << m[1][1] << ", " << m[1][2] << "; "
@@ -176,7 +176,7 @@ namespace ar_track_alvar
   int extractFrame (const pcl::ModelCoefficients& coeffs,
 		    const ARPoint& p1, const ARPoint& p2,
 		    const ARPoint& p3, const ARPoint& p4,
-		    btMatrix3x3 &retmat)
+            tf::Matrix3x3 &retmat)
   {
     // Get plane coeffs and project points onto the plane
     double a=0, b=0, c=0, d=0;
@@ -196,7 +196,7 @@ namespace ar_track_alvar
     const tf::Vector3 v = (q2-q1).normalized();
     const tf::Vector3 n(a, b, c);
     const tf::Vector3 w = -v.cross(n);
-    btMatrix3x3 m(v[0], v[1], v[2], w[0], w[1], w[2], n[0], n[1], n[2]);
+    tf::Matrix3x3 m(v[0], v[1], v[2], w[0], w[1], w[2], n[0], n[1], n[2]);
   
     // Possibly flip things based on third point
     const tf::Vector3 diff = (q4-q3).normalized();
@@ -216,12 +216,12 @@ namespace ar_track_alvar
   }
 
 
-  int getQuaternion (const btMatrix3x3& m, tf::Quaternion &retQ)
+  int getQuaternion (const tf::Matrix3x3& m, tf::Quaternion &retQ)
   {
     if(m.determinant() <= 0)
       return -1;
     
-    //btScalar y=0, p=0, r=0;
+    //tfScalar y=0, p=0, r=0;
     //m.getEulerZYX(y, p, r);
     //retQ.setEulerZYX(y, p, r);
 
@@ -235,10 +235,10 @@ namespace ar_track_alvar
     Eigen::Quaternion<float> eig_quat(eig_m);
     
     // Translate back to bullet
-    btScalar ex = eig_quat.x();
-    btScalar ey = eig_quat.y();
-    btScalar ez = eig_quat.z();
-    btScalar ew = eig_quat.w();
+    tfScalar ex = eig_quat.x();
+    tfScalar ey = eig_quat.y();
+    tfScalar ez = eig_quat.z();
+    tfScalar ew = eig_quat.w();
     tf::Quaternion quat(ex,ey,ez,ew);
     retQ = quat.normalized();
     
@@ -251,7 +251,7 @@ namespace ar_track_alvar
 			  const ARPoint& p3, const ARPoint& p4,
 			  gm::Quaternion &retQ)
   {
-    btMatrix3x3 m;
+    tf::Matrix3x3 m;
     if(extractFrame(coeffs, p1, p2, p3, p4, m) < 0)
       return -1;
     tf::Quaternion q;

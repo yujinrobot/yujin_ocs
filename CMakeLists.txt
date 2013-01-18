@@ -21,6 +21,9 @@ find_package(catkin COMPONENTS
 find_package(Eigen REQUIRED)
 find_package(OpenCV REQUIRED)
 
+find_package(PkgConfig)
+pkg_check_modules(PC_LIBOPENNI REQUIRED tinyxml)
+
 # generate messages
 set(MSG_FILES AlvarMarker.msg AlvarMarkers.msg)
 add_message_files(DIRECTORY msg FILES ${MSG_FILES})
@@ -45,9 +48,9 @@ include_directories(include
                     ${PC_LIBOPENNI_INCLUDE_DIRS}
                     ${catkin_INCLUDE_DIRS}
                     ${OpenCV_INCLUDE_DIRS}
+                    ${PC_TINYXML_INCLUDE_DIRS}
 
 )
-add_definitions(${PC_LIBOPENNI_CFLAGS_OTHER})
 
 add_library(ar_track_alvar
     src/Camera.cpp
@@ -78,32 +81,34 @@ add_library(ar_track_alvar
     src/MultiMarker.cpp
     src/MultiMarkerBundle.cpp
     src/MultiMarkerInitializer.cpp)
-target_link_libraries(ar_track_alvar ${OpenCV_LIBS} )
+target_link_libraries(ar_track_alvar ${OpenCV_LIBS} tinyxml ${catkin_LIBRARIES})
 
 # Kinect filtering code
 add_library(kinect_filtering src/kinect_filtering.cpp)
+target_link_libraries(kinect_filtering ${catkin_LIBRARIES})
 add_library(medianFilter src/medianFilter.cpp)
+target_link_libraries(medianFilter ${catkin_LIBRARIES})
 #add_compile_flags(kinect_filtering -std=c++0x)
 
 set(ALVAR_TARGETS individualMarkers individualMarkersNoKinect trainMarkerBundle findMarkerBundles findMarkerBundlesNoKinect createMarker ar_track_alvar)
 
 add_executable(individualMarkers nodes/IndividualMarkers.cpp)
-target_link_libraries(individualMarkers ar_track_alvar kinect_filtering)
+target_link_libraries(individualMarkers ar_track_alvar kinect_filtering ${catkin_LIBRARIES})
 
 add_executable(individualMarkersNoKinect nodes/IndividualMarkersNoKinect.cpp)
-target_link_libraries(individualMarkersNoKinect ar_track_alvar)
+target_link_libraries(individualMarkersNoKinect ar_track_alvar ${catkin_LIBRARIES})
 
 add_executable(trainMarkerBundle nodes/TrainMarkerBundle.cpp)
-target_link_libraries(trainMarkerBundle ar_track_alvar)
+target_link_libraries(trainMarkerBundle ar_track_alvar ${catkin_LIBRARIES})
 
 add_executable(findMarkerBundles nodes/FindMarkerBundles.cpp)
-target_link_libraries(findMarkerBundles ar_track_alvar kinect_filtering medianFilter)
+target_link_libraries(findMarkerBundles ar_track_alvar kinect_filtering medianFilter ${catkin_LIBRARIES})
 
 add_executable(findMarkerBundlesNoKinect nodes/FindMarkerBundlesNoKinect.cpp)
-target_link_libraries(findMarkerBundlesNoKinect ar_track_alvar)
+target_link_libraries(findMarkerBundlesNoKinect ar_track_alvar ${catkin_LIBRARIES})
 
 add_executable(createMarker src/SampleMarkerCreator.cpp)
-target_link_libraries(createMarker ar_track_alvar)
+target_link_libraries(createMarker ar_track_alvar ${catkin_LIBRARIES})
 
 
 #foreach(t ${ALVAR_TARGETS})

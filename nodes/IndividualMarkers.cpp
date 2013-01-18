@@ -125,7 +125,7 @@ void draw3dPoints(ARCloud::Ptr cloud, string frame, int color, int id, double ra
 }
 
 
-void drawArrow(gm::Point start, btMatrix3x3 mat, string frame, int color, int id)
+void drawArrow(gm::Point start, tf::Matrix3x3 mat, string frame, int color, int id)
 {
   visualization_msgs::Marker rvizMarker;
   
@@ -239,7 +239,7 @@ int PlaneFitPoseImprovement(int id, const ARCloud &corners_3D, ARCloud::Ptr sele
   succ = ata::extractOrientation(res.coeffs, corners_3D[i1], corners_3D[i2], corners_3D[i3], corners_3D[i4], pose.pose.orientation);
   if(succ < 0) return -1;
 
-  btMatrix3x3 mat; 
+  tf::Matrix3x3 mat;
   succ = ata::extractFrame(res.coeffs, corners_3D[i1], corners_3D[i2], corners_3D[i3], corners_3D[i4], mat);
   if(succ < 0) return -1;
 

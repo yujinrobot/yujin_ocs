@@ -33,8 +33,6 @@
 
   author: Scott Niekum
 */
-#define ROSCONSOLE_DEFAULT_NAME balllalaahaha
-
 #include "CvTestbed.h"
 #include "MarkerDetector.h"
 #include "MultiMarkerBundle.h"
@@ -162,7 +160,7 @@ void draw3dPoints(ARCloud::Ptr cloud, string frame, int color, int id, double ra
 }
 
 
-void drawArrow(gm::Point start, btMatrix3x3 mat, string frame, int color, int id)
+void drawArrow(gm::Point start, tf::Matrix3x3 mat, string frame, int color, int id)
 {
   visualization_msgs::Marker rvizMarker;
   
@@ -353,7 +351,7 @@ int PlaneFitPoseImprovement(int id, const ARCloud &corners_3D, ARCloud::Ptr sele
   succ = ata::extractOrientation(res.coeffs, corners_3D[i1], corners_3D[i2], corners_3D[i3], corners_3D[i4], pose.pose.orientation);
   if(succ < 0) return -1;
 
-  btMatrix3x3 mat; 
+  tf::Matrix3x3 mat;
   succ = ata::extractFrame(res.coeffs, corners_3D[i1], corners_3D[i2], corners_3D[i3], corners_3D[i4], mat);
   if(succ < 0) return -1;
 
@@ -689,7 +687,7 @@ int makeMasterTransform (const CvPoint3D64f& p0, const CvPoint3D64f& p1,
     const tf::Vector3 v = (q1-q0).normalized();
     const tf::Vector3 w = (q2-q1).normalized();
     const tf::Vector3 n = v.cross(w);
-    btMatrix3x3 m(v[0], v[1], v[2], w[0], w[1], w[2], n[0], n[1], n[2]);
+    tf::Matrix3x3 m(v[0], v[1], v[2], w[0], w[1], w[2], n[0], n[1], n[2]);
     m = m.inverse();
     
     //Translate to quaternion
@@ -706,10 +704,10 @@ int makeMasterTransform (const CvPoint3D64f& p0, const CvPoint3D64f& p1,
     Eigen::Quaternion<float> eig_quat(eig_m);
     
     // Translate back to bullet
-    btScalar ex = eig_quat.x();
-    btScalar ey = eig_quat.y();
-    btScalar ez = eig_quat.z();
-    btScalar ew = eig_quat.w();
+    tfScalar ex = eig_quat.x();
+    tfScalar ey = eig_quat.y();
+    tfScalar ez = eig_quat.z();
+    tfScalar ew = eig_quat.w();
     tf::Quaternion quat(ex,ey,ez,ew);
     quat = quat.normalized();
     
