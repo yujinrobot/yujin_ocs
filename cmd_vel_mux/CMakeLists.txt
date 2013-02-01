@@ -1,41 +1,41 @@
-##############################################################################
-# CMake
-##############################################################################
+cmake_minimum_required(VERSION 2.8.3)
+project(cmd_vel_mux)
+find_package(catkin REQUIRED COMPONENTS roscpp nodelet dynamic_reconfigure)
 
-cmake_minimum_required(VERSION 2.4.6)
-set(CMAKE_VERBOSE_MAKEFILE TRUE) # useful for eclipse indexing
+# Dynamic reconfigure support
+generate_dynamic_reconfigure_options(cfg/reload.cfg)
 
-##############################################################################
-# Ros
-##############################################################################
+catkin_package(
+   INCLUDE_DIRS include
+   LIBRARIES cmd_vel_mux_nodelet
+   CATKIN_DEPENDS roscpp nodelet dynamic_reconfigure 
+   DEPENDS yaml-cpp
+)
 
-include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+include_directories(SYSTEM ${catkin_INCLUDE_DIRS})
+include_directories(include)
 
-# Set the build type.  Options are:
-#  Coverage       : w/ debug symbols, w/o optimization, w/ code-coverage
-#  Debug          : w/ debug symbols, w/o optimization
-#  Release        : w/o debug symbols, w/ optimization
-#  RelWithDebInfo : w/ debug symbols, w/ optimization
-#  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
-#set(ROS_BUILD_TYPE RelWithDebInfo)
 
-rosbuild_init()
+# Nodelet library
+add_library(cmd_vel_mux_nodelet src/cmd_vel_mux_nodelet.cpp src/cmd_vel_subscribers.cpp)
 
-##############################################################################
-# Dynamic Reconfigure
-##############################################################################
-
-# Note, this initialises CMAKE_LIBRARY_OUTPUT_DIRECTORY, take care below.
-find_package(catkin REQUIRED dynamic_reconfigure)
-generate_dynamic_reconfigure_options(cfg/Reload.cfg)
-
-##############################################################################
-# Nodelet
-##############################################################################
-
-# No good since CMAKE_LIBRARY_OUTPUT_DIRECTORY is initialised, do directly
-#set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
-
-rosbuild_add_library(cmd_vel_mux_nodelet src/cmd_vel_mux_nodelet.cpp src/cmd_vel_subscribers.cpp)
+target_link_libraries(cmd_vel_mux_nodelet ${catkin_LIBRARIES})
 target_link_libraries(cmd_vel_mux_nodelet yaml-cpp)
-set_target_properties(cmd_vel_mux_nodelet PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
+
+install(TARGETS cmd_vel_mux_nodelet
+        DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+)
+install(DIRECTORY include/${PROJECT_NAME}/
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+)
+install(DIRECTORY plugins
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
+
+install(DIRECTORY launch
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
+
+install(DIRECTORY param
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)

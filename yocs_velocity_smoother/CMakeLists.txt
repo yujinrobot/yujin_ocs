@@ -1,30 +1,40 @@
-cmake_minimum_required(VERSION 2.4.6)
-include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+cmake_minimum_required(VERSION 2.8.3)
+project(yocs_velocity_smoother)
+find_package(catkin REQUIRED COMPONENTS roscpp nodelet ecl_threads dynamic_reconfigure geometry_msgs nav_msgs)
 
-# Set the build type.  Options are:
-#  Coverage       : w/ debug symbols, w/o optimization, w/ code-coverage
-#  Debug          : w/ debug symbols, w/o optimization
-#  Release        : w/o debug symbols, w/ optimization
-#  RelWithDebInfo : w/ debug symbols, w/ optimization
-#  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
-#set(ROS_BUILD_TYPE RelWithDebInfo)
+# Dynamic reconfigure support
+generate_dynamic_reconfigure_options(cfg/params.cfg)
 
-rosbuild_init()
+catkin_package(
+   INCLUDE_DIRS include
+   LIBRARIES velocity_smoother_nodelet
+   CATKIN_DEPENDS roscpp nodelet ecl_threads dynamic_reconfigure geometry_msgs nav_msgs
+)
 
-#set the default path for built libraries to the "lib" directory
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
+include_directories(SYSTEM ${catkin_INCLUDE_DIRS})
+include_directories(include)
 
-##############################################################################
-# Dynamic Reconfigure
-##############################################################################
 
-# Note, this initialises CMAKE_LIBRARY_OUTPUT_DIRECTORY, take care below.
-find_package(catkin REQUIRED dynamic_reconfigure)
-generate_dynamic_reconfigure_options(cfg/Config.cfg)
+# Nodelet library
+add_library(velocity_smoother_nodelet src/velocity_smoother_nodelet.cpp)
 
-##############################################################################
-# NODELET
-##############################################################################
 
-rosbuild_add_library(velocity_smoother_nodelet src/velocity_smoother_nodelet.cpp)
-set_target_properties(velocity_smoother_nodelet PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
+target_link_libraries(velocity_smoother_nodelet ${catkin_LIBRARIES})
+
+install(TARGETS velocity_smoother_nodelet
+        DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+)
+install(DIRECTORY include/velocity_smoother/
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+)
+install(DIRECTORY plugins
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
+
+install(DIRECTORY launch
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
+
+install(DIRECTORY param
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
