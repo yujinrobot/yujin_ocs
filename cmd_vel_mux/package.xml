@@ -7,8 +7,8 @@
      allowed topic if no messages are received after a configured timeout. All topics, together with their
      priority and timeout are configured through a YAML file, that can be reload at runtime.
   </description>
-  <author email="jorge@rnd.yujinrobot.com">Jorge Santos Simon</author>
-  <maintainer email="jorge@rnd.yujinrobot.com">Jorge Santos Simon</maintainer>
+  <author email="jorge@yujinrobot.com">Jorge Santos Simon</author>
+  <maintainer email="jorge@yujinrobot.com">Jorge Santos Simon</maintainer>
   <license>BSD</license>
   <url>http://ros.org/wiki/cmd_vel_mux</url>
 

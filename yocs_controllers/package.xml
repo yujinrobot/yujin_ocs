@@ -6,8 +6,8 @@
      By now it just contains a Controller class definition with the common interface
      that controllers intended to work with Yujin's control system must implement.
   </description>
-  <author email="marcus.liebhardt@rnd.yujinrobot.com">Marcus Liebhardt</author>
-  <maintainer email="marcus.liebhardt@rnd.yujinrobot.com">Marcus Liebhardt</maintainer>
+  <author email="marcus.liebhardt@yujinrobot.com">Marcus Liebhardt</author>
+  <maintainer email="marcus.liebhardt@yujinrobot.com">Marcus Liebhardt</maintainer>
   <license>BSD</license>
   <url>http://ros.org/wiki/yocs_controllers</url>
 
