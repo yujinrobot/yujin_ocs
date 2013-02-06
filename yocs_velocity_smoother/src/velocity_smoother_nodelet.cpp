@@ -15,7 +15,7 @@
 #include <pluginlib/class_list_macros.h>
 
 #include <dynamic_reconfigure/server.h>
-#include <yocs_velocity_smoother/reConfig.h>
+#include <yocs_velocity_smoother/paramsConfig.h>
 
 #include <ecl/threads/thread.hpp>
 
@@ -39,7 +39,7 @@ namespace yocs_velocity_smoother {
 ** Implementation
 **********************/
 
-void VelocitySmoother::reconfigCB(yocs_velocity_smoother::reConfig &config, uint32_t level)
+void VelocitySmoother::reconfigCB(yocs_velocity_smoother::paramsConfig &config, uint32_t level)
 {
   ROS_INFO("Reconfigure request : %f %f %f %f %f",
            config.speed_lim_v, config.speed_lim_w, config.accel_lim_v, config.accel_lim_w, config.decel_factor);
@@ -223,7 +223,7 @@ bool VelocitySmoother::init(ros::NodeHandle& nh)
   // Dynamic Reconfigure
   dynamic_reconfigure_callback = boost::bind(&VelocitySmoother::reconfigCB, this, _1, _2);
 
-  dynamic_reconfigure_server = new dynamic_reconfigure::Server<yocs_velocity_smoother::reConfig>(nh);
+  dynamic_reconfigure_server = new dynamic_reconfigure::Server<yocs_velocity_smoother::paramsConfig>(nh);
   dynamic_reconfigure_server->setCallback(dynamic_reconfigure_callback);
 
   // Optional parameters

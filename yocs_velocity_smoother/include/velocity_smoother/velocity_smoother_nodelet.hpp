@@ -83,9 +83,9 @@ private:
   /*********************
   ** Dynamic Reconfigure
   **********************/
-  dynamic_reconfigure::Server<yocs_velocity_smoother::reConfig> *             dynamic_reconfigure_server;
-  dynamic_reconfigure::Server<yocs_velocity_smoother::reConfig>::CallbackType dynamic_reconfigure_callback;
-  void reconfigCB(yocs_velocity_smoother::reConfig &config, uint32_t unused_level);
+  dynamic_reconfigure::Server<yocs_velocity_smoother::paramsConfig> *             dynamic_reconfigure_server;
+  dynamic_reconfigure::Server<yocs_velocity_smoother::paramsConfig>::CallbackType dynamic_reconfigure_callback;
+  void reconfigCB(yocs_velocity_smoother::paramsConfig &config, uint32_t unused_level);
 };
 
 } // yocs_namespace velocity_smoother
