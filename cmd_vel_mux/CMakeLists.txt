@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 2.8.3)
 project(cmd_vel_mux)
 find_package(catkin REQUIRED COMPONENTS roscpp nodelet dynamic_reconfigure)
 
+# pkg-config support
+find_package(PkgConfig)
+pkg_search_module(REQUIRED yaml-cpp)
+
 # Dynamic reconfigure support
 generate_dynamic_reconfigure_options(cfg/reload.cfg)
 
