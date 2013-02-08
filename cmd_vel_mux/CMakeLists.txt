@@ -16,9 +16,7 @@ catkin_package(
    DEPENDS yaml-cpp
 )
 
-include_directories(SYSTEM ${catkin_INCLUDE_DIRS})
-include_directories(include)
-
+include_directories(include ${catkin_INCLUDE_DIRS} ${yaml-cpp_INCLUDE_DIRS})
 
 # Nodelet library
 add_library(cmd_vel_mux_nodelet src/cmd_vel_mux_nodelet.cpp src/cmd_vel_subscribers.cpp)
@@ -35,11 +33,9 @@ install(DIRECTORY include/${PROJECT_NAME}/
 install(DIRECTORY plugins
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
-
 install(DIRECTORY launch
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
-
 install(DIRECTORY param
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
