@@ -20,9 +20,9 @@
 #include <ros/ros.h>
 #include <nodelet/nodelet.h>
 #include <dynamic_reconfigure/server.h>
-#include <cmd_vel_mux/reloadConfig.h>
 
-#include "cmd_vel_subscribers.hpp"
+#include "cmd_vel_mux/reloadConfig.h"
+#include "cmd_vel_mux/cmd_vel_subscribers.hpp"
 
 /*****************************************************************************
 ** Namespaces
