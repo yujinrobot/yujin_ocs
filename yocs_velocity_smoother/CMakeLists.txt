@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(yocs_velocity_smoother)
-find_package(catkin REQUIRED COMPONENTS roscpp nodelet ecl_threads dynamic_reconfigure geometry_msgs nav_msgs)
+find_package(catkin REQUIRED COMPONENTS roscpp pluginlib nodelet ecl_threads dynamic_reconfigure geometry_msgs nav_msgs)
 
 # Dynamic reconfigure support
 generate_dynamic_reconfigure_options(cfg/params.cfg)
@@ -8,7 +8,7 @@ generate_dynamic_reconfigure_options(cfg/params.cfg)
 catkin_package(
    INCLUDE_DIRS include
    LIBRARIES velocity_smoother_nodelet
-   CATKIN_DEPENDS roscpp nodelet ecl_threads dynamic_reconfigure geometry_msgs nav_msgs
+   CATKIN_DEPENDS roscpp pluginlib nodelet ecl_threads dynamic_reconfigure geometry_msgs nav_msgs
 )
 
 include_directories(SYSTEM ${catkin_INCLUDE_DIRS})
