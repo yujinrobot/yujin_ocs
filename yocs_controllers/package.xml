@@ -1,6 +1,6 @@
 <package>
   <name>yocs_controllers</name>
-  <version>0.2.1</version>
+  <version>0.2.2</version>
   <description>
      Library for various controller types and algorithms.
      By now it just contains a Controller class definition with the common interface
