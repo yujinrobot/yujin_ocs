@@ -21,7 +21,7 @@
  * <http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html>.
  */
 
-#include "MarkerDetector.h"
+#include "ar_track_alvar/MarkerDetector.h"
 
 template class ALVAR_EXPORT alvar::MarkerDetector<alvar::Marker>;
 template class ALVAR_EXPORT alvar::MarkerDetector<alvar::MarkerData>;

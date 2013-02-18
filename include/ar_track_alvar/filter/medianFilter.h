@@ -39,7 +39,7 @@
 #ifndef AR_TRACK_ALVAR_MEDIAN_FILTER_H
 #define AR_TRACK_ALVAR_MEDIAN_FILTER_H
 
-#include "Pose.h"
+#include "ar_track_alvar/Pose.h"
 
 namespace ar_track_alvar
 {

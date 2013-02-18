@@ -36,7 +36,7 @@
  * \author Scott Niekum
  */
 
-#include <ar_track_alvar/medianFilter.h>
+#include <ar_track_alvar/filter/medianFilter.h>
 
 namespace ar_track_alvar
 {

@@ -21,7 +21,7 @@
  * <http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html>.
  */
 
-#include "CaptureFactory_private.h"
+#include "ar_track_alvar/CaptureFactory_private.h"
 
 #include <stdlib.h>
 #include <unistd.h> // for readlink()

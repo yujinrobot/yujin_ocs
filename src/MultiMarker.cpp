@@ -21,9 +21,9 @@
  * <http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html>.
  */
 
-#include "Alvar.h"
-#include "MultiMarker.h"
-#include "FileFormatUtils.h"
+#include "ar_track_alvar/Alvar.h"
+#include "ar_track_alvar/MultiMarker.h"
+#include "ar_track_alvar/FileFormatUtils.h"
 #include <fstream>
 
 using namespace std;

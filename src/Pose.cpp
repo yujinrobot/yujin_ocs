@@ -21,7 +21,7 @@
  * <http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html>.
  */
 
-#include "Pose.h"
+#include "ar_track_alvar/Pose.h"
 
 using namespace std;
 

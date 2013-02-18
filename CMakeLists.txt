@@ -44,7 +44,7 @@ catkin_package(
         pcl_ros
 )
 
-include_directories(include
+include_directories(include 
                     ${PC_LIBOPENNI_INCLUDE_DIRS}
                     ${catkin_INCLUDE_DIRS}
                     ${OpenCV_INCLUDE_DIRS}
@@ -121,3 +121,6 @@ install(TARGETS ${ALVAR_TARGETS}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+)

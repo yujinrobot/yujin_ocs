@@ -21,8 +21,8 @@
  * <http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html>.
  */
 
-#include "Alvar.h"
-#include "Filter.h"
+#include "ar_track_alvar/Alvar.h"
+#include "ar_track_alvar/Filter.h"
 
 template class ALVAR_EXPORT alvar::FilterArray<alvar::FilterAverage>;
 template class ALVAR_EXPORT alvar::FilterArray<alvar::FilterMedian>;

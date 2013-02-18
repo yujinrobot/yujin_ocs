@@ -33,11 +33,11 @@
 
   author: Scott Niekum
 */
-#include "CvTestbed.h"
-#include "MarkerDetector.h"
-#include "MultiMarkerBundle.h"
-#include "MultiMarkerInitializer.h"
-#include "Shared.h"
+#include "ar_track_alvar/CvTestbed.h"
+#include "ar_track_alvar/MarkerDetector.h"
+#include "ar_track_alvar/MultiMarkerBundle.h"
+#include "ar_track_alvar/MultiMarkerInitializer.h"
+#include "ar_track_alvar/Shared.h"
 #include <cv_bridge/cv_bridge.h>
 #include <ar_track_alvar/AlvarMarker.h>
 #include <ar_track_alvar/AlvarMarkers.h>
@@ -63,8 +63,8 @@
 
 #include <tf/tf.h>
 #include <Eigen/Core>
-#include <ar_track_alvar/kinect_filtering.h>
-#include <ar_track_alvar/medianFilter.h>
+#include <ar_track_alvar/filter/kinect_filtering.h>
+#include <ar_track_alvar/filter/medianFilter.h>
 
 
 #define MAIN_MARKER 1

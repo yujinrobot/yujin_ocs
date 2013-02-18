@@ -21,9 +21,9 @@
  * <http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html>.
  */
 
-#include "Plugin_private.h"
+#include "ar_track_alvar/Plugin_private.h"
 
-#include "AlvarException.h"
+#include "ar_track_alvar/AlvarException.h"
 
 #include <dlfcn.h>
 #include <sstream>

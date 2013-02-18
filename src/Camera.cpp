@@ -21,9 +21,9 @@
  * <http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html>.
  */
 
-#include "Alvar.h"
-#include "Camera.h"
-#include "FileFormatUtils.h"
+#include "ar_track_alvar/Alvar.h"
+#include "ar_track_alvar/Camera.h"
+#include "ar_track_alvar/FileFormatUtils.h"
 #include <memory>
 
 using namespace std;

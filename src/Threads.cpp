@@ -21,9 +21,9 @@
  * <http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html>.
  */
 
-#include "Threads.h"
+#include "ar_track_alvar/Threads.h"
 
-#include "Threads_private.h"
+#include "ar_track_alvar/Threads_private.h"
 
 namespace alvar {
 

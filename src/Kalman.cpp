@@ -26,9 +26,9 @@
 #include "cxcore.h"
 #include "cv.h"
 #include "highgui.h"
-#include "Kalman.h"
-#include "Util.h"
-#include "Alvar.h"
+#include "ar_track_alvar/Kalman.h"
+#include "ar_track_alvar/Util.h"
+#include "ar_track_alvar/Alvar.h"
 
 namespace alvar {
 
