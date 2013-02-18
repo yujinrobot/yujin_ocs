@@ -21,11 +21,11 @@
  * <http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html>.
  */
 
-#include "CaptureFactory.h"
+#include "ar_track_alvar/CaptureFactory.h"
 
-#include "CaptureFactory_private.h"
-#include "CapturePlugin.h"
-#include "DirectoryIterator.h"
+#include "ar_track_alvar/CaptureFactory_private.h"
+#include "ar_track_alvar/CapturePlugin.h"
+#include "ar_track_alvar/DirectoryIterator.h"
 
 namespace alvar {
 

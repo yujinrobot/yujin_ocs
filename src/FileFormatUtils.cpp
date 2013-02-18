@@ -21,7 +21,7 @@
  * <http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html>.
  */
 
-#include "FileFormatUtils.h"
+#include "ar_track_alvar/FileFormatUtils.h"
 #include <stdio.h>
 #include <sstream>
 #include <limits>

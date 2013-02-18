@@ -44,7 +44,7 @@ catkin_package(
         pcl_ros
 )
 
-include_directories(include/ar_track_alvar
+include_directories(include 
                     ${PC_LIBOPENNI_INCLUDE_DIRS}
                     ${catkin_INCLUDE_DIRS}
                     ${OpenCV_INCLUDE_DIRS}

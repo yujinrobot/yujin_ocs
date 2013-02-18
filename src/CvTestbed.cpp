@@ -1,4 +1,4 @@
-#include "CvTestbed.h"
+#include "ar_track_alvar/CvTestbed.h"
 
 CvTestbed::CvTestbed() {
 	cap=NULL;

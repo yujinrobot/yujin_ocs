@@ -35,12 +35,12 @@
 */
 
 
-#include "CvTestbed.h"
-#include "MarkerDetector.h"
-#include "MultiMarkerBundle.h"
-#include "MultiMarkerInitializer.h"
-#include "Shared.h"
-#include <cv_bridge/cv_bridge.h>.h>
+#include "ar_track_alvar/CvTestbed.h"
+#include "ar_track_alvar/MarkerDetector.h"
+#include "ar_track_alvar/MultiMarkerBundle.h"
+#include "ar_track_alvar/MultiMarkerInitializer.h"
+#include "ar_track_alvar/Shared.h"
+#include <cv_bridge/cv_bridge.h>
 #include <ar_track_alvar/AlvarMarker.h>
 #include <ar_track_alvar/AlvarMarkers.h>
 #include <tf/transform_listener.h>

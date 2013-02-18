@@ -21,7 +21,7 @@
  * <http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html>.
  */
 
-#include "MultiMarkerInitializer.h"
+#include "ar_track_alvar/MultiMarkerInitializer.h"
 
 using namespace std;
 

@@ -21,8 +21,8 @@
  * <http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html>.
  */
 
-#include "Util.h"
-#include "FileFormatUtils.h"
+#include "ar_track_alvar/Util.h"
+#include "ar_track_alvar/FileFormatUtils.h"
 
 using namespace std;
 
