@@ -33,7 +33,7 @@
 
 //#include <ros/ros.h>
 #include <Eigen/Core>
-#include <ar_track_alvar/kinect_filtering.h>
+#include <filter/kinect_filtering.h>
 #include <tf/tf.h>
 #include <tf/transform_datatypes.h>
 

@@ -63,8 +63,8 @@
 
 #include <tf/tf.h>
 #include <Eigen/Core>
-#include <ar_track_alvar/kinect_filtering.h>
-#include <ar_track_alvar/medianFilter.h>
+#include <filter/kinect_filtering.h>
+#include <filter/medianFilter.h>
 
 
 #define MAIN_MARKER 1
