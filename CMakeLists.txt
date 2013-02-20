@@ -31,6 +31,7 @@ generate_messages(DEPENDENCIES ${MSG_DEPS})
 
 catkin_package(
   INCLUDE_DIRS include
+  LIBRARIES ar_track_alvar
   CATKIN_DEPENDS
         std_msgs
         roscpp
@@ -54,6 +55,7 @@ include_directories(include
 
 add_library(ar_track_alvar
     src/Camera.cpp
+    src/CaptureDevice.cpp
     src/Pose.cpp
     src/Marker.cpp
     src/MarkerDetector.cpp
@@ -77,6 +79,7 @@ add_library(ar_track_alvar
     src/Util.cpp
     src/Filter.cpp
     src/Kalman.cpp
+    src/kinect_filtering.cpp
     src/Optimization.cpp
     src/MultiMarker.cpp
     src/MultiMarkerBundle.cpp
@@ -89,7 +92,7 @@ target_link_libraries(kinect_filtering ${catkin_LIBRARIES})
 add_library(medianFilter src/medianFilter.cpp)
 target_link_libraries(medianFilter ${catkin_LIBRARIES})
 
-set(ALVAR_TARGETS individualMarkers individualMarkersNoKinect trainMarkerBundle findMarkerBundles findMarkerBundlesNoKinect createMarker ar_track_alvar)
+set(ALVAR_TARGETS ar_track_alvar individualMarkers individualMarkersNoKinect trainMarkerBundle findMarkerBundles findMarkerBundlesNoKinect createMarker ar_track_alvar)
 
 add_executable(individualMarkers nodes/IndividualMarkers.cpp)
 target_link_libraries(individualMarkers ar_track_alvar kinect_filtering ${catkin_LIBRARIES})
