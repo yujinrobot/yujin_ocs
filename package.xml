@@ -28,7 +28,7 @@ This package is a ROS wrapper for Alvar, an open source AR tag tracking library.
  <run_depend>cv_bridge</run_depend>
  <run_depend>geometry_msgs</run_depend>
  <run_depend>image_transport</run_depend>
- <run_depend>message_generation</run_depend>
+ <run_depend>message_runtime</run_depend>
  <run_depend>pcl</run_depend>
  <run_depend>pcl_ros</run_depend>
  <run_depend>resource_retriever</run_depend>
