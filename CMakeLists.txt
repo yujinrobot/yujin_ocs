@@ -15,6 +15,7 @@ find_package(catkin COMPONENTS
         resource_retriever
         cv_bridge
         pcl_ros
+        message_generation
         ${MSG_DEPS}
         REQUIRED)
 
@@ -36,6 +37,7 @@ catkin_package(
         std_msgs
         roscpp
         tf
+        message_runtime
         image_transport
         sensor_msgs
         geometry_msgs
@@ -96,27 +98,27 @@ set(ALVAR_TARGETS ar_track_alvar individualMarkers individualMarkersNoKinect tra
 
 add_executable(individualMarkers nodes/IndividualMarkers.cpp)
 target_link_libraries(individualMarkers ar_track_alvar kinect_filtering ${catkin_LIBRARIES})
-add_dependencies(individualMarkers ${PROJECT_NAME}_generate_messages)
+add_dependencies(individualMarkers ${PROJECT_NAME}_gencpp)
 
 add_executable(individualMarkersNoKinect nodes/IndividualMarkersNoKinect.cpp)
 target_link_libraries(individualMarkersNoKinect ar_track_alvar ${catkin_LIBRARIES})
-add_dependencies(individualMarkersNoKinect ${PROJECT_NAME}_generate_messages)
+add_dependencies(individualMarkersNoKinect ${PROJECT_NAME}_gencpp)
 
 add_executable(trainMarkerBundle nodes/TrainMarkerBundle.cpp)
 target_link_libraries(trainMarkerBundle ar_track_alvar ${catkin_LIBRARIES})
-add_dependencies(trainMarkerBundle ${PROJECT_NAME}_generate_messages)
+add_dependencies(trainMarkerBundle ${PROJECT_NAME}_gencpp)
 
 add_executable(findMarkerBundles nodes/FindMarkerBundles.cpp)
 target_link_libraries(findMarkerBundles ar_track_alvar kinect_filtering medianFilter ${catkin_LIBRARIES})
-add_dependencies(findMarkerBundles ${PROJECT_NAME}_generate_messages)
+add_dependencies(findMarkerBundles ${PROJECT_NAME}_gencpp)
 
 add_executable(findMarkerBundlesNoKinect nodes/FindMarkerBundlesNoKinect.cpp)
 target_link_libraries(findMarkerBundlesNoKinect ar_track_alvar ${catkin_LIBRARIES})
-add_dependencies(findMarkerBundlesNoKinect ${PROJECT_NAME}_generate_messages)
+add_dependencies(findMarkerBundlesNoKinect ${PROJECT_NAME}_gencpp)
 
 add_executable(createMarker src/SampleMarkerCreator.cpp)
 target_link_libraries(createMarker ar_track_alvar ${catkin_LIBRARIES})
-add_dependencies(createMarker ${PROJECT_NAME}_generate_messages)
+add_dependencies(createMarker ${PROJECT_NAME}_gencpp)
 
 install(TARGETS ${ALVAR_TARGETS}
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
