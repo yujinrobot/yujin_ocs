@@ -23,7 +23,7 @@ find_package(Eigen REQUIRED)
 find_package(OpenCV REQUIRED)
 
 find_package(PkgConfig)
-pkg_check_modules(PC_LIBOPENNI REQUIRED tinyxml)
+pkg_check_modules(PC_TINYXML REQUIRED tinyxml)
 
 # generate messages
 set(MSG_FILES AlvarMarker.msg AlvarMarkers.msg)
@@ -48,7 +48,7 @@ catkin_package(
 )
 
 include_directories(include 
-                    ${PC_LIBOPENNI_INCLUDE_DIRS}
+                    ${PC_TINYXML_INCLUDE_DIRS}
                     ${catkin_INCLUDE_DIRS}
                     ${OpenCV_INCLUDE_DIRS}
                     ${PC_TINYXML_INCLUDE_DIRS}
