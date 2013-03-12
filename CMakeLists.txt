@@ -31,7 +31,8 @@ rosbuild_genmsg()
 #target_link_libraries(example ${PROJECT_NAME})
 
 find_package(Eigen REQUIRED)
-include_directories(${Eigen_INCLUDE_DIRS})
+include_directories(${EIGEN_INCLUDE_DIRS})
+add_definitions(${EIGEN_DEFINITIONS})
 FIND_PACKAGE( OpenCV REQUIRED )
 
 rosbuild_add_library(ar_track_alvar src/Camera.cpp src/Pose.cpp src/Marker.cpp src/MarkerDetector.cpp src/Bitset.cpp src/Rotation.cpp src/CvTestbed.cpp src/CaptureDevice.cpp src/CaptureFactory.cpp src/CaptureFactory_unix.cpp src/FileFormatUtils.cpp src/Threads.cpp src/Threads_unix.cpp src/Mutex.cpp src/Mutex_unix.cpp src/ConnectedComponents.cpp src/Line.cpp src/Plugin.cpp src/Plugin_unix.cpp src/DirectoryIterator.cpp src/DirectoryIterator_unix.cpp src/Draw.cpp src/Util.cpp src/Filter.cpp src/Kalman.cpp src/Optimization.cpp src/MultiMarker.cpp src/MultiMarkerBundle.cpp src/MultiMarkerInitializer.cpp)
@@ -76,5 +77,5 @@ foreach(t ${ALVAR_TARGETS})
     -Wno-type-limits)
 endforeach(t)
 
-rosbuild_make_distribution(0.4.0)
+rosbuild_make_distribution(0.5.0)
 
