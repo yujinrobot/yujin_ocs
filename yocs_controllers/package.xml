@@ -2,9 +2,7 @@
   <name>yocs_controllers</name>
   <version>0.2.2</version>
   <description>
-     Library for various controller types and algorithms.
-     By now it just contains a Controller class definition with the common interface
-     that controllers intended to work with Yujin's control system must implement.
+     Library for various controller types and algorithms
   </description>
   <author email="marcus.liebhardt@yujinrobot.com">Marcus Liebhardt</author>
   <maintainer email="marcus.liebhardt@yujinrobot.com">Marcus Liebhardt</maintainer>
