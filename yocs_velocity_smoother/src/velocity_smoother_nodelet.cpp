@@ -92,7 +92,18 @@ void VelocitySmoother::velocityCB(const geometry_msgs::Twist::ConstPtr& msg)
 
 void VelocitySmoother::odometryCB(const nav_msgs::Odometry::ConstPtr& msg)
 {
-  odometry_vel = msg->twist.twist;
+  if (robot_feedback == ODOMETRY)
+    current_vel = msg->twist.twist;
+
+  // ignore otherwise
+}
+
+void VelocitySmoother::robotVelCB(const geometry_msgs::Twist::ConstPtr& msg)
+{
+  if (robot_feedback == COMMANDS)
+    current_vel = *msg;
+
+  // ignore otherwise
 }
 
 void VelocitySmoother::spin()
@@ -117,21 +128,24 @@ void VelocitySmoother::spin()
       }
     }
 
-    if ((input_active == true) &&
+    if ((robot_feedback != NONE) && (input_active == true) &&
         (((ros::Time::now() - last_cb_time).toSec() > 5.0*cb_avg_time)     || // 5 missing msgs
-         (std::abs(odometry_vel.linear.x  - last_cmd_vel.linear.x)  > 0.2) ||
-         (std::abs(odometry_vel.angular.z - last_cmd_vel.angular.z) > 2.0)))
+         (std::abs(current_vel.linear.x  - last_cmd_vel.linear.x)  > 0.2) ||
+         (std::abs(current_vel.angular.z - last_cmd_vel.angular.z) > 2.0)))
     {
-      // If the publisher has been inactive for a while, or if odometry velocity has diverged
-      // significatively from last_cmd_vel, we cannot trust the latter; relay on odometry instead
-      // TODO: odometry thresholds are 진짜 arbitrary; should be proportional to the max v and w...
+      // If the publisher has been inactive for a while, or if our current commanding differs a lot
+      // from robot velocity feedback, we cannot trust the former; relay on robot's feedback instead
+      // This can happen mainly due to preemption of current controller on velocity multiplexer.
+      // TODO: current command/feedback difference thresholds are 진짜 arbitrary; they should somehow
+      // be proportional to max v and w...
       // The one for angular velocity is very big because is it's less necessary (for example the
       // reactive controller will never make the robot spin) and because the gyro has a 15 ms delay
-      ROS_WARN("Using odometry instead of last command: %f, %f, %f",
-		(ros::Time::now()      - last_cb_time).toSec(),
-                odometry_vel.linear.x  - last_cmd_vel.linear.x,
-                odometry_vel.angular.z - last_cmd_vel.angular.z);
-      last_cmd_vel = odometry_vel;
+      ROS_WARN("Using robot velocity feedback (%s) instead of last command: %f, %f, %f",
+                robot_feedback == ODOMETRY ? "odometry" : "end commands",
+                (ros::Time::now()      - last_cb_time).toSec(),
+                current_vel.linear.x  - last_cmd_vel.linear.x,
+                current_vel.angular.z - last_cmd_vel.angular.z);
+      last_cmd_vel = current_vel;
     }
 
     geometry_msgs::TwistPtr cmd_vel;
@@ -145,9 +159,10 @@ void VelocitySmoother::spin()
       double v_inc, w_inc, max_v_inc, max_w_inc;
 
       v_inc = target_vel.linear.x - last_cmd_vel.linear.x;
-      if (odometry_vel.linear.x*target_vel.linear.x < 0.0)
+      if ((robot_feedback == ODOMETRY) && (current_vel.linear.x*target_vel.linear.x < 0.0))
       {
-        max_v_inc = decel_lim_v*period;   // countermarch
+        // countermarch (on robots with significant inertia; requires odometry feedback to be detected)
+        max_v_inc = decel_lim_v*period;
       }
       else
       {
@@ -155,9 +170,10 @@ void VelocitySmoother::spin()
       }
 
       w_inc = target_vel.angular.z - last_cmd_vel.angular.z;
-      if (odometry_vel.angular.z*target_vel.angular.z < 0.0)
+      if ((robot_feedback == ODOMETRY) && (current_vel.angular.z*target_vel.angular.z < 0.0))
       {
-        max_w_inc = decel_lim_w*period;  // countermarch
+        // countermarch (on robots with significant inertia; requires odometry feedback to be detected)
+        max_w_inc = decel_lim_w*period;
       }
       else
       {
@@ -199,14 +215,14 @@ void VelocitySmoother::spin()
         cmd_vel->angular.z = last_cmd_vel.angular.z + sign(w_inc)*max_w_inc;
       }
 
-      lim_vel_pub.publish(cmd_vel);
+      smooth_vel_pub.publish(cmd_vel);
       last_cmd_vel = *cmd_vel;
     }
     else if (input_active == true)
     {
       // We already reached target velocity; just keep resending last command while input is active
       cmd_vel.reset(new geometry_msgs::Twist(last_cmd_vel));
-      lim_vel_pub.publish(cmd_vel);
+      smooth_vel_pub.publish(cmd_vel);
     }
 
     spin_rate.sleep();
@@ -227,8 +243,19 @@ bool VelocitySmoother::init(ros::NodeHandle& nh)
   dynamic_reconfigure_server->setCallback(dynamic_reconfigure_callback);
 
   // Optional parameters
-  nh.param("frequency",    frequency,   20.0);
-  nh.param("decel_factor", decel_factor, 1.0);
+  int feedback;
+  nh.param("frequency",      frequency,     20.0);
+  nh.param("decel_factor",   decel_factor,   1.0);
+  nh.param("robot_feedback", feedback, (int)NONE);
+
+  if ((int(feedback) < NONE) || (int(feedback) > COMMANDS))
+  {
+    ROS_WARN("Invalid robot feedback type (%d). Valid options are 0 (NONE, default), 1 (ODOMETRY) and 2 (COMMANDS)",
+             feedback);
+    feedback = NONE;
+  }
+
+  robot_feedback = static_cast<RobotFeedbackType>(feedback);
 
   // Mandatory parameters
   if ((nh.getParam("speed_lim_v", speed_lim_v) == false) ||
@@ -250,9 +277,10 @@ bool VelocitySmoother::init(ros::NodeHandle& nh)
   decel_lim_w = decel_factor*accel_lim_w;
 
   // Publishers and subscribers
-  cur_vel_sub = nh.subscribe("odometry",    1, &VelocitySmoother::odometryCB, this);
-  raw_vel_sub = nh.subscribe("raw_cmd_vel", 1, &VelocitySmoother::velocityCB, this);
-  lim_vel_pub = nh.advertise <geometry_msgs::Twist> ("smooth_cmd_vel", 1);
+  odometry_sub    = nh.subscribe("odometry",      1, &VelocitySmoother::odometryCB, this);
+  current_vel_sub = nh.subscribe("robot_cmd_vel", 1, &VelocitySmoother::robotVelCB, this);
+  raw_in_vel_sub  = nh.subscribe("raw_cmd_vel",   1, &VelocitySmoother::velocityCB, this);
+  smooth_vel_pub  = nh.advertise <geometry_msgs::Twist> ("smooth_cmd_vel", 1);
 
   return true;
 }
