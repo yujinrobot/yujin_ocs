@@ -55,6 +55,8 @@ include_directories(include
 
 )
 
+set(GENCPP_DEPS std_msgs_gencpp sensor_msgs_gencpp geometry_msgs_gencpp visualization_msgs_gencpp)
+
 add_library(ar_track_alvar
     src/Camera.cpp
     src/CaptureDevice.cpp
@@ -87,38 +89,42 @@ add_library(ar_track_alvar
     src/MultiMarkerBundle.cpp
     src/MultiMarkerInitializer.cpp)
 target_link_libraries(ar_track_alvar ${OpenCV_LIBS} tinyxml ${catkin_LIBRARIES})
+add_dependencies(ar_track_alvar ${GENCPP_DEPS})
 
 # Kinect filtering code
 add_library(kinect_filtering src/kinect_filtering.cpp)
 target_link_libraries(kinect_filtering ${catkin_LIBRARIES})
+add_dependencies(kinect_filtering ${GENCPP_DEPS})
+
 add_library(medianFilter src/medianFilter.cpp)
 target_link_libraries(medianFilter ${catkin_LIBRARIES})
+add_dependencies(medianFilter ${GENCPP_DEPS})
 
 set(ALVAR_TARGETS ar_track_alvar individualMarkers individualMarkersNoKinect trainMarkerBundle findMarkerBundles findMarkerBundlesNoKinect createMarker ar_track_alvar)
 
 add_executable(individualMarkers nodes/IndividualMarkers.cpp)
 target_link_libraries(individualMarkers ar_track_alvar kinect_filtering ${catkin_LIBRARIES})
-add_dependencies(individualMarkers ${PROJECT_NAME}_gencpp)
+add_dependencies(individualMarkers ${PROJECT_NAME}_gencpp ${GENCPP_DEPS})
 
 add_executable(individualMarkersNoKinect nodes/IndividualMarkersNoKinect.cpp)
 target_link_libraries(individualMarkersNoKinect ar_track_alvar ${catkin_LIBRARIES})
-add_dependencies(individualMarkersNoKinect ${PROJECT_NAME}_gencpp)
+add_dependencies(individualMarkersNoKinect ${PROJECT_NAME}_gencpp  ${GENCPP_DEPS})
 
 add_executable(trainMarkerBundle nodes/TrainMarkerBundle.cpp)
 target_link_libraries(trainMarkerBundle ar_track_alvar ${catkin_LIBRARIES})
-add_dependencies(trainMarkerBundle ${PROJECT_NAME}_gencpp)
+add_dependencies(trainMarkerBundle ${PROJECT_NAME}_gencpp ${GENCPP_DEPS})
 
 add_executable(findMarkerBundles nodes/FindMarkerBundles.cpp)
 target_link_libraries(findMarkerBundles ar_track_alvar kinect_filtering medianFilter ${catkin_LIBRARIES})
-add_dependencies(findMarkerBundles ${PROJECT_NAME}_gencpp)
+add_dependencies(findMarkerBundles ${PROJECT_NAME}_gencpp ${GENCPP_DEPS})
 
 add_executable(findMarkerBundlesNoKinect nodes/FindMarkerBundlesNoKinect.cpp)
 target_link_libraries(findMarkerBundlesNoKinect ar_track_alvar ${catkin_LIBRARIES})
-add_dependencies(findMarkerBundlesNoKinect ${PROJECT_NAME}_gencpp)
+add_dependencies(findMarkerBundlesNoKinect ${PROJECT_NAME}_gencpp ${GENCPP_DEPS})
 
 add_executable(createMarker src/SampleMarkerCreator.cpp)
 target_link_libraries(createMarker ar_track_alvar ${catkin_LIBRARIES})
-add_dependencies(createMarker ${PROJECT_NAME}_gencpp)
+add_dependencies(createMarker ${PROJECT_NAME}_gencpp ${GENCPP_DEPS})
 
 install(TARGETS ${ALVAR_TARGETS}
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
