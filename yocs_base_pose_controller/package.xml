@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<package>
+  <name>yocs_diff_drive_pose_controller</name>
+  <version>0.0.1</version>
+  <description>
+    A controller for driving a differential drive base to a pose goal or along a path specified by multiple poses.
+    A pose consists of a 2D position (x,y) and a 1D orientation (theta).
+  </description>
+  <license>BSD</license>
+  <url type="website">http://ros.org/wiki/yocs_diff_drive_pose_controller</url>
+  <author email="marcus.liebhardt@yujinrobot.com">Marcus Liebhardt</author>
+  <maintainer email="marcus.liebhardt@yujinrobot.com">Marcus Liebhardt</maintainer>
+  
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>ecl_threads</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>nodelet</build_depend>
+  <build_depend>pluginlib</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>tf</build_depend>
+  <build_depend>yocs_controllers</build_depend>
+  <run_depend>ecl_threads</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>nodelet</run_depend>
+  <run_depend>pluginlib</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>tf</run_depend>
+  <run_depend>yocs_controllers</run_depend>
+  
+  <export>
+    <nodelet plugin="${prefix}/plugins/nodelets.xml"/>
+  </export>
+</package>

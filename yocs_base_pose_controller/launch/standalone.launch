@@ -1,0 +1,10 @@
+<!-- Example/standalone launcher for the diff-drive pose controller -->
+
+<launch>
+  <node pkg="nodelet" type="nodelet" name="nodelet_manager"  args="manager"/>
+  <node pkg="nodelet" type="nodelet" name="diff_drive_pose_controller"
+        args="load yocs_diff_drive_pose_controller/DiffDrivePoseControllerNodelet nodelet_manager">
+<!--     <remap from="kobuki_safety_controller/enable" to="enable"/> -->
+<!--     <remap from="kobuki_safety_controller/disable" to="disable"/> -->
+  </node>
+</launch>

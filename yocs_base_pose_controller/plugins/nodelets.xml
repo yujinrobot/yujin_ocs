@@ -1,0 +1,9 @@
+<library path="lib/libyocs_diff_drive_pose_controller_nodelet">
+  <class name="yocs_diff_drive_pose_controller/DiffDrivePoseControllerNodelet"
+         type="yocs::DiffDrivePoseControllerNodelet"
+         base_class_type="nodelet::Nodelet">
+    <description>
+      Nodelet for the YOCS diff-drive pose controller
+    </description>
+  </class>
+</library>
