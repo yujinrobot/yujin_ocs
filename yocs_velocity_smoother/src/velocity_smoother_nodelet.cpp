@@ -72,8 +72,8 @@ void VelocitySmoother::velocityCB(const geometry_msgs::Twist::ConstPtr& msg)
 
   if (period_record.size() <= PERIOD_RECORD_SIZE/2)
   {
-    // wait until we have some values; make a reasonable assumption meanwhile
-    cb_avg_time = 0.05;
+    // wait until we have some values; make a reasonable assumption (10 Hz) meanwhile
+    cb_avg_time = 0.1;
   }
   else
   {
@@ -113,12 +113,14 @@ void VelocitySmoother::spin()
 
   while (! shutdown_req && ros::ok())
   {
-    if ((input_active == true) &&
+    if ((input_active == true) && (cb_avg_time > 0.0) &&
         ((ros::Time::now() - last_cb_time).toSec() > std::min(3.0*cb_avg_time, 0.5)))
     {
       // Velocity input no active anymore; normally last command is a zero-velocity one, but reassure
       // this, just in case something went wrong with our input, or he just forgot good manners...
-      // Issue #2, extra check in case cb_avg_time is very bit, for example with several atomic commands
+      // Issue #2, extra check in case cb_avg_time is very big, for example with several atomic commands
+      // The cb_avg_time > 0 check is required to deal with low-rate simulated time, that can make that
+      // several messages arrive with the same time and so lead to a zero median
       input_active = false;
       if (IS_ZERO_VEOCITY(target_vel) == false)
       {
@@ -128,7 +130,7 @@ void VelocitySmoother::spin()
       }
     }
 
-    if ((robot_feedback != NONE) && (input_active == true) &&
+    if ((robot_feedback != NONE) && (input_active == true) && (cb_avg_time > 0.0) &&
         (((ros::Time::now() - last_cb_time).toSec() > 5.0*cb_avg_time)     || // 5 missing msgs
          (std::abs(current_vel.linear.x  - last_cmd_vel.linear.x)  > 0.2) ||
          (std::abs(current_vel.angular.z - last_cmd_vel.angular.z) > 2.0)))
