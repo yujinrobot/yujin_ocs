@@ -11,6 +11,7 @@
   <run_depend>cmd_vel_mux</run_depend>
   <run_depend>yocs_controllers</run_depend>
   <run_depend>yocs_velocity_smoother</run_depend>
+  <run_depend>yocs_diff_drive_pose_controller</run_depend>
 
   <export>
     <metapackage/>

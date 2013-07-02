@@ -11,9 +11,6 @@ find_package(catkin REQUIRED COMPONENTS ecl_threads
                                         tf
                                         yocs_controllers)
 
-## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
-
 catkin_package(INCLUDE_DIRS include
                LIBRARIES yocs_diff_drive_pose_controller_nodelet
                CATKIN_DEPENDS ecl_threads
@@ -30,10 +27,10 @@ include_directories(include
                     ${catkin_INCLUDE_DIRS})
 
 add_library(yocs_diff_drive_pose_controller_nodelet src/nodelet.cpp)
-add_dependencies(yocs_diff_drive_pose_controller_nodelet geometry_msgs_gencpp)
-add_dependencies(yocs_diff_drive_pose_controller_nodelet sensor_msgs_gencpp)
-add_dependencies(yocs_diff_drive_pose_controller_nodelet std_msgs_gencpp)
-#target_link_libraries(yocs_diff_drive_pose_controller_nodelet ${catkin_LIBRARIES})
+add_dependencies(yocs_diff_drive_pose_controller_nodelet geometry_msgs_gencpp
+                                                         sensor_msgs_gencpp
+                                                         std_msgs_gencpp)
+target_link_libraries(yocs_diff_drive_pose_controller_nodelet ${catkin_LIBRARIES})
 
 install(TARGETS yocs_diff_drive_pose_controller_nodelet LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
 install(DIRECTORY include/${PROJECT_NAME}/

@@ -30,7 +30,7 @@
 /*****************************************************************************
 ** Includes
 *****************************************************************************/
-
+#include <string>
 #include <nodelet/nodelet.h>
 #include <pluginlib/class_list_macros.h>
 #include <ecl/threads/thread.hpp>
@@ -42,45 +42,56 @@ namespace yocs
 class DiffDrivePoseControllerNodelet : public nodelet::Nodelet
 {
 public:
-  DiffDrivePoseControllerNodelet() : shutdown_requested_(false) { };
+  DiffDrivePoseControllerNodelet() : spin_rate_(20.0), shutdown_requested_(false) { };
   ~DiffDrivePoseControllerNodelet()
   {
-    NODELET_DEBUG_STREAM("Waiting for update thread to finish.");
+    NODELET_DEBUG_STREAM("Waiting for update thread to finish. [" << name_ << "]");
     shutdown_requested_ = true;
     update_thread_.join();
   }
-  virtual void onInit()
+
+  void onInit()
   {
     ros::NodeHandle nh = this->getPrivateNodeHandle();
     // resolve node(let) name
-    std::string name = nh.getUnresolvedNamespace();
-    int pos = name.find_last_of('/');
-    name = name.substr(pos + 1);
-    NODELET_INFO_STREAM("Initialising nodelet... [" << name << "]");
-    controller_.reset(new DiffDrivePoseController(nh, name));
-    if (controller_->init())
+    name_ = nh.getUnresolvedNamespace();
+    int pos = name_.find_last_of('/');
+    name_ = name_.substr(pos + 1);
+    NODELET_INFO_STREAM("Initialising nodelet... [" << name_ << "]");
+    double spin_rate_param = 20;
+    if(nh.getParam("spin_rate", spin_rate_param))
     {
-      NODELET_INFO_STREAM("Kobuki initialised. Spinning up update thread ... [" << name << "]");
-      update_thread_.start(&DiffDrivePoseControllerNodelet::update, *this);
-      NODELET_INFO_STREAM("Nodelet initialised. [" << name << "]");
+      ROS_DEBUG_STREAM("Controller will spin at " << spin_rate_param << " hz. [" << name_ <<"]");
     }
     else
     {
-      NODELET_ERROR_STREAM("Couldn't initialise nodelet! Please restart. [" << name << "]");
+      ROS_WARN_STREAM("Couldn't retrieve parameter 'spin_rate' from parameter server! Using default '"
+                      << spin_rate_param << "'. [" << name_ <<"]");
+    }
+    spin_rate_ = ros::Rate(spin_rate_param);
+    controller_.reset(new DiffDrivePoseController(nh, name_));
+    if (controller_->init())
+    {
+      update_thread_.start(&DiffDrivePoseControllerNodelet::update, *this);
+      NODELET_INFO_STREAM("Controller initialised. [" << name_ << "]");
+    }
+    else
+    {
+      NODELET_ERROR_STREAM("Couldn't initialise controller! Please restart. [" << name_ << "]");
     }
   }
 private:
   void update()
   {
-    ros::Rate spin_rate(10);
     controller_->enable(); // enable the controller when loading the nodelet
     while (!shutdown_requested_ && ros::ok())
     {
       controller_->spinOnce();
-      spin_rate.sleep();
+      spin_rate_.sleep();
     }
   }
-
+  std::string name_;
+  ros::Rate spin_rate_;
   boost::shared_ptr<DiffDrivePoseController> controller_;
   ecl::Thread update_thread_;
   bool shutdown_requested_;

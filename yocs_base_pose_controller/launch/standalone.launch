@@ -1,10 +1,18 @@
-<!-- Example/standalone launcher for the diff-drive pose controller -->
+<!-- Example/stand-alone launcher for the diff-drive pose controller -->
 
 <launch>
-  <node pkg="nodelet" type="nodelet" name="nodelet_manager"  args="manager"/>
+  <node pkg="nodelet" type="nodelet" name="nodelet_manager" args="manager"/>
+  
   <node pkg="nodelet" type="nodelet" name="diff_drive_pose_controller"
         args="load yocs_diff_drive_pose_controller/DiffDrivePoseControllerNodelet nodelet_manager">
-<!--     <remap from="kobuki_safety_controller/enable" to="enable"/> -->
-<!--     <remap from="kobuki_safety_controller/disable" to="disable"/> -->
+    <param name="spin_rate" value="25"/>
+    <param name="base_frame_name" value="base_footprint"/>
+    <param name="goal_frame_name" value="base_goal_pose"/>
+    <param name="v_max" value="0.1"/>
+    <param name="r_thres" value="0.05"/>
+    <param name="k_1" value="1.0"/>
+    <param name="k_2" value="10.0"/>
+    <param name="beta" value="0.2"/>
+    <param name="lambda" value="2.0"/>
   </node>
 </launch>

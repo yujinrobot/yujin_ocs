@@ -31,13 +31,13 @@
 ** Ifdefs
 *****************************************************************************/
 
-#ifndef CONTROLLER_HPP_
-#define CONTROLLER_HPP_
+#ifndef YOCS_CONTROLLER_HPP_
+#define YOCS_CONTROLLER_HPP_
 
 /*****************************************************************************
 ** Includes
 *****************************************************************************/
-
+#include <cmath>
 #include <string>
 #include <geometry_msgs/Twist.h>
 #include <ros/ros.h>
@@ -152,6 +152,8 @@ private:
   double v_max_;
   /// angular base velocity [rad/s]
   double w_;
+  /// maximum angular base velocity [rad/s]
+  double w_max_;
   /// path to goal curvature
   double cur_;
   /// constant factor determining the ratio of the rate of change in theta to the rate of change in r
@@ -206,7 +208,7 @@ bool DiffDrivePoseController::init()
     ROS_WARN_STREAM("Couldn't retrieve parameter 'v_max' from parameter server! Using default '"
                     << v_max_ << "'. [" << name_ <<"]");
   }
-  return true;
+  w_max_ = M_PI / 4 * v_max_;
   k_1_ = 1.0;
   if(!nh_.getParam("k_1", k_1_))
   {
@@ -231,26 +233,39 @@ bool DiffDrivePoseController::init()
     ROS_WARN_STREAM("Couldn't retrieve parameter 'lambda' from parameter server! Using default '"
                     << lambda_ << "'. [" << name_ <<"]");
   }
+  ROS_DEBUG_STREAM("Controller initialised with the following parameters: [" << name_ <<"]");
+  ROS_DEBUG_STREAM("base_frame_name = " << base_frame_name_ <<", goal_frame_name = "
+                   << goal_frame_name_ << " [" << name_ <<"]");
+  ROS_DEBUG_STREAM("v_max = " << v_max_ <<", k_1 = " << k_1_ << ", k_2 = " << k_2_
+                   << ", beta = " << beta_ << ", lambda = " << lambda_ << " [" << name_ <<"]");
+  return true;
 };
 
 void DiffDrivePoseController::spinOnce()
 {
-  ROS_INFO_STREAM_THROTTLE(1.0, "Controller spinning. [" << name_ <<"]");
-  // determine pose difference in polar coordinates
-  if (!getPoseDiff())
+  if (this->getState())
   {
-    ROS_WARN_STREAM_THROTTLE(1.0, "Getting pose difference failed. Skipping control loop. [" << name_ <<"]");
-    return;
+    ROS_INFO_STREAM_THROTTLE(1.0, "Controller spinning. [" << name_ <<"]");
+    // determine pose difference in polar coordinates
+    if (!getPoseDiff())
+    {
+      ROS_WARN_STREAM_THROTTLE(1.0, "Getting pose difference failed. Skipping control loop. [" << name_ <<"]");
+      return;
+    }
+    // determine controller output (v, w)
+    getControlOutput();
+    // set control output (v, w)
+    setControlOutput();
+    // Logging
+    ROS_DEBUG_STREAM_THROTTLE(1.0, "Current state: [" << name_ <<"]");
+    ROS_DEBUG_STREAM_THROTTLE(1.0, "r = " << r_ << ", theta = " << theta_ << ", delta = " << delta_
+                                   << " [" << name_ <<"]");
+    ROS_DEBUG_STREAM_THROTTLE(1.0, "cur = " << cur_ << ", v = " << v_ << ", w = " << w_ << " [" << name_ <<"]");
   }
-  // determine controller output (v, w)
-  getControlOutput();
-  // set control output (v, w)
-  setControlOutput();
-  // Logging
-  ROS_DEBUG_STREAM_THROTTLE(1.0, "Current state: [" << name_ <<"]");
-  ROS_DEBUG_STREAM_THROTTLE(1.0, "r = " << r_ << ", theta = " << theta_ << ", delta = " << delta_
-                                 << " [" << name_ <<"]");
-  ROS_DEBUG_STREAM_THROTTLE(1.0, "cur = " << cur_ << ", v = " << v_ << ", w = " << w_ << " [" << name_ <<"]");
+  else
+  {
+    ROS_WARN_STREAM_THROTTLE(3.0, "Controller is disabled. Idling ... [" << name_ <<"]");
+  }
 };
 
 bool DiffDrivePoseController::getPoseDiff()
@@ -271,20 +286,24 @@ bool DiffDrivePoseController::getPoseDiff()
   r_ = std::sqrt(std::pow(tf_goal_pose_rel_.getOrigin().getX(), 2)
                  + std::pow(tf_goal_pose_rel_.getOrigin().getY(), 2));
   // determine orientation of r relative to the base frame
-  delta_ = std::atan2(tf_goal_pose_rel_.getOrigin().getY(), tf_goal_pose_rel_.getOrigin().getX());
+  delta_ = std::atan2(-tf_goal_pose_rel_.getOrigin().getY(), tf_goal_pose_rel_.getOrigin().getX());
   // determine orientation of r relative to the goal frame
-  // helper: theta = tf's orientation - delta
-  theta_ = tf::getYaw(tf_goal_pose_rel_.getRotation()) - delta_;
+  // helper: theta = tf's orientation + delta
+  theta_ = tf::getYaw(tf_goal_pose_rel_.getRotation()) + delta_;
+
   return true;
 };
 
 void DiffDrivePoseController::getControlOutput()
 {
-  cur_ = (-1 / r_) * ((k_2_ * (delta_ - std::atan(-k_1_ * theta_)))
+  cur_ = (-1 / r_) * (k_2_ * (delta_ - std::atan(-k_1_ * theta_))
          + (1 + (k_1_ / (1 + std::pow((k_1_ * theta_), 2)))) * sin(delta_));
   v_ = v_max_ / (1 + beta_ * std::pow(std::abs(cur_), lambda_));
-//  v_ = v_max_ / (1 + std::abs(cur_));
   w_ = cur_ * v_;
+  if (w_ > w_max_)
+  {
+    w_ = w_max_;
+  }
 };
 
 void DiffDrivePoseController::setControlOutput()
@@ -327,4 +346,4 @@ void DiffDrivePoseController::disableCB(const std_msgs::EmptyConstPtr msg)
 
 } // namespace yocs
 
-#endif /* CONTROLLER_HPP_ */
+#endif /* YOCS_CONTROLLER_HPP_ */
