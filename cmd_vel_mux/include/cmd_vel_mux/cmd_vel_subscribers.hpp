@@ -4,7 +4,7 @@
  * @brief Structure for the cmd_vel_mux.
  *
  * License: BSD
- *   https://raw.github.com/yujinrobot/yujin_ocs/master/cmd_vel_mux/LICENSE
+ *   https://raw.github.com/yujinrobot/yujin_ocs/groovy/cmd_vel_mux/LICENSE
  **/
 /*****************************************************************************
 ** Ifdefs

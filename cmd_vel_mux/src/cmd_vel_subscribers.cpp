@@ -4,15 +4,16 @@
  * @brief  Subscriber handlers for the cmd_vel_mux
  *
  * License: BSD
- *   https://raw.github.com/yujinrobot/yujin_ocs/master/cmd_vel_mux/LICENSE
+ *   https://raw.github.com/yujinrobot/yujin_ocs/groovy/cmd_vel_mux/LICENSE
  **/
 /*****************************************************************************
  ** Includes
  *****************************************************************************/
 
 #include <fstream>
-#include "../include/cmd_vel_mux/cmd_vel_subscribers.hpp"
-#include "../include/cmd_vel_mux/exceptions.hpp"
+
+#include "cmd_vel_mux/cmd_vel_subscribers.hpp"
+#include "cmd_vel_mux/exceptions.hpp"
 
 /*****************************************************************************
 ** Namespaces

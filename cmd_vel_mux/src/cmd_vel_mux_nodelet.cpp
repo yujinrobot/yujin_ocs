@@ -4,7 +4,7 @@
  * @brief  Implementation for the command velocity multiplexer
  *
  * License: BSD
- *   https://raw.github.com/yujinrobot/yujin_ocs/master/cmd_vel_mux/LICENSE
+ *   https://raw.github.com/yujinrobot/yujin_ocs/groovy/cmd_vel_mux/LICENSE
  **/
 /*****************************************************************************
  ** Includes
@@ -13,8 +13,9 @@
 #include <fstream>
 #include <std_msgs/String.h>
 #include <pluginlib/class_list_macros.h>
-#include "../include/cmd_vel_mux/cmd_vel_mux_nodelet.hpp"
-#include "../include/cmd_vel_mux/exceptions.hpp"
+
+#include "cmd_vel_mux/cmd_vel_mux_nodelet.hpp"
+#include "cmd_vel_mux/exceptions.hpp"
 
 /*****************************************************************************
 ** Namespaces
