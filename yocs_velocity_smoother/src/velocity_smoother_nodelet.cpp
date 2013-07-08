@@ -4,7 +4,7 @@
  * @brief Velocity smoother implementation.
  *
  * License: BSD
- *   https://raw.github.com/yujinrobot/yujin_ocs/master/velocity_smoother/LICENSE
+ *   https://raw.github.com/yujinrobot/yujin_ocs/groovy/yocs_velocity_smoother/LICENSE
  **/
 /*****************************************************************************
  ** Includes
@@ -19,7 +19,7 @@
 
 #include <ecl/threads/thread.hpp>
 
-#include "../include/velocity_smoother/velocity_smoother_nodelet.hpp"
+#include "velocity_smoother/velocity_smoother_nodelet.hpp"
 
 /*****************************************************************************
  ** Preprocessing

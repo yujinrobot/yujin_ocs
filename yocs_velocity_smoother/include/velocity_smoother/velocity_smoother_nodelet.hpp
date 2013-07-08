@@ -4,7 +4,7 @@
  * @brief Velocity smoother interface
  *
  * License: BSD
- *   https://raw.github.com/yujinrobot/yujin_ocs/master/velocity_smoother/LICENSE
+ *   https://raw.github.com/yujinrobot/yujin_ocs/groovy/yocs_velocity_smoother/LICENSE
  **/
 /*****************************************************************************
  ** Ifdefs
@@ -83,7 +83,7 @@ private:
 
   double sign(double x)  { return x < 0.0 ? -1.0 : +1.0; };
 
-  double median(std::vector<double>& values) {
+  double median(std::vector<double> values) {
     // Return the median element of an doubles vector
     nth_element(values.begin(), values.begin() + values.size()/2, values.end());
     return values[values.size()/2];
