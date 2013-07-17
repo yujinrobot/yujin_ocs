@@ -11,10 +11,12 @@ find_package(catkin COMPONENTS
         genmsg
         roscpp
         tf
+        tf2
         image_transport
         resource_retriever
         cv_bridge
         pcl_ros
+        pcl_conversions
         message_generation
         ${MSG_DEPS}
         REQUIRED)
@@ -37,6 +39,7 @@ catkin_package(
         std_msgs
         roscpp
         tf
+        tf2
         message_runtime
         image_transport
         sensor_msgs
@@ -45,6 +48,7 @@ catkin_package(
         resource_retriever
         cv_bridge
         pcl_ros
+        pcl_conversions
 )
 
 include_directories(include 

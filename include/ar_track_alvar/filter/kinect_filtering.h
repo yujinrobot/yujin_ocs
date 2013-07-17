@@ -39,7 +39,7 @@
 #ifndef AR_TRACK_ALVAR_KINECT_FILTERING_H
 #define AR_TRACK_ALVAR_KINECT_FILTERING_H
 
-#include <pcl/ros/conversions.h>
+#include <pcl_conversions/pcl_conversions.h>
 #include <pcl/point_types.h>
 #include <pcl/registration/icp.h>
 #include <pcl/registration/registration.h>

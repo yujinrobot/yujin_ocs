@@ -43,6 +43,7 @@
 #include <ar_track_alvar/AlvarMarkers.h>
 #include <tf/transform_listener.h>
 #include <sensor_msgs/image_encodings.h>
+#include <pcl_conversions/pcl_conversions.h>
 
 namespace gm=geometry_msgs;
 namespace ata=ar_track_alvar;
@@ -181,7 +182,7 @@ int PlaneFitPoseImprovement(int id, const ARCloud &corners_3D, ARCloud::Ptr sele
 
   ata::PlaneFitResult res = ata::fitPlane(selected_points);
   gm::PoseStamped pose;
-  pose.header.stamp = cloud.header.stamp;
+  pose.header.stamp = pcl_conversions::fromPCL(cloud.header).stamp;
   pose.header.frame_id = cloud.header.frame_id;
   pose.pose.position = ata::centroid(*res.inliers);
 
@@ -317,7 +318,7 @@ void getPointCloudCallback (const sensor_msgs::PointCloud2ConstPtr &msg)
     pcl::fromROSMsg(*msg, cloud);
 
     //Get an OpenCV image from the cloud
-    pcl::toROSMsg (cloud, *image_msg);
+    pcl::toROSMsg (*msg, *image_msg);
     image_msg->header.stamp = msg->header.stamp;
     image_msg->header.frame_id = msg->header.frame_id;
 
