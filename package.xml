@@ -26,6 +26,7 @@ This package is a ROS wrapper for Alvar, an open source AR tag tracking library.
  <build_depend>tf2</build_depend>
  <build_depend>tinyxml</build_depend>
  <build_depend>visualization_msgs</build_depend>
+ <build_depend>dynamic_reconfigure</build_depend>
 
  <run_depend>cv_bridge</run_depend>
  <run_depend>geometry_msgs</run_depend>
@@ -43,6 +44,7 @@ This package is a ROS wrapper for Alvar, an open source AR tag tracking library.
  <run_depend>tf2</run_depend>
  <run_depend>tinyxml</run_depend>
  <run_depend>visualization_msgs</run_depend>
+ <run_depend>dynamic_reconfigure</run_depend>
 
 </package>
 

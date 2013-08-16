@@ -19,6 +19,7 @@ find_package(catkin COMPONENTS
         pcl_conversions
         message_generation
         ${MSG_DEPS}
+        dynamic_reconfigure
         REQUIRED)
 
 find_package(Eigen REQUIRED)
@@ -31,6 +32,9 @@ pkg_check_modules(PC_TINYXML REQUIRED tinyxml)
 set(MSG_FILES AlvarMarker.msg AlvarMarkers.msg)
 add_message_files(DIRECTORY msg FILES ${MSG_FILES})
 generate_messages(DEPENDENCIES ${MSG_DEPS})
+
+# dynamic reconfigure support
+generate_dynamic_reconfigure_options(cfg/Params.cfg)
 
 catkin_package(
   INCLUDE_DIRS include
@@ -49,6 +53,7 @@ catkin_package(
         cv_bridge
         pcl_ros
         pcl_conversions
+        dynamic_reconfigure
 )
 
 include_directories(include 
