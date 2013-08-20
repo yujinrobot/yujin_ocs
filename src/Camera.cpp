@@ -246,10 +246,17 @@ void Camera::camInfoCallback (const sensor_msgs::CameraInfoConstPtr & cam_info)
 		cvmSet(&calib_K, 2, 1, cam_info_.K[7]);
 		cvmSet(&calib_K, 2, 2, cam_info_.K[8]);
 
-		cvmSet(&calib_D, 0, 0, cam_info_.D[0]);
-		cvmSet(&calib_D, 1, 0, cam_info_.D[1]);
-		cvmSet(&calib_D, 2, 0, cam_info_.D[2]);
-		cvmSet(&calib_D, 3, 0, cam_info_.D[3]);      	
+        if (cam_info_.D.size() >= 4) {
+            cvmSet(&calib_D, 0, 0, cam_info_.D[0]);
+            cvmSet(&calib_D, 1, 0, cam_info_.D[1]);
+            cvmSet(&calib_D, 2, 0, cam_info_.D[2]);
+            cvmSet(&calib_D, 3, 0, cam_info_.D[3]);
+        } else {
+            cvmSet(&calib_D, 0, 0, 0);
+            cvmSet(&calib_D, 1, 0, 0);
+            cvmSet(&calib_D, 2, 0, 0);
+            cvmSet(&calib_D, 3, 0, 0);
+        }
 		  
 		getCamInfo_ = true;
     }
