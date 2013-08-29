@@ -2,8 +2,10 @@
 Changelog for package yocs_controllers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.4.0 (2013-08-29)
+------------------
+* Add bugtracker and repo info URLs.
+* Changelogs at package level.
 
 0.3.0 (2013-07-02)
 ------------------

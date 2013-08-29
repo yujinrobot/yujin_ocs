@@ -2,9 +2,11 @@
 Changelog for package cmd_vel_mux
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
-* License link fixed
+0.4.0 (2013-08-29)
+------------------
+* Add bugtracker and repo info URLs.
+* Changelogs at package level.
+* License link fixed.
 
 0.3.0 (2013-07-02)
 ------------------
