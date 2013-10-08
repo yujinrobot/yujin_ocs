@@ -19,7 +19,6 @@
   <build_depend>geometry_msgs</build_depend>
   <build_depend>yocs_msgs</build_depend>
   <build_depend>yocs_math_toolkit</build_depend>
-  <build_depend>semantic_region_handler</build_depend>
 
   <run_depend>tf</run_depend>
   <run_depend>roscpp</run_depend>
@@ -27,7 +26,6 @@
   <run_depend>geometry_msgs</run_depend>
   <run_depend>yocs_msgs</run_depend>
   <run_depend>yocs_math_toolkit</run_depend>
-  <run_depend>semantic_region_handler</run_depend>
 
   <export>
   </export>
