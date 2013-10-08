@@ -1,0 +1,13 @@
+<!--
+ Virtual sensor that uses semantic map information to "see" obstacles undetectable by robot sensors.
+-->
+<launch>
+  <node name="virtual_sensor" pkg="yocs_virtual_sensor" type="virtual_sensor_node">
+    <param name="range_min"    value="0.0"/>
+    <param name="range_max"    value="6.0"/>
+    <param name="frequency"    value="10.0"/>
+    <param name="hits_count"   value="3"/>
+    <param name="global_frame" value="/map"/>
+    <param name="sensor_frame" value="/base_link"/>
+  </node>
+</launch>
