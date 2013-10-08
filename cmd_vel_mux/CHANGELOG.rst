@@ -2,6 +2,9 @@
 Changelog for package cmd_vel_mux
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.4.1 (2013-10-08)
+------------------
+
 0.4.0 (2013-08-29)
 ------------------
 * Add bugtracker and repo info URLs.

@@ -2,6 +2,10 @@
 Changelog for package yujin_ocs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.4.1 (2013-10-08)
+------------------
+* Packages virtual sensor and math toolkit migrated here from https://github.com/yujinrobot/kobuki-x
+
 0.4.0 (2013-08-29)
 ------------------
 * Add bugtracker and repo info URLs.
