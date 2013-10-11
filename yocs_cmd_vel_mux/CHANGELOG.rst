@@ -2,7 +2,7 @@
 Changelog for package yocs_cmd_vel_mux
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.4.2 (2013-10-11)
+0.5.0 (2013-10-11)
 ------------------
 * Renamed as yocs_cmd_vel_mux.
 
