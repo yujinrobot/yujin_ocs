@@ -2,6 +2,9 @@
 Changelog for package yocs_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.4.2 (2013-10-11)
+------------------
+
 0.4.1 (2013-10-08)
 ------------------
 * Initial version: migrated here from https://github.com/yujinrobot/kobuki-x

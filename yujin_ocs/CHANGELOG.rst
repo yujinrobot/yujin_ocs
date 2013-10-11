@@ -2,6 +2,10 @@
 Changelog for package yujin_ocs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.4.2 (2013-10-11)
+------------------
+* Cmd_vel_mux renamed as yocs_cmd_vel_mux.
+
 0.4.1 (2013-10-08)
 ------------------
 * Packages virtual sensor and math toolkit migrated here from https://github.com/yujinrobot/kobuki-x
