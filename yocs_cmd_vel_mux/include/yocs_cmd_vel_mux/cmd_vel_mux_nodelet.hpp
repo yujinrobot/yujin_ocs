@@ -1,10 +1,10 @@
 /**
- * @file /include/cmd_vel_mux/cmd_vel_mux_nodelet.hpp
+ * @file /include/yocs_cmd_vel_mux/cmd_vel_mux_nodelet.hpp
  *
- * @brief Structure for the cmd_vel_mux.
+ * @brief Structure for the yocs_cmd_vel_mux.
  *
  * License: BSD
- *   https://raw.github.com/yujinrobot/yujin_ocs/groovy/cmd_vel_mux/LICENSE
+ *   https://raw.github.com/yujinrobot/yujin_ocs/hydro/yocs_cmd_vel_mux/LICENSE
  **/
 /*****************************************************************************
  ** Ifdefs
@@ -21,14 +21,14 @@
 #include <nodelet/nodelet.h>
 #include <dynamic_reconfigure/server.h>
 
-#include "cmd_vel_mux/reloadConfig.h"
-#include "cmd_vel_mux/cmd_vel_subscribers.hpp"
+#include "yocs_cmd_vel_mux/reloadConfig.h"
+#include "yocs_cmd_vel_mux/cmd_vel_subscribers.hpp"
 
 /*****************************************************************************
 ** Namespaces
 *****************************************************************************/
 
-namespace cmd_vel_mux {
+namespace yocs_cmd_vel_mux {
 
 /*****************************************************************************
  ** CmdVelMux
@@ -61,9 +61,9 @@ private:
   /*********************
   ** Dynamic Reconfigure
   **********************/
-  dynamic_reconfigure::Server<cmd_vel_mux::reloadConfig> * dynamic_reconfigure_server;
-  dynamic_reconfigure::Server<cmd_vel_mux::reloadConfig>::CallbackType dynamic_reconfigure_cb;
-  void reloadConfiguration(cmd_vel_mux::reloadConfig &config, uint32_t unused_level);
+  dynamic_reconfigure::Server<yocs_cmd_vel_mux::reloadConfig> * dynamic_reconfigure_server;
+  dynamic_reconfigure::Server<yocs_cmd_vel_mux::reloadConfig>::CallbackType dynamic_reconfigure_cb;
+  void reloadConfiguration(yocs_cmd_vel_mux::reloadConfig &config, uint32_t unused_level);
 
   /*********************
    ** Private Classes
@@ -107,6 +107,6 @@ private:
   };
 };
 
-} // namespace cmd_vel_mux
+} // namespace yocs_cmd_vel_mux
 
 #endif /* YUJIN_OCS_CMD_VEL_MUX_HPP_ */

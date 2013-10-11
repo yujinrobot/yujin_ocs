@@ -1,5 +1,5 @@
 # Another example configuration file, though this one is used to test the dynamic reconfiguration
-# of the cmd_vel_mux. Used with reconfigure.launch.
+# of the yocs_cmd_vel_mux. Used with reconfigure.launch.
 
 subscribers:
   - name:        "Default input"

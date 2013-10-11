@@ -1,10 +1,10 @@
 /**
- * @file /cmd_vel_mux/include/cmd_vel_mux/exceptions.hpp
+ * @file /cmd_vel_mux/include/yocs_cmd_vel_mux/exceptions.hpp
  *
  * @brief Exception classes for cmd_vel_mux.
  *
  * License: BSD
- *   https://raw.github.com/yujinrobot/yujin_ocs/groovy/cmd_vel_mux/LICENSE
+ *   https://raw.github.com/yujinrobot/yujin_ocs/hydro/yocs_cmd_vel_mux/LICENSE
  **/
 /*****************************************************************************
 ** Ifdefs
@@ -23,7 +23,7 @@
 ** Namespaces
 *****************************************************************************/
 
-namespace cmd_vel_mux {
+namespace yocs_cmd_vel_mux {
 
 /*****************************************************************************
 ** Exceptions
@@ -50,6 +50,6 @@ public:
         virtual ~YamlException() throw() {}
 };
 
-} // namespace cmd_vel_mux
+} // namespace yocs_cmd_vel_mux
 
 #endif /* YUJIN_OCS_CMD_VEL_EXCEPTIONS_HPP_ */

@@ -1,10 +1,10 @@
 /**
- * @file /include/velocity_smoother/velocity_smoother_nodelet.hpp
+ * @file /include/yocs_velocity_smoother/velocity_smoother_nodelet.hpp
  *
  * @brief Velocity smoother interface
  *
  * License: BSD
- *   https://raw.github.com/yujinrobot/yujin_ocs/groovy/yocs_velocity_smoother/LICENSE
+ *   https://raw.github.com/yujinrobot/yujin_ocs/hydro/yocs_velocity_smoother/LICENSE
  **/
 /*****************************************************************************
  ** Ifdefs

@@ -1,17 +1,17 @@
 /**
- * @file /include/cmd_vel_mux/cmd_vel_subscribers.hpp
+ * @file /include/yocs_cmd_vel_mux/cmd_vel_subscribers.hpp
  *
  * @brief Structure for the cmd_vel_mux.
  *
  * License: BSD
- *   https://raw.github.com/yujinrobot/yujin_ocs/groovy/cmd_vel_mux/LICENSE
+ *   https://raw.github.com/yujinrobot/yujin_ocs/hydro/yocs_cmd_vel_mux/LICENSE
  **/
 /*****************************************************************************
 ** Ifdefs
 *****************************************************************************/
 
-#ifndef CMD_VEL_SUBSCRIBERS_HPP_
-#define CMD_VEL_SUBSCRIBERS_HPP_
+#ifndef YUJIN_OCS_CMD_VEL_SUBSCRIBERS_HPP_
+#define YUJIN_OCS_CMD_VEL_SUBSCRIBERS_HPP_
 
 /*****************************************************************************
 ** Includes
@@ -32,7 +32,7 @@
 ** Namespaces
 *****************************************************************************/
 
-namespace cmd_vel_mux {
+namespace yocs_cmd_vel_mux {
 
 /*****************************************************************************
 ** CmdVelSubscribers
@@ -88,6 +88,6 @@ private:
   std::vector<CmdVelSubs> list;
 };
 
-} // namespace cmd_vel_mux
+} // namespace yocs_cmd_vel_mux
 
 #endif /* CMD_VEL_SUBSCRIBERS_HPP_ */

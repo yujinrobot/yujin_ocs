@@ -4,7 +4,7 @@
  * @brief Velocity smoother implementation.
  *
  * License: BSD
- *   https://raw.github.com/yujinrobot/yujin_ocs/groovy/yocs_velocity_smoother/LICENSE
+ *   https://raw.github.com/yujinrobot/yujin_ocs/hydro/yocs_velocity_smoother/LICENSE
  **/
 /*****************************************************************************
  ** Includes
@@ -19,7 +19,7 @@
 
 #include <ecl/threads/thread.hpp>
 
-#include "velocity_smoother/velocity_smoother_nodelet.hpp"
+#include "yocs_velocity_smoother/velocity_smoother_nodelet.hpp"
 
 /*****************************************************************************
  ** Preprocessing
@@ -132,8 +132,8 @@ void VelocitySmoother::spin()
 
     if ((robot_feedback != NONE) && (input_active == true) && (cb_avg_time > 0.0) &&
         (((ros::Time::now() - last_cb_time).toSec() > 5.0*cb_avg_time)     || // 5 missing msgs
-         (std::abs(current_vel.linear.x  - last_cmd_vel.linear.x)  > 0.2) ||
-         (std::abs(current_vel.angular.z - last_cmd_vel.angular.z) > 2.0)))
+          (std::abs(current_vel.linear.x  - last_cmd_vel.linear.x)  > 0.2) ||
+          (std::abs(current_vel.angular.z - last_cmd_vel.angular.z) > 2.0)))
     {
       // If the publisher has been inactive for a while, or if our current commanding differs a lot
       // from robot velocity feedback, we cannot trust the former; relay on robot's feedback instead
@@ -144,7 +144,7 @@ void VelocitySmoother::spin()
       // reactive controller will never make the robot spin) and because the gyro has a 15 ms delay
       ROS_WARN("Using robot velocity feedback (%s) instead of last command: %f, %f, %f",
                 robot_feedback == ODOMETRY ? "odometry" : "end commands",
-                (ros::Time::now()      - last_cb_time).toSec(),
+               (ros::Time::now()      - last_cb_time).toSec(),
                 current_vel.linear.x  - last_cmd_vel.linear.x,
                 current_vel.angular.z - last_cmd_vel.angular.z);
       last_cmd_vel = current_vel;

@@ -1,5 +1,5 @@
 <package>
-  <name>cmd_vel_mux</name>
+  <name>yocs_cmd_vel_mux</name>
   <version>0.4.1</version>
   <description>
      A multiplexer for command velocity inputs. Arbitrates incoming cmd_vel messages from several topics,
@@ -10,7 +10,7 @@
   <author email="jorge@yujinrobot.com">Jorge Santos Simon</author>
   <maintainer email="jorge@yujinrobot.com">Jorge Santos Simon</maintainer>
   <license>BSD</license>
-  <url type="website">http://ros.org/wiki/cmd_vel_mux</url>
+  <url type="website">http://ros.org/wiki/yocs_cmd_vel_mux</url>
   <url type="repository">https://github.com/yujinrobot/yujin_ocs</url>
   <url type="bugtracker">https://github.com/yujinrobot/yujin_ocs/issues</url>
   

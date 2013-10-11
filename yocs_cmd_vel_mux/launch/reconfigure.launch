@@ -1,0 +1,8 @@
+<!--
+  Test the dynamic reconfiguration of the yocs_cmd_vel_mux. Run this after running the example launcher.
+ -->
+<launch>
+  <node name="$(anon dynparam)" pkg="dynamic_reconfigure" type="dynparam" args="set_from_parameters nodelet_manager">
+    <param name="yaml_cfg_file" type="string" value="$(find yocs_cmd_vel_mux)/param/reconfigure.yaml" />
+  </node>
+</launch>

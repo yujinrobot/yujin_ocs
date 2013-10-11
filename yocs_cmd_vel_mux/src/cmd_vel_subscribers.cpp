@@ -1,10 +1,10 @@
 /**
  * @file /src/cmd_vel_subscribers.cpp
  *
- * @brief  Subscriber handlers for the cmd_vel_mux
+ * @brief  Subscriber handlers for the yocs_cmd_vel_mux
  *
  * License: BSD
- *   https://raw.github.com/yujinrobot/yujin_ocs/groovy/cmd_vel_mux/LICENSE
+ *   https://raw.github.com/yujinrobot/yujin_ocs/hydro/yocs_cmd_vel_mux/LICENSE
  **/
 /*****************************************************************************
  ** Includes
@@ -12,14 +12,14 @@
 
 #include <fstream>
 
-#include "cmd_vel_mux/cmd_vel_subscribers.hpp"
-#include "cmd_vel_mux/exceptions.hpp"
+#include "yocs_cmd_vel_mux/cmd_vel_subscribers.hpp"
+#include "yocs_cmd_vel_mux/exceptions.hpp"
 
 /*****************************************************************************
 ** Namespaces
 *****************************************************************************/
 
-namespace cmd_vel_mux {
+namespace yocs_cmd_vel_mux {
 
 /*****************************************************************************
  ** Implementation
@@ -67,4 +67,4 @@ void CmdVelSubscribers::configure(const YAML::Node& node) {
 }
 
 
-} // namespace cmd_vel_mux
+} // namespace yocs_cmd_vel_mux
