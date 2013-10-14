@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>yocs_virtual_sensor</name>
-  <version>0.5.0</version>
+  <version>0.5.1</version>
   <description>The virtual_sensor package</description>
 
   <license>BSD</license>

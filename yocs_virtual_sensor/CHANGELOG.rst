@@ -2,6 +2,10 @@
 Changelog for package yocs_virtual_sensor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.5.1 (2013-10-14)
+------------------
+* Unify naming politics for binaries and plugins.
+
 0.5.0 (2013-10-11)
 ------------------
 

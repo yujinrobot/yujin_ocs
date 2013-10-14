@@ -2,6 +2,9 @@
 Changelog for package yujin_ocs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.5.1 (2013-10-14)
+------------------
+
 0.5.0 (2013-10-11)
 ------------------
 * Cmd_vel_mux renamed as yocs_cmd_vel_mux.

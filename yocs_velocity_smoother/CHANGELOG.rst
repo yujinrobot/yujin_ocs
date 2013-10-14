@@ -2,9 +2,12 @@
 Changelog for package yocs_velocity_smoother
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.5.1 (2013-10-14)
+------------------
+* Unify naming politics for binaries and plugins.
+
 0.5.0 (2013-10-11)
 ------------------
-* Issue `#19 <https://github.com/yujinrobot/yujin_ocs/issues/19>`_: rename cmd_vel_mux as yocs_cmd_vel_mux. In general, add yocs prefix to include dirs, namespaces and targets, but not  to src files.
 
 0.4.1 (2013-10-08)
 ------------------
