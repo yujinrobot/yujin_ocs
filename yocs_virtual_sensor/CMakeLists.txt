@@ -12,7 +12,6 @@ find_package(Boost REQUIRED COMPONENTS system)
 ###################################
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES virtual_sensor
   CATKIN_DEPENDS tf roscpp sensor_msgs geometry_msgs yocs_msgs yocs_math_toolkit
   DEPENDS Boost
 )
@@ -25,19 +24,19 @@ catkin_package(
 include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 
 ## Declare a cpp executable
-add_executable(virtual_sensor_node src/virtual_sensor_node.cpp)
+add_executable(${PROJECT_NAME}_node src/virtual_sensor_node.cpp)
 
 ## Add cmake target dependencies of the executable/library
-add_dependencies(virtual_sensor_node yocs_msgs_gencpp)
+add_dependencies(${PROJECT_NAME}_node yocs_msgs_gencpp)
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(virtual_sensor_node ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES})
 
 #############
 ## Install ##
 #############
 
-install(TARGETS virtual_sensor_node
+install(TARGETS ${PROJECT_NAME}_node
         DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )
 install(DIRECTORY include/${PROJECT_NAME}/

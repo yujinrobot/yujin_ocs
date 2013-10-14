@@ -30,6 +30,6 @@
   <run_depend>dynamic_reconfigure</run_depend>
   
   <export>
-    <nodelet plugin="${prefix}/plugins/nodelet_plugins.xml"/>
+    <nodelet plugin="${prefix}/plugins/nodelets.xml"/>
   </export>
 </package>
