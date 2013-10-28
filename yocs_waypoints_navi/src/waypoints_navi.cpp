@@ -27,7 +27,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <list>
 #include <fstream>
 #include <yaml-cpp/yaml.h>
 
@@ -60,6 +59,8 @@ public:
     pnh.param("close_enough",   close_enough_,  0.3);  // close enough to next waypoint
     pnh.param("goal_timeout",   goal_timeout_, 30.0);  // maximum time to reach a waypoint
     pnh.param("waypoints_file", waypoints_file_, std::string());
+    pnh.param("robot_frame",    robot_frame_,    std::string("/base_footprint"));
+    pnh.param("world_frame",    world_frame_,    std::string("/map"));
 
 //    if (waypoints_file_.length() > 0)
 //    {
@@ -91,7 +92,6 @@ public:
       }
     }
 
-//    waypoint_markers_pub_ = pnh.advertise<geometry_msgs::PoseStamped>("waypoint_markes", 1, true);
     wp_markers_pub_ = nh.advertise<visualization_msgs::MarkerArray>("waypoint_marker", 1, true);
 
     final_goal_sub_ = nh.subscribe("final_goal", 1, &WaypointsGoalNode::finalGoalCB, this);
@@ -105,21 +105,18 @@ public:
     if ((state_ > IDLE) && (state_ < COMPLETED))
     {
       ROS_INFO("Already have a task; cancelling...");
-      waypoints_.clear();
-//      waypoints_it_.
-      mode_  = NONE;
-      state_ = IDLE;
-      final_goal_ = geometry_msgs::PoseStamped();
-
+      resetWaypoints();
       cancelAllGoals();
     }
     else
     {
       ROS_INFO("Goal received with %lu waypoints; lets' go!", waypoints_.size());
 
+      goal_  = *goal;
       mode_  = GOAL;
       state_ = START;
-      final_goal_ = *goal;
+
+      waypoints_it_ = waypoints_.begin();
     }
   }
 
@@ -129,7 +126,7 @@ public:
     {
       ROS_DEBUG("Already have a task; ignoring additional points");
     }
-    else if ((waypoints_.size() > 0) && (mtk::distance2D(point->point, waypoints_.front().point) < 0.2))
+    else if ((waypoints_.size() > 1) && (mtk::distance2D(point->point, waypoints_.front().point) < 0.2))
     {
       // Waypoints loop closed; assume we are in loop mode and start moving
       ROS_INFO("Waypoints loop closed with %lu points; lets' go!", waypoints_.size());
@@ -172,46 +169,95 @@ public:
     return true;
   }
 
-  void publishMarkers()
+  void resetWaypoints()
   {
-    if (wp_markers_pub_.getNumSubscribers() == 0)
+    ROS_DEBUG("Full reset: clear markers, delete waypoints and goal and set state to IDLE");
+
+    publishMarkers(true);  // clear all markers
+    waypoints_.clear();
+    waypoints_it_ = waypoints_.end();
+    goal_  = NOWHERE;
+    mode_  = NONE;
+    state_ = IDLE;
+  }
+
+  void publishMarkers(bool clear = false)
+  {
+    if ((state_ == IDLE) || (wp_markers_pub_.getNumSubscribers() == 0))
       return;
 
-    // Publish a latched MarkerArray message with all landmarks in the map
     visualization_msgs::MarkerArray markers_array;
+    visualization_msgs::Marker marker, label;
 
-    visualization_msgs::Marker marker;
+    marker.header.frame_id = world_frame_;
+    marker.header.stamp = ros::Time::now();
+    marker.scale.x = 0.08;  // scale in meters
+    marker.scale.y = 0.08;
+    marker.scale.z = 0.01;
+    marker.pose.position.z = marker.scale.z/2.0;
+    marker.color.r = 0.8f;
+    marker.color.g = 0.2f;
+    marker.color.b = 0.2f;
 
     int index = 0;
-    std::list<geometry_msgs::PointStamped>::iterator it;
+    std::vector<geometry_msgs::PointStamped>::iterator it;
     for (it = waypoints_.begin(); it != waypoints_.end(); it++)
     {
-      marker.header.frame_id = "/map";
-      marker.header.stamp = ros::Time::now();
-      std::stringstream lm_name;
-      lm_name << "WP " << index;
-      marker.ns = lm_name.str();
+      std::stringstream name;
+      name << "WP " << index;
+      marker.ns = name.str();
       marker.id = index;
-      marker.type = visualization_msgs::Marker::CYLINDER;
-      marker.action = visualization_msgs::Marker::ADD;
-      marker.scale.x = 0.15;  // scale in metres
-      marker.scale.y = 0.15;
-      marker.scale.z = 0.01;
-      marker.pose.orientation = tf::createQuaternionMsgFromYaw(0.0);
       marker.pose.position.x = it->point.x;
       marker.pose.position.y = it->point.y;
-      marker.pose.position.z = 0.0f;
+      marker.type = visualization_msgs::Marker::CYLINDER;
+      if ((clear == true) || ((mode_ == GOAL) && (it < waypoints_it_)))  // We are fully reseting waypoints list
+        marker.action = visualization_msgs::Marker::DELETE;              // or this waypoint has being reached
+      else
+        marker.action = visualization_msgs::Marker::ADD;
+      marker.color.a = (it == waypoints_it_)?1.0f:0.6f; // only next waypoint is solid
+
+      label = marker;
+      label.id = marker.id + 1000000;  // marker id must be unique
+      label.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+      label.pose.position.z = marker.pose.position.z + marker.scale.z/2.0 + 0.05; // just above the marker
+      label.text = marker.ns.substr(3);  // i.e. strlen("WP ")
+      label.scale.x = 0.1;
+      label.scale.y = 0.1;
+      label.scale.z = 0.1;
+
+      markers_array.markers.push_back(marker);
+      markers_array.markers.push_back(label);
+
+      index++;
+    }
+
+    if (mode_ == GOAL)
+    {
+//      marker.header.frame_id = world_frame_;
+//      marker.header.stamp = ros::Time::now();
+      marker.ns = "GOAL";
+      marker.id = 666666;
+      marker.type = visualization_msgs::Marker::ARROW;
+      if (clear == true)
+        marker.action = visualization_msgs::Marker::DELETE;
+      else
+        marker.action = visualization_msgs::Marker::ADD;
+      marker.scale.x = 0.5;   // scale in metres
+      marker.scale.y = 0.08;  // planar short and wide arrow
+      marker.scale.z = 0.001;
+      marker.pose.orientation = goal_.pose.orientation;
+      marker.pose.position.x = goal_.pose.position.x;
+      marker.pose.position.y = goal_.pose.position.y;
+      marker.pose.position.z = 0.0005;
       marker.color.r = 0.8f;
-      marker.color.g = 0.2f;  // highlight factor: 1 for at view, 0 for not
+      marker.color.g = 0.2f;
       marker.color.b = 0.2f;
       marker.color.a = 1.0f;
-      index++;
 
       markers_array.markers.push_back(marker);
     }
 
-    if (markers_array.markers.size() > 0)
-      wp_markers_pub_.publish(markers_array);
+    wp_markers_pub_.publish(markers_array);
   }
 
   void spin()
@@ -245,23 +291,23 @@ public:
             ROS_WARN("Cannot reach goal after %.2f seconds; request a new one (current state is %s)",
                       goal_timeout_, move_base_ac_.getState().toString().c_str());
           }
-          else if (equals(mb_goal.target_pose, final_goal_) == false)
+          else if (equals(mb_goal.target_pose, goal_) == false)
           {
             // When close enough to current goal (except for the final one!), go for the
             // next waypoint, so we avoid the final slow approach and subgoal obsession
-            tf::StampedTransform robot_gb;
+            tf::StampedTransform robot_gb, goal_gb;
             try
             {
-              tf_listener_.lookupTransform("/map", "/base_footprint", ros::Time(0.0), robot_gb); // TODO make params
+              tf_listener_.lookupTransform(world_frame_, robot_frame_, ros::Time(0.0), robot_gb);
             }
             catch (tf::TransformException& e)
             {
-              ROS_WARN("Cannot get tf %s -> %s: %s", "/map", "/base_footprint", e.what());
+              ROS_WARN("Cannot get tf %s -> %s: %s", world_frame_.c_str(), robot_frame_.c_str(), e.what());
               continue;
             }
 
-            double distance =  std::sqrt(std::pow(robot_gb.getOrigin().x() - mb_goal.target_pose.pose.position.x, 2)
-                                       + std::pow(robot_gb.getOrigin().y() - mb_goal.target_pose.pose.position.y, 2));
+            mtk::pose2tf(mb_goal.target_pose, goal_gb);
+            double distance = mtk::distance2D(robot_gb, goal_gb);
             if (distance > close_enough_)
             {
               continue;
@@ -273,16 +319,13 @@ public:
           }
           else
           {
-            // keep going to except for the final goal
+            // Keep going until reaching the final goal
             continue;
           }
         }
-        else if (equals(mb_goal.target_pose, final_goal_) == true)
+        else if (equals(mb_goal.target_pose, goal_) == true)
         {
-          mode_  = NONE;
-          state_ = IDLE;
-
-          final_goal_ = geometry_msgs::PoseStamped();
+          resetWaypoints();
 
           // Final goal achieved or failed; check what happened
           if (move_base_ac_.getState() != actionlib::SimpleClientGoalState::SUCCEEDED)
@@ -300,40 +343,39 @@ public:
         }
       } // if (state_ == ACTIVE)
 
-      if (waypoints_.size() > 0)
-      {
-//        if (state_ == GOAL_ACTIVE)
-//          waypoints_.pop_front();   // Not the first waypoint; discard already reached one
+      // If we are here is because we need a new goal (or the initial one!)
 
-        geometry_msgs::PointStamped next;
-        if (mode_ == GOAL)
+
+      ///////////TODO comment this!! difficult
+      if ((waypoints_.size() > 0) && (equals(mb_goal.target_pose.pose.position, waypoints_it_->point) == true))
+      {
+        waypoints_it_++;
+
+        if (mode_ == LOOP)
         {
-          next = waypoints_.front();
-        }
-        else      // LOOP
-        {
-          next = *waypoints_it_;
-          waypoints_it_++;
           if (waypoints_it_ == waypoints_.end())
             waypoints_it_ = waypoints_.begin();
         }
+      }
 
+      if (waypoints_it_ < waypoints_.end())
+      {
         mb_goal.target_pose.header.stamp = ros::Time::now();
-        mb_goal.target_pose.header.frame_id = "/map";
-        mb_goal.target_pose.pose.position = next.point;
+        mb_goal.target_pose.header.frame_id = world_frame_;
+        mb_goal.target_pose.pose.position = waypoints_it_->point;
         mb_goal.target_pose.pose.orientation = tf::createQuaternionMsgFromYaw(0.0);  // TODO use the heading from robot loc to next (front)
-
-        // If not in loop mode, remove current waypoint from the list so it's not showed as a marker but as a goal
-        if (mode_ == GOAL)
-          waypoints_.pop_front();
+      }
+      else if (mode_ == GOAL)
+      {
+        mb_goal.target_pose = goal_;
+        mb_goal.target_pose.header.stamp = ros::Time::now();
       }
       else
       {
-        mb_goal.target_pose = final_goal_;
-        mb_goal.target_pose.header.stamp = ros::Time::now();
+        ROS_ERROR("Impossible situation.  M: %d  S: %d", mode_,  state_);
+        break;
       }
 
-   //   exploration_goal_pub_.publish(mb_goal.target_pose);
       ROS_INFO("New goal: %.2f, %.2f, %.2f",
                mb_goal.target_pose.pose.position.x, mb_goal.target_pose.pose.position.y,
                tf::getYaw(mb_goal.target_pose.pose.orientation));
@@ -356,6 +398,8 @@ public:
   }
 
 private:
+  const geometry_msgs::PoseStamped NOWHERE;
+
   enum { NONE = 0,
          GOAL,
          LOOP
@@ -370,20 +414,22 @@ private:
          COMPLETED
        } state_;
 
-  double frequency_;
-  double close_enough_;
-  double goal_timeout_;
+  double      frequency_;
+  double      close_enough_;
+  double      goal_timeout_;
+  std::string robot_frame_;
+  std::string world_frame_;
 
   std::string waypoints_file_;
 
-  std::list<geometry_msgs::PointStamped>           waypoints_;
-  std::list<geometry_msgs::PointStamped>::iterator waypoints_it_;
-  geometry_msgs::PoseStamped                       final_goal_;
+  std::vector<geometry_msgs::PointStamped>           waypoints_;
+  std::vector<geometry_msgs::PointStamped>::iterator waypoints_it_;
+  geometry_msgs::PoseStamped goal_;
 
-  tf::TransformListener   tf_listener_;
-  ros::Publisher  wp_markers_pub_;
-  ros::Subscriber final_goal_sub_;
-  ros::Subscriber waypoints_sub_;
+  tf::TransformListener tf_listener_;
+  ros::Publisher     wp_markers_pub_;
+  ros::Subscriber    final_goal_sub_;
+  ros::Subscriber    waypoints_sub_;
 
   actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> move_base_ac_;
 
@@ -456,7 +502,7 @@ private:
         (*fg_node)["pose"]["orientation"]["z"] >> goal.pose.orientation.z;
         (*fg_node)["pose"]["orientation"]["w"] >> goal.pose.orientation.w;
 
-        final_goal_ = goal;
+        goal_ = goal;
         mode_ = GOAL;
       }
       else
@@ -492,6 +538,10 @@ private:
     // TODO make decent, with rotation (tk::minAngle, I think) and frame_id and put in math toolkit
   }
 
+  bool equals(const geometry_msgs::Point& a, const geometry_msgs::Point& b)
+  {
+    return ((a.x == b.x) && (a.y == b.y) && (a.z == b.z));
+  }
 };
 
 int main(int argc, char **argv)
