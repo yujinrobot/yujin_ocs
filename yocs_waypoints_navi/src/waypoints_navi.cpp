@@ -38,6 +38,7 @@
 #include <geometry_msgs/PointStamped.h>
 #include <move_base_msgs/MoveBaseAction.h>
 #include <actionlib/client/simple_action_client.h>
+#include <visualization_msgs/MarkerArray.h>
 
 #include <yocs_math_toolkit/common.hpp>
 #include <yocs_math_toolkit/geometry.hpp>
@@ -91,7 +92,7 @@ public:
     }
 
 //    waypoint_markers_pub_ = pnh.advertise<geometry_msgs::PoseStamped>("waypoint_markes", 1, true);
- // waypoint_markers_pub_ = pnh.advertise<geometry_msgs::PoseStamped>("waypoint_markes", 1, true);
+    wp_markers_pub_ = nh.advertise<visualization_msgs::MarkerArray>("waypoint_marker", 1, true);
 
     final_goal_sub_ = nh.subscribe("final_goal", 1, &WaypointsGoalNode::finalGoalCB, this);
     waypoints_sub_  = nh.subscribe("waypoints",  1, &WaypointsGoalNode::waypointCB, this);
@@ -171,6 +172,48 @@ public:
     return true;
   }
 
+  void publishMarkers()
+  {
+    if (wp_markers_pub_.getNumSubscribers() == 0)
+      return;
+
+    // Publish a latched MarkerArray message with all landmarks in the map
+    visualization_msgs::MarkerArray markers_array;
+
+    visualization_msgs::Marker marker;
+
+    int index = 0;
+    std::list<geometry_msgs::PointStamped>::iterator it;
+    for (it = waypoints_.begin(); it != waypoints_.end(); it++)
+    {
+      marker.header.frame_id = "/map";
+      marker.header.stamp = ros::Time::now();
+      std::stringstream lm_name;
+      lm_name << "WP " << index;
+      marker.ns = lm_name.str();
+      marker.id = index;
+      marker.type = visualization_msgs::Marker::CYLINDER;
+      marker.action = visualization_msgs::Marker::ADD;
+      marker.scale.x = 0.15;  // scale in metres
+      marker.scale.y = 0.15;
+      marker.scale.z = 0.01;
+      marker.pose.orientation = tf::createQuaternionMsgFromYaw(0.0);
+      marker.pose.position.x = it->point.x;
+      marker.pose.position.y = it->point.y;
+      marker.pose.position.z = 0.0f;
+      marker.color.r = 0.8f;
+      marker.color.g = 0.2f;  // highlight factor: 1 for at view, 0 for not
+      marker.color.b = 0.2f;
+      marker.color.a = 1.0f;
+      index++;
+
+      markers_array.markers.push_back(marker);
+    }
+
+    if (markers_array.markers.size() > 0)
+      wp_markers_pub_.publish(markers_array);
+  }
+
   void spin()
   {
     move_base_msgs::MoveBaseGoal mb_goal;
@@ -181,6 +224,8 @@ public:
     {
       ros::spinOnce();
       rate.sleep();
+
+      publishMarkers();
 
       if ((state_ <= READY) || (state_ >= COMPLETED))
         continue;
@@ -336,7 +381,7 @@ private:
   geometry_msgs::PoseStamped                       final_goal_;
 
   tf::TransformListener   tf_listener_;
-  ros::Publisher exploration_goal_pub_;
+  ros::Publisher  wp_markers_pub_;
   ros::Subscriber final_goal_sub_;
   ros::Subscriber waypoints_sub_;
 

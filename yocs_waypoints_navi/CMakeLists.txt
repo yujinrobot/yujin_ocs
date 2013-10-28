@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(yocs_waypoints_navi)
 
 # Load catkin and all dependencies required for this package
-find_package(catkin REQUIRED COMPONENTS move_base_msgs actionlib_msgs geometry_msgs nav_msgs actionlib roscpp tf yocs_math_toolkit)
+find_package(catkin REQUIRED COMPONENTS visualization_msgs move_base_msgs actionlib_msgs geometry_msgs nav_msgs actionlib roscpp tf yocs_math_toolkit)
 
 # pkg-config support
 find_package(PkgConfig)
@@ -11,7 +11,7 @@ pkg_search_module(REQUIRED yaml-cpp)
 catkin_package(
     INCLUDE_DIRS
     LIBRARIES
-    CATKIN_DEPENDS move_base_msgs actionlib_msgs geometry_msgs nav_msgs actionlib roscpp tf yocs_math_toolkit
+    CATKIN_DEPENDS visualization_msgs move_base_msgs actionlib_msgs geometry_msgs nav_msgs actionlib roscpp tf yocs_math_toolkit
     DEPENDS yaml-cpp
 )
 
