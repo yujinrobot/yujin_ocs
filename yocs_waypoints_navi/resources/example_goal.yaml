@@ -1,0 +1,24 @@
+waypoints:
+  - point:
+      x: 4
+      y: 5
+      z: 0
+  - point:
+      x: 9
+      y: 6
+      z: 0
+final_goal:
+  header:
+      seq: 1
+      stamp: 1
+      frame_id: /map
+  pose:
+    position:
+      x: 10
+      y: 5
+      z: 0
+    orientation:
+      x: 0
+      y: 0
+      z: 1
+      w: 0

@@ -1,0 +1,17 @@
+waypoints:
+  - point:
+      x: 2
+      y: 4
+      z: 0
+  - point:
+      x: 2.5
+      y: 5
+      z: 0
+  - point:
+      x: 5
+      y: 6
+      z: 0
+  - point:
+      x: 4
+      y: 5
+      z: 0
