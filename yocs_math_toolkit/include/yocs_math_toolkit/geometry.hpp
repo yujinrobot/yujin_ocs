@@ -34,7 +34,7 @@ double distance2D(geometry_msgs::Pose a, geometry_msgs::Pose b = geometry_msgs::
 double distance2D(const tf::Vector3& a, const tf::Vector3& b = tf::Vector3());
 double distance2D(const tf::Transform& a, const tf::Transform& b = tf::Transform());
 
-double distance2D(double ax, double ay, double az, double bx, double by, double bz);
+double distance3D(double ax, double ay, double az, double bx, double by, double bz);
 double distance3D(geometry_msgs::Point a, geometry_msgs::Point b = geometry_msgs::Point());
 double distance3D(geometry_msgs::Pose a, geometry_msgs::Pose b = geometry_msgs::Pose());
 double distance3D(const tf::Vector3& a, const tf::Vector3& b);

@@ -70,14 +70,14 @@ double distance2D(const tf::Point& p)
   return std::sqrt(std::pow(p.x(), 2) + std::pow(p.y(), 2));
 }
 
-double distance2D(const tf::Point& p1, const tf::Point& p2)
-{
-  return std::sqrt(std::pow(p2.x() - p1.x(), 2) + std::pow(p2.y() - p1.y(), 2));
-}
-
 double distance2D(double ax, double ay, double bx, double by)
 {
   return std::sqrt(std::pow(ax - bx, 2) + std::pow(ay - by, 2));
+}
+
+double distance2D(const tf::Point& p1, const tf::Point& p2)
+{
+  return std::sqrt(std::pow(p2.x() - p1.x(), 2) + std::pow(p2.y() - p1.y(), 2));
 }
 
 double distance2D(geometry_msgs::Point a, geometry_msgs::Point b)
@@ -104,6 +104,11 @@ double distance3D(double x, double y, double z)
 double distance3D(const tf::Point& p)
 {
   return std::sqrt(std::pow(p.x(), 2) + std::pow(p.y(), 2) + std::pow(p.z(), 2));
+}
+
+double distance3D(double ax, double ay, double az, double bx, double by, double bz)
+{
+  return std::sqrt(std::pow(ax - bx, 2) + std::pow(ay - by, 2) + std::pow(az - bz, 2));
 }
 
 double distance3D(const tf::Point& p1, const tf::Point& p2)

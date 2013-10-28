@@ -44,6 +44,12 @@ void pose2tf(const geometry_msgs::PoseStamped& pose, tf::StampedTransform& tf)
 
 char ___buffer___[256];
 
+const char* point2str(const geometry_msgs::Point& point)
+{
+  sprintf(___buffer___, "%.2f, %.2f, %.2f", point.x, point.y, point.z);
+  return (const char*)___buffer___;
+}
+
 const char* pose2str(const geometry_msgs::Pose& pose)
 {
   sprintf(___buffer___, "%.2f, %.2f, %.2f", pose.position.x, pose.position.y, tf::getYaw(pose.orientation));

@@ -68,6 +68,7 @@ void tf2pose(const tf::StampedTransform& tf, geometry_msgs::PoseStamped& pose);
 void pose2tf(const geometry_msgs::Pose& pose, tf::Transform& tf);
 void pose2tf(const geometry_msgs::PoseStamped& pose, tf::StampedTransform& tf);
 
+const char* point2str(const geometry_msgs::Point& point);
 const char* pose2str(const geometry_msgs::Pose& pose);
 const char* pose2str(const geometry_msgs::PoseStamped& pose);
 
