@@ -1,8 +1,12 @@
-<?xml version="1.0"?>
 <package>
   <name>yocs_virtual_sensor</name>
   <version>0.5.1</version>
-  <description>The virtual_sensor package</description>
+  <description>
+      The virtual_sensor package.
+      
+      TODO: Current implementation cannot read obstacles from YAML files. Until this feature gets implemented,
+      we use auxiliary scripts to read and publish files' content. Data directory contains some example files.
+  </description>
 
   <license>BSD</license>
   <author email="jorge@yujinrobot.com">Jorge Santos</author> 

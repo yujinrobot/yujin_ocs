@@ -39,10 +39,17 @@ target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES})
 install(TARGETS ${PROJECT_NAME}_node
         DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
+install(PROGRAMS scripts/column_publisher.py
+                 scripts/column_publisher.py
+        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 install(DIRECTORY include/${PROJECT_NAME}/
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
 install(DIRECTORY launch
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
+install(DIRECTORY data
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
