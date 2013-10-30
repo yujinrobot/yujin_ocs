@@ -2,10 +2,10 @@
   <name>yocs_virtual_sensor</name>
   <version>0.5.1</version>
   <description>
-      The virtual_sensor package.
+      Virtual sensor that uses semantic map information to "see" obstacles undetectable by robot sensors.
       
-      TODO: Current implementation cannot read obstacles from YAML files. Until this feature gets implemented,
-      we use auxiliary scripts to read and publish files' content. Data directory contains some example files.
+      Current implementation cannot read obstacles from YAML files. Until this feature gets implemented, we
+      use auxiliary scripts to read and publish files' content. Data directory contains some example files.
   </description>
 
   <license>BSD</license>
@@ -30,6 +30,11 @@
   <run_depend>geometry_msgs</run_depend>
   <run_depend>yocs_msgs</run_depend>
   <run_depend>yocs_math_toolkit</run_depend>
+
+  <!-- Temporally included to support file reading auxiliary scripts -->
+  <run_depend>rospy</run_depend>
+  <run_depend>rospy_message_converter</run_depend>
+  <run_depend>visualization_msgs</run_depend>
 
   <export>
   </export>
