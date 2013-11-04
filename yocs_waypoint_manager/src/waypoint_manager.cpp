@@ -76,10 +76,11 @@ namespace yocs {
     marker.color.r = 0.0f;
     marker.color.g = 1.0f;
     marker.color.b = 0.0f;
-    marker.color.r = 1.0f;
-    marker.scale.x = 1;
-    marker.scale.y = 1;
-    marker.scale.z = 1;
+    marker.color.a = 1.0f;
+    marker.scale.x = 0.1;
+    marker.scale.y = 0.1;
+    marker.scale.z = 0.1;
+
   }
 
   void WaypointManager::createLabelMarker(const int i,const yocs_msgs::Waypoint& wp, visualization_msgs::Marker& marker)
@@ -88,9 +89,13 @@ namespace yocs {
     marker.header.stamp = ros::Time::now();
     marker.ns = "waypoints_label";
     marker.id = i + label_index_;
-    marker.scale.x = 1;
-    marker.scale.y = 1;
-    marker.scale.z = 1;
+    marker.scale.x = 0.1;
+    marker.scale.y = 0.1;
+    marker.scale.z = 0.1;
+    marker.color.r = 1.0f;
+    marker.color.g = 1.0f;
+    marker.color.b = 1.0f;
+    marker.color.a = 1.0f;
     marker.pose = wp.pose;
     marker.pose.position.z = marker.pose.position.z + marker.scale.z / 2.0 + 0.05;  // just above the marker
     marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;

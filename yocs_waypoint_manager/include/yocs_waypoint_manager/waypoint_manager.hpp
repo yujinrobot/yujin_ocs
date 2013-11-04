@@ -52,8 +52,8 @@ namespace yocs {
       yocs_msgs::WaypointList waypoints_;
       visualization_msgs::MarkerArray waypoints_viz_;
 
-      unsigned int marker_index_;
-      unsigned int label_index_;
+      int marker_index_;
+      int label_index_;
   };
 }
 
