@@ -15,7 +15,6 @@
   <run_depend>yocs_controllers</run_depend>
   <run_depend>yocs_diff_drive_pose_controller</run_depend>
   <run_depend>yocs_math_toolkit</run_depend>
-  <run_depend>yocs_msgs</run_depend>
   <run_depend>yocs_velocity_smoother</run_depend>
   <run_depend>yocs_virtual_sensor</run_depend>
   <run_depend>yocs_waypoints_navi</run_depend>
