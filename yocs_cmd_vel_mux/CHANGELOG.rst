@@ -2,6 +2,9 @@
 Changelog for package yocs_cmd_vel_mux
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.5.2 (2013-11-05)
+------------------
+
 0.5.1 (2013-10-14)
 ------------------
 * Unify naming politics for binaries and plugins.

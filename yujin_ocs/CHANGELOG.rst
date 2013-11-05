@@ -2,6 +2,11 @@
 Changelog for package yujin_ocs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.5.2 (2013-11-05)
+------------------
+* Move YOCS messages to its own stack.
+* Add yocs_waypoints_navi new package.
+
 0.5.1 (2013-10-14)
 ------------------
 

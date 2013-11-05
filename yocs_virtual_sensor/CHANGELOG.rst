@@ -2,6 +2,12 @@
 Changelog for package yocs_virtual_sensor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.5.2 (2013-11-05)
+------------------
+* Current implementation cannot read obstacles from YAML files. Until this
+  feature gets implemented, we use auxiliary scripts to read and publish
+  files' content. Data directory contains some example files.
+
 0.5.1 (2013-10-14)
 ------------------
 * Unify naming politics for binaries and plugins.
