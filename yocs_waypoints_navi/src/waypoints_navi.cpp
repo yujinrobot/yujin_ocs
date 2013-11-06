@@ -62,20 +62,6 @@ public:
     pnh.param("robot_frame",    robot_frame_,    std::string("/base_footprint"));
     pnh.param("world_frame",    world_frame_,    std::string("/map"));
 
-//    if (waypoints_file_.length() > 0)
-//    {
-//      if (readWaypointsFile(waypoints_file_) == true)
-//      {
-//        ROS_INFO("Waypoints file properly parsed: %s", waypoints_file_.c_str());
-//        state_ = START;  // goal requested to start
-//      }
-//      else
-//      {
-//        ROS_ERROR("Waypoints file parse failed: %s", waypoints_file_.c_str());
-//        return false;
-//      }
-//    }
-
     // Wait for the move_base action servers to come up
     ros::Time t0 = ros::Time::now();
     double timeout = 10.0;
@@ -233,8 +219,6 @@ public:
 
     if (mode_ == GOAL)
     {
-//      marker.header.frame_id = world_frame_;
-//      marker.header.stamp = ros::Time::now();
       marker.ns = "GOAL";
       marker.id = 666666;
       marker.type = visualization_msgs::Marker::ARROW;
@@ -409,8 +393,6 @@ private:
          READY,
          START,
          ACTIVE,
-//         GOAL_WAIPOINTS,
-//         GOAL_LAST_LEG,
          COMPLETED
        } state_;
 
@@ -461,10 +443,6 @@ private:
           // Parse waypoint entries on YAML
           geometry_msgs::PointStamped point;
 
-  //        (*wp_node)[i]["header"]["seq"]       >> point.header.seq;
-  //        (*wp_node)[i]["header"]["stamp"]     >> point.header.stamp;
-  //        (*wp_node)[i]["header"]["frame_id"]  >> point.header.frame_id;
-
           (*wp_node)[i]["point"]["x"]          >> point.point.x;
           (*wp_node)[i]["point"]["y"]          >> point.point.y;
           (*wp_node)[i]["point"]["z"]          >> point.point.z;
@@ -489,8 +467,6 @@ private:
         // Parse goal pose
         geometry_msgs::PoseStamped goal;
 
-  //      (*fg_node)["header"]["seq"]            >> goal.header.seq;
-  //      (*fg_node)["header"]["stamp"]          >> goal.header.stamp;
         (*fg_node)["header"]["frame_id"]       >> goal.header.frame_id;
 
         (*fg_node)["pose"]["position"]["x"]    >> goal.pose.position.x;
