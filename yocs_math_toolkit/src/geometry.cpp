@@ -172,6 +172,25 @@ double minAngle(const tf::Transform& a, const tf::Transform& b)
   return minAngle(a.getRotation(), b.getRotation());
 }
 
+bool sameFrame(const geometry_msgs::PoseStamped& a, const geometry_msgs::PoseStamped& b)
+{
+  return sameFrame(a.header.frame_id, b.header.frame_id);
+}
+
+bool sameFrame(const std::string& frame_a, const std::string& frame_b)
+{
+  if (frame_a.length() == 0 && frame_b.length() == 0)
+  {
+    ROS_WARN("Comparing two empty frame ids!");
+    return true;
+  }
+
+  int start_a = frame_a.at(0) == '/' ? 1 : 0;
+  int start_b = frame_b.at(0) == '/' ? 1 : 0;
+
+  return frame_a.compare(start_a, frame_a.length(), frame_b, start_b, frame_b.length()) == 0;
+}
+
 double pointSegmentDistance(double px, double py, double s1x, double s1y, double s2x, double s2y)
 {
   // Return minimum distance between line segment s1-s2 and point p
