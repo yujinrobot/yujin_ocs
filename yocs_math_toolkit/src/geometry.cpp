@@ -181,8 +181,15 @@ bool sameFrame(const std::string& frame_a, const std::string& frame_b)
 {
   if (frame_a.length() == 0 && frame_b.length() == 0)
   {
-    ROS_WARN("Comparing two empty frame ids!");
+    ROS_WARN("Comparing two empty frame ids (considered as the same frame)");
     return true;
+  }
+
+  if (frame_a.length() == 0 || frame_b.length() == 0)
+  {
+    ROS_WARN("Comparing %s%s with an empty frame id (considered as different frames)",
+             frame_a.c_str(), frame_b.c_str());
+    return false;
   }
 
   int start_a = frame_a.at(0) == '/' ? 1 : 0;
