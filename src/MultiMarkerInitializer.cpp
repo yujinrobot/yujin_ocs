@@ -22,6 +22,7 @@
  */
 
 #include "ar_track_alvar/MultiMarkerInitializer.h"
+#include <Eigen/StdVector>
 
 using namespace std;
 
@@ -42,7 +43,7 @@ MultiMarkerInitializer::MultiMarkerInitializer(std::vector<int>& indices, int _f
 
 void MultiMarkerInitializer::MeasurementsAdd(MarkerIterator &begin, MarkerIterator &end) {
 	// copy markers into measurements.
-	vector<MarkerMeasurement> new_measurements;
+	vector<MarkerMeasurement, Eigen::aligned_allocator<MarkerMeasurement> > new_measurements;
 	for (MarkerIterator &i = begin.reset(); i != end; ++i) {
 		const Marker* marker = *i;
 		int index = get_id_index(marker->GetId()); 
@@ -95,7 +96,7 @@ int MultiMarkerInitializer::Initialize(Camera* cam) {
 		found_new = false;
 		// Iterate through all measurements, try to compute Pose for each.
 		for (MeasurementIterator mi = measurements.begin(); mi != measurements.end(); ++mi) {
-			vector<MarkerMeasurement> &markers = *mi;
+			vector<MarkerMeasurement, Eigen::aligned_allocator<MarkerMeasurement> > &markers = *mi;
 			Pose pose;
 			MarkerIteratorImpl<MarkerMeasurement> m_begin(markers.begin());
 			MarkerIteratorImpl<MarkerMeasurement> m_end(markers.end());
@@ -116,9 +117,9 @@ int MultiMarkerInitializer::Initialize(Camera* cam) {
 	return n_detected;
 }
 
-bool MultiMarkerInitializer::updateMarkerPoses(vector<MarkerMeasurement> &markers, const Pose &pose) {
+bool MultiMarkerInitializer::updateMarkerPoses(vector<MarkerMeasurement, Eigen::aligned_allocator<MarkerMeasurement> > &markers, const Pose &pose) {
 	bool found_new = false;
-	for (vector<MarkerMeasurement>::iterator i = markers.begin(); i != markers.end(); ++i) {
+	for (vector<MarkerMeasurement, Eigen::aligned_allocator<MarkerMeasurement> >::iterator i = markers.begin(); i != markers.end(); ++i) {
 		MarkerMeasurement &marker = *i;
 		int id = marker.GetId();
 		int index = get_id_index(id);

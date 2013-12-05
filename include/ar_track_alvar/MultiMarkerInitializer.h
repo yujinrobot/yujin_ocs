@@ -32,6 +32,7 @@
  */
 
 #include "MultiMarker.h"
+#include <Eigen/StdVector>
 
 namespace alvar {
 
@@ -63,12 +64,12 @@ public:
 
 protected:
 	std::vector<bool> marker_detected;
-	std::vector<std::vector<MarkerMeasurement> > measurements;
-	typedef std::vector<std::vector<MarkerMeasurement> >::iterator MeasurementIterator;
+	std::vector<std::vector<MarkerMeasurement, Eigen::aligned_allocator<MarkerMeasurement> > > measurements;
+	typedef std::vector<std::vector<MarkerMeasurement, Eigen::aligned_allocator<MarkerMeasurement> > >::iterator MeasurementIterator;
 	FilterMedian *pointcloud_filtered;
 	int filter_buffer_min;
 
-	bool updateMarkerPoses(std::vector<MarkerMeasurement> &markers, const Pose &pose);
+	bool updateMarkerPoses(std::vector<MarkerMeasurement, Eigen::aligned_allocator<MarkerMeasurement> > &markers, const Pose &pose);
 	void MeasurementsAdd(MarkerIterator &begin, MarkerIterator &end);
 
 public:
@@ -91,7 +92,7 @@ public:
 	 * and then the pose of B.
 	 */
 	template <class M>
-	void MeasurementsAdd(const std::vector<M> *markers) {
+	void MeasurementsAdd(const std::vector<M, Eigen::aligned_allocator<M> > *markers) {
 	    MarkerIteratorImpl<M> begin(markers->begin());
 	    MarkerIteratorImpl<M> end(markers->end());
         MeasurementsAdd(begin, end);
@@ -111,13 +112,15 @@ public:
 
 	int getMeasurementCount() { return measurements.size(); }
 
-	const std::vector<MarkerMeasurement>& getMeasurementMarkers(int measurement) { 
+	const std::vector<MarkerMeasurement, Eigen::aligned_allocator<MarkerMeasurement> >& getMeasurementMarkers(int measurement) {
 		return measurements[measurement];
 	}
 
 	double getMeasurementPose(int measurement, Camera *cam, Pose &pose) {
-		MarkerIteratorImpl<MarkerMeasurement> m_begin(measurements[measurement].begin());
-		MarkerIteratorImpl<MarkerMeasurement> m_end(measurements[measurement].end());
+//	  std::vector<MarkerMeasurement>::const_iterator test_measure(measurements[measurement].begin());
+//    MarkerIteratorImpl<MarkerMeasurement> m_begin(test_measure);
+	  MarkerIteratorImpl<MarkerMeasurement> m_begin(measurements[measurement].begin());
+    MarkerIteratorImpl<MarkerMeasurement> m_end(measurements[measurement].end());
 		return _GetPose(m_begin, m_end, cam, pose, NULL);
 	}
 };

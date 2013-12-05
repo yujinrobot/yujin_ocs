@@ -33,6 +33,7 @@
 
 #include "MultiMarker.h"
 #include "Optimization.h"
+#include <Eigen/StdVector>
 
 namespace alvar {
 
@@ -81,7 +82,7 @@ public:
 		\param camera_pose Current camera pose.
 	*/
 	template <class M>
-	void MeasurementsAdd(const std::vector<M> *markers, const Pose& camera_pose) {
+	void MeasurementsAdd(const std::vector<M, Eigen::aligned_allocator<M> > *markers, const Pose& camera_pose) {
 	    MarkerIteratorImpl<M> begin(markers->begin());
 	    MarkerIteratorImpl<M> end(markers->end());
         _MeasurementsAdd(begin, end,

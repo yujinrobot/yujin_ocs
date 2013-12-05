@@ -40,6 +40,7 @@
 #include "Bitset.h"
 #include <vector>
 #include "filter/kinect_filtering.h"
+#include <Eigen/StdVector>
 
 namespace alvar {
 
@@ -293,7 +294,8 @@ namespace alvar {
     class ALVAR_EXPORT MarkerIteratorImpl : public MarkerIterator {
   public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW    
-  MarkerIteratorImpl(typename std::vector<T>::const_iterator i) : _begin(i), _i(i) {
+  typedef typename std::vector<T, Eigen::aligned_allocator<T> >::const_iterator const_iterator_aligntype;
+  MarkerIteratorImpl(const_iterator_aligntype i) : _begin(i), _i(i) {
       _data = this;
     }
 
@@ -334,8 +336,8 @@ namespace alvar {
     }
 
   private:
-    typename std::vector<T>::const_iterator _begin;
-    typename std::vector<T>::const_iterator _i;
+    const_iterator_aligntype _begin;
+    const_iterator_aligntype _i;
   };
 
 } // namespace alvar

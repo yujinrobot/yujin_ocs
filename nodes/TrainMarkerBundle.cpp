@@ -45,6 +45,7 @@
 #include <ar_track_alvar/AlvarMarkers.h>
 #include <tf/transform_listener.h>
 #include <sensor_msgs/image_encodings.h>
+#include <Eigen/StdVector>
 
 using namespace alvar;
 using namespace std;
@@ -144,7 +145,7 @@ double GetMultiMarkerPose(IplImage *image, Pose &pose) {
             for (int i = 0; i < multi_marker_init->getMeasurementCount(); ++i) {
                 Pose p2;
                 multi_marker_init->getMeasurementPose(i, cam, p2);
-                const std::vector<MultiMarkerInitializer::MarkerMeasurement> markers = multi_marker_init->getMeasurementMarkers(i);
+                const std::vector<MultiMarkerInitializer::MarkerMeasurement, Eigen::aligned_allocator<MultiMarkerInitializer::MarkerMeasurement> > markers = multi_marker_init->getMeasurementMarkers(i);
                 multi_marker_bundle->MeasurementsAdd(&markers, p2);
             }
             // Initialize the bundle adjuster with initial marker poses.
