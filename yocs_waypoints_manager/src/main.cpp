@@ -7,20 +7,33 @@
    Date   : Dec 2013
  */
 
-
 #include "yocs_waypoints_manager/waypoints_manager.hpp"
+#include "yocs_waypoints_manager/yaml_parser.hpp"
+#include <yocs_msgs/WaypointList.h>
 
 int main(int argc, char** argv)
 {
-  ros::NodeHandle priv_n;
-
+  ros::init(argc, argv, "waypoint_manager");
+  ros::NodeHandle priv_n("~");
   yocs::WaypointManager* wm;
+  yocs_msgs::WaypointList wps;
+  std::string filename;
+  
+  if(!priv_n.getParam("filename", filename)) {
+    ROS_ERROR("Waypoint Manager : filename argument is not set");
+    return -1;
+  }
 
-  wm = new yocs::WaypointManager;
+  if(!yocs::loadWaypointListFromYaml(filename, wps)) {
+    ROS_ERROR("Waypoint Manager : Failed to parse yaml[%s]",filename.c_str());
+    return -1;
+  }
+
+  wm = new yocs::WaypointManager(priv_n, wps);
 
   ROS_INFO("Waypoint Manager : Initialized");
-
   wm->spin();
+  ROS_INFO("Waypoint Manager : Bye Bye");
 
   delete wm;
 

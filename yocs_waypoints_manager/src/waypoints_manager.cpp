@@ -11,18 +11,45 @@
 
 #include "yocs_waypoints_manager/waypoints_manager.hpp"
 
-
 namespace yocs {
+  WaypointManager::WaypointManager(ros::NodeHandle& n, yocs_msgs::WaypointList& wp) : nh_(n) 
+  { 
 
-  WaypointManager::WaypointManager() : nh("") {
+    // setup pub
+    waypoints_pub_ = nh_.advertise<yocs_msgs::WaypointList>("waypoints", 5, true);
+    waypoints_viz_pub_ = nh_.advertise<visualization_msgs::MarkerArray>("waypoints_viz", 5, true); 
+    // setup srv server
+    waypoints_srv_ = nh_.advertiseService("request_waypoints", &WaypointManager::processWaypointsService, this);
+
+    waypoints_ = wp;
+    generateVizmarkers(waypoints_, waypoints_viz_);
   }
 
-  WaypointManager::WaypointManager(ros::NodeHandle& n) {
+
+  WaypointManager::~WaypointManager() {}
+
+  bool WaypointManager::processWaypointsService(yocs_msgs::WaypointListService::Request& request, yocs_msgs::WaypointListService::Response& response)
+  {
+    ROS_INFO("Waypoint Manager : Received request");
+    if(!initialized_) // return false if node is not initialized with points
+    {
+      response.success = false;
+    }
+    else {
+      response.waypoints = this->waypoints_;
+      response.success = true;
+    }
+    return true;
   }
 
-  WaypointManager::~WaypointManager() {
+  void WaypointManager::generateVizmarkers(const yocs_msgs::WaypointList& wp, visualization_msgs::MarkerArray& wp_viz)
+  {
   }
 
   void WaypointManager::spin() {
+    waypoints_pub_.publish(waypoints_);
+    waypoints_viz_pub_.publish(waypoints_viz_);
+    initialized_ = true;
+    ros::spin();
   }
 }
