@@ -1,6 +1,6 @@
 waypoints:
   - name: p1
-    frame_id: /map
+    frame_id: map
     pose:
       position:
         x: 1
@@ -12,12 +12,12 @@ waypoints:
         z: 0
         w: 0
   - name: p2
-    frame_id: /map
+    frame_id: map
     pose:
       position:
-        x: 1
-        y: 1
-        z: 1
+        x: 0
+        y: 0
+        z: 0
       orientation:
         x: 0
         y: 0

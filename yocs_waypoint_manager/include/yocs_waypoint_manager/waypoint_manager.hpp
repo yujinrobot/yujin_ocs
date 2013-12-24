@@ -38,6 +38,9 @@ namespace yocs {
 
       void generateVizmarkers(const yocs_msgs::WaypointList& wp, visualization_msgs::MarkerArray& wp_viz);
       bool processWaypointsService(yocs_msgs::WaypointListService::Request& request, yocs_msgs::WaypointListService::Response& response);
+  
+      void createArrowMarker(const int i,const yocs_msgs::Waypoint& wp, visualization_msgs::Marker& marker);
+      void createLabelMarker(const int i,const yocs_msgs::Waypoint& wp, visualization_msgs::Marker& marker);
 
     private:
       bool initialized_;
@@ -48,6 +51,9 @@ namespace yocs {
 
       yocs_msgs::WaypointList waypoints_;
       visualization_msgs::MarkerArray waypoints_viz_;
+
+      unsigned int marker_index_;
+      unsigned int label_index_;
   };
 }
 

@@ -15,6 +15,7 @@ int main(int argc, char** argv)
 {
   ros::init(argc, argv, "waypoint_manager");
   ros::NodeHandle priv_n("~");
+  ros::NodeHandle n;
   yocs::WaypointManager* wm;
   yocs_msgs::WaypointList wps;
   std::string filename;
@@ -29,7 +30,7 @@ int main(int argc, char** argv)
     return -1;
   }
 
-  wm = new yocs::WaypointManager(priv_n, wps);
+  wm = new yocs::WaypointManager(n, wps);
 
   ROS_INFO("Waypoint Manager : Initialized");
   wm->spin();
