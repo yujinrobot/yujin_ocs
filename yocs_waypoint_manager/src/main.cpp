@@ -7,8 +7,8 @@
    Date   : Dec 2013
  */
 
-#include "yocs_waypoints_manager/waypoints_manager.hpp"
-#include "yocs_waypoints_manager/yaml_parser.hpp"
+#include "yocs_waypoint_manager/waypoint_manager.hpp"
+#include "yocs_waypoint_manager/yaml_parser.hpp"
 #include <yocs_msgs/WaypointList.h>
 
 int main(int argc, char** argv)

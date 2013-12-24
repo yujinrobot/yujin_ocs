@@ -1,7 +1,7 @@
 /*
    Way point Manager
 
-   inspired by yocs_waypoints_navi
+   highly inspired by yocs_waypoint_navi written by Jorge Santos
 
    LICENSE : BSD - https://raw.github.com/yujinrobot/yujin_ocs/license/LICENSE
 

@@ -9,7 +9,7 @@
    Date   : Dec 2013
  */
 
-#include "yocs_waypoints_manager/waypoints_manager.hpp"
+#include "yocs_waypoint_manager/waypoint_manager.hpp"
 
 namespace yocs {
   WaypointManager::WaypointManager(ros::NodeHandle& n, yocs_msgs::WaypointList& wp) : nh_(n) 

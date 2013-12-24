@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(yocs_waypoints_manager)
+project(yocs_waypoint_manager)
 
 # Load catkin and all dependencies required for this package
 find_package(catkin REQUIRED COMPONENTS visualization_msgs yocs_msgs roscpp )
@@ -18,7 +18,7 @@ catkin_package(
 include_directories(include ${catkin_INCLUDE_DIRS} ${yaml-cpp_INCLUDE_DIRS})
 
 # building c++ executables and libraries
-add_library(waypoint_manager_lib src/waypoints_manager.cpp)
+add_library(waypoint_manager_lib src/waypoint_manager.cpp)
 add_dependencies(waypoint_manager_lib yocs_msgs_gencpp)
 target_link_libraries(waypoint_manager_lib ${catkin_LIBRARIES})
 

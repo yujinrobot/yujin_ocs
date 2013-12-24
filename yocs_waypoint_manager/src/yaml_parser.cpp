@@ -1,5 +1,5 @@
 
-#include "yocs_waypoints_manager/yaml_parser.hpp"
+#include "yocs_waypoint_manager/yaml_parser.hpp"
 
 namespace yocs {
   bool loadWaypointListFromYaml(const std::string& filename,yocs_msgs::WaypointList& wps) {

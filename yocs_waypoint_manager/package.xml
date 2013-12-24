@@ -1,11 +1,13 @@
 <?xml version="1.0"?>
 <package>
-  <name>yocs_waypoints_manager</name>
+  <name>yocs_waypoint_manager</name>
   <version>0.0.0</version>
-  <description>The yocs_waypoints_manager package</description>
+  <description>
+    Parse a multiple poses from yaml and provide as topic and service. This package is highly inspired by yocs_waypoints_navi
+  </description>
 
   <maintainer email="jihoonl@yujinrobot.com">Jihoon Lee</maintainer>
-  <!-- <author email="jane.doe@example.com">Jane Doe</author> -->
+  <author email="jihoonl@yujinrobot.com">Jihoon Lee</author> 
 
   <license>BSD</license>
 
