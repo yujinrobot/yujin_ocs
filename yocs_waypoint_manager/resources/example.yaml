@@ -1,0 +1,25 @@
+waypoints:
+  - name: room1
+    frame_id: map
+    pose:
+      position:
+        x: 1.406
+        y: 7.37
+        z: 0
+      orientation:
+        x: 0
+        y: 0
+        z: -0.617
+        w: 0.7865
+  - name: corner
+    frame_id: map
+    pose:
+      position:
+        x: 4.715
+        y: 2.0748
+        z: 0
+      orientation:
+        x: 0
+        y: 0
+        z: -0.999
+        w: 0.0344
