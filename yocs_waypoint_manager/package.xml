@@ -11,7 +11,9 @@
 
   <license>BSD</license>
 
-  <!-- <url type="website">http://wiki.ros.org/yocs_waypoints_manager</url> -->
+  <url type="website">http://ros.org/wiki/yocs_waypoint_manager</url>
+  <url type="repository">https://github.com/yujinrobot/yujin_ocs</url>
+  <url type="bugtracker">https://github.com/yujinrobot/yujin_ocs/issues</url>
 
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>roscpp</build_depend>
