@@ -245,7 +245,7 @@ void DiffDrivePoseController::spinOnce()
 {
   if (this->getState())
   {
-    ROS_INFO_STREAM_THROTTLE(1.0, "Controller spinning. [" << name_ <<"]");
+    ROS_DEBUG_STREAM_THROTTLE(1.0, "Controller spinning. [" << name_ <<"]");
     // determine pose difference in polar coordinates
     if (!getPoseDiff())
     {
