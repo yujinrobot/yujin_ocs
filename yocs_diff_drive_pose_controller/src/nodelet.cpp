@@ -69,9 +69,21 @@ public:
                       << spin_rate_param << "'. [" << name_ <<"]");
     }
     spin_rate_ = ros::Rate(spin_rate_param);
+    double start_enabled = true;
+    nh.getParam("start_enabled", start_enabled);
     controller_.reset(new DiffDrivePoseController(nh, name_));
     if (controller_->init())
     {
+      if (start_enabled)
+      {
+        controller_->enable();
+        ROS_INFO_STREAM("Controller will start enabled. [" << name_ <<"]");
+      }
+      else
+      {
+        controller_->disable();
+        ROS_INFO_STREAM("Controller will start disabled. [" << name_ <<"]");
+      }
       update_thread_.start(&DiffDrivePoseControllerNodelet::update, *this);
       NODELET_INFO_STREAM("Controller initialised. [" << name_ << "]");
     }
@@ -83,7 +95,6 @@ public:
 private:
   void update()
   {
-    controller_->enable(); // enable the controller when loading the nodelet
     while (!shutdown_requested_ && ros::ok())
     {
       controller_->spinOnce();

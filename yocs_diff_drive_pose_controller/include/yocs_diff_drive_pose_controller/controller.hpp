@@ -41,6 +41,7 @@
 #include <string>
 #include <geometry_msgs/Twist.h>
 #include <ros/ros.h>
+#include <std_msgs/Bool.h>
 #include <std_msgs/Empty.h>
 #include <std_msgs/Float32.h>
 #include <tf/transform_listener.h>
@@ -138,6 +139,8 @@ private:
   ros::Subscriber control_velocity_subscriber_;
   /// publisher for sending out base velocity commands
   ros::Publisher command_velocity_publisher_;
+  /// publishes the status of the goal pose tracking
+  ros::Publisher pose_reached_publisher_;
 
   // variables and constants for the control law
   /// distance to pose goal [m]
@@ -170,6 +173,12 @@ private:
    * determines the sharpness of the curve: higher lambda -> bigger drop in short term, smaller in the long term
    */
   double lambda_;
+  /// lower bound for the distance (v = 0)
+  double dist_thres_;
+  /// lower bound for the orientation (w = 0)
+  double orient_thres_;
+  /// True, if pose has been reached (v == 0, w == 0)
+  bool pose_reached_;
 
   /// tf used to get goal pose relative to the base pose
   tf::TransformListener tf_listener_;
@@ -187,6 +196,7 @@ bool DiffDrivePoseController::init()
   disable_controller_subscriber_ = nh_.subscribe("disable", 10, &DiffDrivePoseController::disableCB, this);
   control_velocity_subscriber_ = nh_.subscribe("control_max_vel", 10, &DiffDrivePoseController::controlMaxVelCB, this);
   command_velocity_publisher_ = nh_.advertise<geometry_msgs::Twist>("command_velocity", 10);
+  pose_reached_publisher_ = nh_.advertise<std_msgs::Bool>("pose_reached", 10);
 
   // retrieve configuration parameters
   base_frame_name_ = "base_footprint";
@@ -233,11 +243,25 @@ bool DiffDrivePoseController::init()
     ROS_WARN_STREAM("Couldn't retrieve parameter 'lambda' from parameter server! Using default '"
                     << lambda_ << "'. [" << name_ <<"]");
   }
+  dist_thres_ = 0.01;
+  if(!nh_.getParam("dist_thres", dist_thres_))
+  {
+    ROS_WARN_STREAM("Couldn't retrieve parameter 'dist_thres' from parameter server! Using default '"
+                    << dist_thres_ << "'. [" << name_ <<"]");
+  }
+  orient_thres_ = 0.02;
+  if(!nh_.getParam("orient_thres", orient_thres_))
+  {
+    ROS_WARN_STREAM("Couldn't retrieve parameter 'orient_thres' from parameter server! Using default '"
+                    << orient_thres_ << "'. [" << name_ <<"]");
+  }
+  pose_reached_ = false;
   ROS_DEBUG_STREAM("Controller initialised with the following parameters: [" << name_ <<"]");
   ROS_DEBUG_STREAM("base_frame_name = " << base_frame_name_ <<", goal_frame_name = "
                    << goal_frame_name_ << " [" << name_ <<"]");
-  ROS_DEBUG_STREAM("v_max = " << v_max_ <<", k_1 = " << k_1_ << ", k_2 = " << k_2_
-                   << ", beta = " << beta_ << ", lambda = " << lambda_ << " [" << name_ <<"]");
+  ROS_DEBUG_STREAM("v_max = " << v_max_ <<", k_1 = " << k_1_ << ", k_2 = " << k_2_ << ", beta = " << beta_
+                   << ", lambda = " << lambda_ << ", dist_thres = " << dist_thres_
+                   << ", orient_thres = " << orient_thres_ <<" [" << name_ <<"]");
   return true;
 };
 
@@ -300,18 +324,57 @@ void DiffDrivePoseController::getControlOutput()
          + (1 + (k_1_ / (1 + std::pow((k_1_ * theta_), 2)))) * sin(delta_));
   v_ = v_max_ / (1 + beta_ * std::pow(std::abs(cur_), lambda_));
   w_ = cur_ * v_;
+
+  // upper bound for rotational speed (linear speed already has an upper bound)
   if (w_ > w_max_)
   {
     w_ = w_max_;
+  }
+
+  // lower bounds
+  if (r_ <= dist_thres_)
+  {
+    v_ = 0;
+    if (std::abs(delta_ - theta_) <= orient_thres_)
+    {
+      w_ = 0;
+    }
+  }
+
+  // check, if pose has been reached
+  if ((r_ <= dist_thres_) && (std::abs(delta_ - theta_) <= orient_thres_))
+  {
+    if (!pose_reached_)
+    {
+      pose_reached_ = true;
+      ROS_INFO_STREAM("Pose reached. [" << name_ <<"]");
+      std_msgs::Bool bool_msg;
+      bool_msg.data = true;
+      pose_reached_publisher_.publish(bool_msg);
+    }
+  }
+  else
+  {
+    if (pose_reached_)
+    {
+      pose_reached_ = false;
+      ROS_INFO_STREAM("Tracking new goal pose. [" << name_ <<"]");
+      std_msgs::Bool bool_msg;
+      bool_msg.data = false;
+      pose_reached_publisher_.publish(bool_msg);
+    }
   }
 };
 
 void DiffDrivePoseController::setControlOutput()
 {
-  geometry_msgs::TwistPtr cmd_vel(new geometry_msgs::Twist());
-  cmd_vel->linear.x = v_;
-  cmd_vel->angular.z = w_;
-  command_velocity_publisher_.publish(cmd_vel);
+  if (!pose_reached_)
+  {
+    geometry_msgs::TwistPtr cmd_vel(new geometry_msgs::Twist());
+    cmd_vel->linear.x = v_;
+    cmd_vel->angular.z = w_;
+    command_velocity_publisher_.publish(cmd_vel);
+  }
 };
 
 void DiffDrivePoseController::controlMaxVelCB(const std_msgs::Float32ConstPtr msg)

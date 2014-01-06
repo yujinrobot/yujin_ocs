@@ -6,6 +6,7 @@
   <node pkg="nodelet" type="nodelet" name="diff_drive_pose_controller"
         args="load yocs_diff_drive_pose_controller/DiffDrivePoseControllerNodelet mobile_base_nodelet_manager">
     <param name="spin_rate" value="25"/>
+    <param name="start_enabled" value="true"/>
     <param name="base_frame_name" value="base_footprint"/>
     <param name="goal_frame_name" value="base_goal_pose"/>
     <param name="v_max" value="0.1"/>
@@ -13,6 +14,8 @@
     <param name="k_2" value="10.0"/>
     <param name="beta" value="0.2"/>
     <param name="lambda" value="2.0"/>
+    <param name="dist_thres" value="0.01"/>
+    <param name="orient_thres" value="0.06"/>
     <remap from="diff_drive_pose_controller/command_velocity" to="mobile_base/commands/velocity"/>
   </node>
 </launch>
