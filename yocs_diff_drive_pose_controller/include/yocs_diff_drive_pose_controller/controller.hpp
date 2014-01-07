@@ -183,6 +183,10 @@ private:
   double orient_thres_;
   /// True, if pose has been reached (v == 0, w == 0)
   bool pose_reached_;
+  /// Error in distance above which pose is considered differen
+  double dist_eps_;
+  /// Error in orientation above which pose is considered differen
+  double orient_eps_;
 
   /// tf used to get goal pose relative to the base pose
   tf::TransformListener tf_listener_;
@@ -276,6 +280,18 @@ bool DiffDrivePoseController::init()
     ROS_WARN_STREAM("Couldn't retrieve parameter 'orient_thres' from parameter server! Using default '"
                     << orient_thres_ << "'. [" << name_ <<"]");
   }
+  dist_eps_ = dist_eps_ * 0.2;
+  if(!nh_.getParam("dist_eps", dist_eps_))
+  {
+    ROS_WARN_STREAM("Couldn't retrieve parameter 'dist_eps' from parameter server! Using default '"
+                    << dist_eps_ << "'. [" << name_ <<"]");
+  }
+  orient_eps_ = orient_thres_ * 0.2;
+  if(!nh_.getParam("orient_eps", orient_eps_))
+  {
+    ROS_WARN_STREAM("Couldn't retrieve parameter 'orient_eps' from parameter server! Using default '"
+                    << orient_eps_ << "'. [" << name_ <<"]");
+  }
   pose_reached_ = false;
   ROS_DEBUG_STREAM("Controller initialised with the following parameters: [" << name_ <<"]");
   ROS_DEBUG_STREAM("base_frame_name = " << base_frame_name_ <<", goal_frame_name = "
@@ -309,7 +325,7 @@ void DiffDrivePoseController::spinOnce()
   }
   else
   {
-    ROS_WARN_STREAM_THROTTLE(3.0, "Controller is disabled. Idling ... [" << name_ <<"]");
+    ROS_DEBUG_STREAM_THROTTLE(3.0, "Controller is disabled. Idling ... [" << name_ <<"]");
   }
 };
 
@@ -393,7 +409,7 @@ void DiffDrivePoseController::getControlOutput()
       pose_reached_publisher_.publish(bool_msg);
     }
   }
-  else
+  else if ((r_ > (dist_thres_ + dist_eps_)) || (std::abs(delta_ - theta_) > (orient_thres_ + orient_eps_)))
   {
     if (pose_reached_)
     {
@@ -408,13 +424,13 @@ void DiffDrivePoseController::getControlOutput()
 
 void DiffDrivePoseController::setControlOutput()
 {
+  geometry_msgs::TwistPtr cmd_vel(new geometry_msgs::Twist());
   if (!pose_reached_)
   {
-    geometry_msgs::TwistPtr cmd_vel(new geometry_msgs::Twist());
     cmd_vel->linear.x = v_;
     cmd_vel->angular.z = w_;
-    command_velocity_publisher_.publish(cmd_vel);
   }
+  command_velocity_publisher_.publish(cmd_vel);
 };
 
 void DiffDrivePoseController::controlMaxVelCB(const std_msgs::Float32ConstPtr msg)
