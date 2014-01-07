@@ -69,7 +69,7 @@ public:
                       << spin_rate_param << "'. [" << name_ <<"]");
     }
     spin_rate_ = ros::Rate(spin_rate_param);
-    double start_enabled = true;
+    bool start_enabled = true;
     nh.getParam("start_enabled", start_enabled);
     controller_.reset(new DiffDrivePoseController(nh, name_));
     if (controller_->init())

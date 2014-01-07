@@ -151,10 +151,14 @@ private:
   double delta_;
   /// linear base velocity [m/s]
   double v_;
+  /// minimum linear base velocity [m/s]
+  double v_min_;
   /// maximum linear base velocity [m/s]
   double v_max_;
   /// angular base velocity [rad/s]
   double w_;
+  /// minimum angular base velocity [rad/s]
+  double w_min_;
   /// maximum angular base velocity [rad/s]
   double w_max_;
   /// path to goal curvature
@@ -212,13 +216,30 @@ bool DiffDrivePoseController::init()
                     << goal_frame_name_ << "'. [" << name_ <<"]");
   }
   v_ = 0.0;
+  v_min_ = 0.01;
+  if(!nh_.getParam("v_min", v_min_))
+  {
+    ROS_WARN_STREAM("Couldn't retrieve parameter 'v_min' from parameter server! Using default '"
+                    << v_min_ << "'. [" << name_ <<"]");
+  }
   v_max_ = 0.5;
   if(!nh_.getParam("v_max", v_max_))
   {
     ROS_WARN_STREAM("Couldn't retrieve parameter 'v_max' from parameter server! Using default '"
                     << v_max_ << "'. [" << name_ <<"]");
   }
+  w_min_ = 0.01;
+  if(!nh_.getParam("w_min", w_min_))
+  {
+    ROS_WARN_STREAM("Couldn't retrieve parameter 'w_min' from parameter server! Using default '"
+                    << w_min_ << "'. [" << name_ <<"]");
+  }
   w_max_ = M_PI / 4 * v_max_;
+  if(!nh_.getParam("w_max", w_max_))
+  {
+    ROS_WARN_STREAM("Couldn't retrieve parameter 'w_max' from parameter server! Using default '"
+                    << w_max_ << "'. [" << name_ <<"]");
+  }
   k_1_ = 1.0;
   if(!nh_.getParam("k_1", k_1_))
   {
@@ -323,15 +344,34 @@ void DiffDrivePoseController::getControlOutput()
   cur_ = (-1 / r_) * (k_2_ * (delta_ - std::atan(-k_1_ * theta_))
          + (1 + (k_1_ / (1 + std::pow((k_1_ * theta_), 2)))) * sin(delta_));
   v_ = v_max_ / (1 + beta_ * std::pow(std::abs(cur_), lambda_));
-  w_ = cur_ * v_;
 
-  // upper bound for rotational speed (linear speed already has an upper bound)
-  if (w_ > w_max_)
+  // bounds for v
+  if (v_ < 0.0)
   {
-    w_ = w_max_;
+    if (v_ > -v_min_)
+    {
+      v_ = -v_min_;
+    }
+    else if (v_ < -v_max_)
+    {
+      v_ = -v_max_;
+    }
+  }
+  else
+  {
+    if (v_ < v_min_)
+    {
+      v_ = v_min_;
+    }
+    else if (v_ > v_max_)
+    {
+      v_ = v_max_;
+    }
   }
 
-  // lower bounds
+  w_ = cur_ * v_; // unbounded for now
+
+  // pose reached thresholds
   if (r_ <= dist_thres_)
   {
     v_ = 0;
