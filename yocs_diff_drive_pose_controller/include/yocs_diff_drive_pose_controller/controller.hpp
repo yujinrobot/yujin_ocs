@@ -415,9 +415,6 @@ void DiffDrivePoseController::getControlOutput()
     {
       pose_reached_ = false;
       ROS_INFO_STREAM("Tracking new goal pose. [" << name_ <<"]");
-      std_msgs::Bool bool_msg;
-      bool_msg.data = false;
-      pose_reached_publisher_.publish(bool_msg);
     }
   }
 };
