@@ -117,18 +117,28 @@ void CmdVelMuxNodelet::reloadConfiguration(yocs_cmd_vel_mux::reloadConfig &confi
     return;
   }
   // probably need to bring the try catches back here
-  YAML::Parser parser(ifs);
   YAML::Node doc;
+#ifdef HAVE_NEW_YAMLCPP
+  doc = YAML::Load(ifs);
+#else
+  YAML::Parser parser(ifs);
   parser.GetNextDocument(doc);
+#endif
 
   /*********************
   ** Output Publisher
   **********************/
   std::string output_name("output");
+#ifdef HAVE_NEW_YAMLCPP
+  if ( doc["publisher"] ) {
+    doc["publisher"] >> output_name;
+  }
+#else
   const YAML::Node *node = doc.FindValue("publisher");
   if ( node != NULL ) {
     *node >> output_name;
   }
+#endif
   mux_cmd_vel_pub = nh.advertise <geometry_msgs::Twist> (output_name, 10);
 
   /*********************

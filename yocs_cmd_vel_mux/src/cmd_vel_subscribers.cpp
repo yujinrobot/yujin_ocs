@@ -31,7 +31,11 @@ void CmdVelSubscribers::CmdVelSubs::operator << (const YAML::Node& node)
   node["topic"]      >> topic;
   node["timeout"]    >> timeout;
   node["priority"]   >> priority;
+#ifdef HAVE_NEW_YAMLCPP
+  if (node["short_desc"]) {
+#else
   if (node.FindValue("short_desc") != NULL) {
+#endif
     node["short_desc"] >> short_desc;
   }
 }

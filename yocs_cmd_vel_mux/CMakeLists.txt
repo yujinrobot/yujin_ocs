@@ -4,7 +4,11 @@ find_package(catkin REQUIRED COMPONENTS roscpp pluginlib nodelet dynamic_reconfi
 
 # pkg-config support
 find_package(PkgConfig)
-pkg_search_module(REQUIRED yaml-cpp)
+pkg_search_module(yaml-cpp REQUIRED yaml-cpp)
+
+if(NOT ${yaml-cpp_VERSION} VERSION_LESS "0.5")
+add_definitions(-DHAVE_NEW_YAMLCPP)
+endif()
 
 # Dynamic reconfigure support
 generate_dynamic_reconfigure_options(cfg/reload.cfg)
@@ -23,8 +27,7 @@ add_library(${PROJECT_NAME}_nodelet src/cmd_vel_mux_nodelet.cpp src/cmd_vel_subs
 add_dependencies(${PROJECT_NAME}_nodelet geometry_msgs_gencpp)
 add_dependencies(${PROJECT_NAME}_nodelet ${PROJECT_NAME}_gencfg)
 
-target_link_libraries(${PROJECT_NAME}_nodelet ${catkin_LIBRARIES})
-target_link_libraries(${PROJECT_NAME}_nodelet yaml-cpp)
+target_link_libraries(${PROJECT_NAME}_nodelet ${catkin_LIBRARIES} ${yaml-cpp_LIBRARIES})
 
 install(TARGETS ${PROJECT_NAME}_nodelet
         DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
