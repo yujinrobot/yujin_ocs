@@ -2,8 +2,8 @@
 Changelog for package yocs_cmd_vel_mux
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.3 (2014-03-24)
+------------------
 * Added support for YAML-CPP 0.5+.
   The new yaml-cpp API removes the "node >> outputvar;" operator, and
   it has a new way of loading documents. There's no version hint in the
