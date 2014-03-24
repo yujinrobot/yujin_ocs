@@ -2,6 +2,9 @@
 Changelog for package yocs_math_toolkit
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.5.2 (2013-11-05)
 ------------------
 * Some more functions added.

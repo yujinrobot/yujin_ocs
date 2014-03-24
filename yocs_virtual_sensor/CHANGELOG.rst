@@ -2,6 +2,9 @@
 Changelog for package yocs_virtual_sensor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.5.2 (2013-11-05)
 ------------------
 * Current implementation cannot read obstacles from YAML files. Until this

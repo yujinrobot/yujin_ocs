@@ -2,6 +2,9 @@
 Changelog for package yocs_diff_drive_pose_controller
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.5.2 (2013-11-05)
 ------------------
 

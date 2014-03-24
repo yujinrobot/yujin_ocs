@@ -2,6 +2,9 @@
 Changelog for package yocs_velocity_smoother
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.5.2 (2013-11-05)
 ------------------
 

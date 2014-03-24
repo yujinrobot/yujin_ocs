@@ -2,6 +2,9 @@
 Changelog for package yujin_ocs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.5.2 (2013-11-05)
 ------------------
 * Move YOCS messages to its own stack.
