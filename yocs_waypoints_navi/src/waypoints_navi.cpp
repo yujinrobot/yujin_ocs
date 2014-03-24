@@ -42,6 +42,15 @@
 #include <yocs_math_toolkit/common.hpp>
 #include <yocs_math_toolkit/geometry.hpp>
 
+#ifdef HAVE_NEW_YAMLCPP
+// The >> operator disappeared in yaml-cpp 0.5, so this function is
+// added to provide support for code written under the yaml-cpp 0.3 API.
+template<typename T>
+void operator >> (const YAML::Node& node, T& i)
+{
+  i = node.as<T>();
+}
+#endif
 
 class WaypointsGoalNode
 {
@@ -431,11 +440,18 @@ private:
         return false;
       }
 
-      YAML::Parser parser(ifs);
       YAML::Node doc;
+#ifdef HAVE_NEW_YAMLCPP
+      doc = YAML::Load(ifs);
+
+      const YAML::Node &wp_node_tmp = doc["waypoints"];
+      const YAML::Node *wp_node = wp_node_tmp ? &wp_node_tmp : NULL;
+#else
+      YAML::Parser parser(ifs);
       parser.GetNextDocument(doc);
 
       const YAML::Node *wp_node = doc.FindValue("waypoints");
+#endif
       if (wp_node != NULL)
       {
         for (unsigned int i = 0; i < wp_node->size(); i++)
@@ -455,7 +471,12 @@ private:
         ROS_DEBUG("No waypoints in file; assuming go to goal mode");  // still a valid file in goal mode
       }
 
+#ifdef HAVE_NEW_YAMLCPP
+      const YAML::Node &fg_node_tmp = doc["final_goal"];
+      const YAML::Node *fg_node = fg_node_tmp ? &fg_node_tmp : NULL;
+#else
       const YAML::Node *fg_node = doc.FindValue("final_goal");
+#endif
       if ((wp_node == NULL) && (fg_node == NULL))
       {
         ROS_ERROR("Missing required key: final_goal");

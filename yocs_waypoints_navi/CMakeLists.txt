@@ -6,7 +6,11 @@ find_package(catkin REQUIRED COMPONENTS visualization_msgs move_base_msgs action
 
 # pkg-config support
 find_package(PkgConfig)
-pkg_search_module(REQUIRED yaml-cpp)
+pkg_search_module(yaml-cpp REQUIRED yaml-cpp)
+
+if(NOT ${yaml-cpp_VERSION} VERSION_LESS "0.5")
+add_definitions(-DHAVE_NEW_YAMLCPP)
+endif()
 
 catkin_package(
     INCLUDE_DIRS
@@ -19,7 +23,7 @@ include_directories(${catkin_INCLUDE_DIRS} ${yaml-cpp_INCLUDE_DIRS})
 
 # building c++ executables and libraries
 add_executable(${PROJECT_NAME}_node src/waypoints_navi.cpp)
-target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} ${Boost_LIBRARIES} yaml-cpp)
+target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${yaml-cpp_LIBRARIES})
 
 
 #############
