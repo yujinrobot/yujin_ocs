@@ -3,39 +3,7 @@ Simple Annotation Server
 
 A simple annotation server which associate with a file.
 
-File format
------------
-
-.. code-block:: yaml
-    
-    # yocs_msgs/Table
-    tables:
-      - name:
-        radius:
-        ...
-      - ...
-      - ...
-
-    # yocs_msgs/Column
-    columns:
-      - name: 
-        radius:
-        ...
-      - ...
-      - ...
-
-    # yocs_msgs/Wall
-    walls:
-      - name:
-        length: 
-        ...
-      - ...
-
-    # ar_track_alvar/AlvarMarker
-    ar_markers:
-      - id:
-        pose:
-      - ...
+.. image:: imgs/quickview.png
 
 
 ROS APIs
@@ -69,3 +37,38 @@ Parameters
 ^^^^^^^^^^
 
 * ``~filename`` : a required parameter to point a file which associates with annotation server.
+
+
+File format
+-----------
+
+.. code-block:: yaml
+    
+    # yocs_msgs/Table
+    tables:
+      - name:
+        radius:
+        ...
+      - ...
+      - ...
+
+    # yocs_msgs/Column
+    columns:
+      - name: 
+        radius:
+        ...
+      - ...
+      - ...
+
+    # yocs_msgs/Wall
+    walls:
+      - name:
+        length: 
+        ...
+      - ...
+
+    # ar_track_alvar/AlvarMarker
+    ar_markers:
+      - id:
+        pose:
+      - ...
