@@ -15,3 +15,16 @@ catkin_package(
 )
 
 include_directories(include ${catkin_INCLUDE_DIRS} ${yaml-cpp_INCLUDE_DIRS})
+
+
+add_library(yocs_simple_annotation_server src/simple_annotation_server.cpp 
+                                          src/file_io.cpp)
+add_dependencies(yocs_simple_annotation_server yocs_msgs_gencpp)
+target_link_libraries(yocs_simple_annotation_server ${catkin_LIBRARIES})
+
+add_executable(simple_annotation_server src/main.cpp)
+add_dependencies(simple_annotation_server yocs_simple_annotation_server)
+target_link_libraries(simple_annotation_server yocs_simple_annotation_server)
+
+install(TARGETS simple_annotation_server
+        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
