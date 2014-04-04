@@ -15,14 +15,40 @@ void SimpleAnnotationServer::setAnnotationFile(const std::string filename)
   filename_ = filename;
 }
 
-bool SimpleAnnotationServer::loadAnnotationsFromFile()
-{
-  return false;
-}
-
 void SimpleAnnotationServer::writeAnnotationsToFile(const yocs_msgs::SaveAnnotations::Request& request)
 {
 
+}
+
+bool SimpleAnnotationServer::loadAnnotationsFromFile()
+{
+  YAML::Node doc;
+
+//  if(!loadYAMLNode(filename, doc)
+//    return false;
+
+  loadWalls(doc.FindValue("walls"));
+  loadColumns(doc.FindValue("columns"));
+  loadTables(doc.FindValue("tables"));
+  loadARMarkers(doc.FindValue("ar_markers"));
+
+  return true;
+}
+
+void SimpleAnnotationServer::loadWalls(const YAML::Node* node)
+{
+}
+
+void SimpleAnnotationServer::loadColumns(const YAML::Node* node)
+{
+}
+
+void SimpleAnnotationServer::loadTables(const YAML::Node* node)
+{
+}
+
+void SimpleAnnotationServer::loadARMarkers(const YAML::Node* node)
+{
 }
 
 } // yocs

@@ -20,6 +20,7 @@
 #include <yocs_msgs/TableList.h>
 #include <ar_track_alvar/AlvarMarkers.h>
 
+#include <yaml-cpp/yaml.h>
 /*****************************************************************************
 ** Class 
 *****************************************************************************/
@@ -47,6 +48,11 @@ class SimpleAnnotationServer {
     bool loadAnnotationsFromFile();
   private:
     void initPublishers();
+
+    void loadWalls(const YAML::Node* node);
+    void loadColumns(const YAML::Node* node);
+    void loadTables(const YAML::Node* node);
+    void loadARMarkers(const YAML::Node* node);
 
     ros::NodeHandle nh_;
     ros::NodeHandle priv_nh_;
