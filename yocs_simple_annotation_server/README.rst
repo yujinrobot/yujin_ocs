@@ -22,16 +22,10 @@ Topics
 Services
 ^^^^^^^^
 
-* ``~save_annotations`` `yocs_msgs`_/AnnotationList
-
-*yocs_msgs/AnnotationList*
-
-.. code-block:: xml
-    
-    TableList tables
-    ColumnList columns
-    WallList  walls
-    ar_track_alvar/AlvarMarkers ar_markers    
+* ``~save_tables``
+* ``~save_columns``
+* ``~save_walls``
+* ``~ar_markers``
 
 Parameters
 ^^^^^^^^^^
