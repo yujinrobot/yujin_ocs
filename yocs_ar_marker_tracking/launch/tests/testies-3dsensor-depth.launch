@@ -1,0 +1,41 @@
+<launch>
+  <!-- Currently what we're using for the 3dsensor configuration on robot. 
+       Argument settings are turtlebot style (just copied here so we don't have to introduce
+       a turtlebot setting for a non-turtlebot dependendant package). 
+  -->
+  <arg name="camera"                          default="camera"/>
+  <arg name="publish_tf"                      default="false"/>
+  <arg name="rgb_processing"                  default="true" />
+  <arg name="ir_processing"                   default="false"/>
+  <arg name="depth_processing"                default="false"/>
+  <arg name="disparity_processing"            default="false"/>
+  <arg name="disparity_registered_processing" default="false"/>
+  <arg name="num_worker_threads"              default="4" />
+  <arg name="depth_registration"              default="true"/>
+  <arg name="depth_registered_processing"     default="true"/>
+
+  <include file="$(find openni_launch)/launch/openni.launch">
+    <arg name="camera"                          value="$(arg camera)"/>
+    <arg name="publish_tf"                      value="$(arg publish_tf)"/>
+    <arg name="num_worker_threads"              value="$(arg num_worker_threads)" />
+
+    <!-- Processing Modules -->
+    <arg name="depth_registration"              value="$(arg depth_registration)"/>
+    <arg name="rgb_processing"                  value="$(arg rgb_processing)"/>
+    <arg name="ir_processing"                   value="$(arg ir_processing)"/>
+    <arg name="depth_processing"                value="$(arg depth_processing)"/>
+    <arg name="depth_registered_processing"     value="$(arg depth_registered_processing)"/>
+    <arg name="disparity_processing"            value="$(arg disparity_processing)"/>
+    <arg name="disparity_registered_processing" value="$(arg disparity_registered_processing)"/>
+  </include>
+  
+  <arg name="marker_size" default="10.0" />
+  <arg name="max_new_marker_error" default="0.08" />  <!-- 0.08 -->
+  <arg name="max_track_error" default="0.2" />        <!-- 0.2 --> 
+  <arg name="cam_info_topic" default="/camera/rgb/camera_info" />     
+  <arg name="output_frame" default="camera_rgb_optical_frame" />
+  <arg name="cam_image_topic" default="/camera/depth_registered/points" />
+  <arg name="max_frequency"        default="5.0" />
+  <node name="ar_track_alvar" pkg="ar_track_alvar" type="individualMarkers" respawn="false" output="screen" args="$(arg marker_size) $(arg max_new_marker_error) $(arg max_track_error) $(arg cam_image_topic) $(arg cam_info_topic) $(arg output_frame) $(arg max_frequency)" />
+</launch>
+

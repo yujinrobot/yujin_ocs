@@ -1,0 +1,20 @@
+<package>
+  <name>yocs_ar_pair_approach</name>
+  <version>0.0.0</version>
+  <description>
+    Search and approach behaviour, moving to a target in front of a pair of ar markers.
+  </description>
+  <maintainer email="d.stonier@gmail.com">Daniel Stonier</maintainer>
+  <license>BSD</license>
+  <url type="website">http://ros.org/wiki/yocs_ar_pair_approach</url>
+  <url type="repository">https://github.com/yujinrobot/yujin_ocs</url>
+  <url type="bugtracker">https://github.com/yujinrobot/yujin_ocs/issues</url>
+  <author>Daniel Stonier</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <run_depend>rospy</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>tf</run_depend>
+  <run_depend>dynamic_reconfigure</run_depend>
+</package>

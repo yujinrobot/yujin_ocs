@@ -1,0 +1,11 @@
+<launch>
+  <node name="ar_marker_tracking" pkg="yocs_ar_marker_tracking" type="yocs_ar_marker_tracking_node" respawn="false">
+    <rosparam param="max_valid_d_inc">1.0</rosparam>    <!-- Per second; will get divided by tracker frequency -->
+    <rosparam param="max_valid_h_inc">5.0</rosparam>    <!--  Per second; will get divided by tracker frequency -->
+    <rosparam param="max_tracking_time">2.0</rosparam>  <!-- In seconds -->
+    <rosparam param="min_penalized_dist">1.4</rosparam> <!-- Minimum penalized distance (1.0 confidence) -->
+    <rosparam param="max_reliable_dist">2.8</rosparam>  <!-- Maximum reliable distance (0.0 confidence) -->
+    <rosparam param="min_penalized_head">1.0</rosparam> <!-- Minimum penalized heading (1.0 confidence) -->
+    <rosparam param="max_reliable_head">1.8</rosparam>  <!-- Maximum reliable heading (0.0 confidence) -->
+  </node>
+</launch>

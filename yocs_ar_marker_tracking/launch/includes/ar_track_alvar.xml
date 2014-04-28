@@ -1,0 +1,19 @@
+<launch>
+  <!-- Important arguments -->
+  <arg name="ar_marker_size"            default="10.0" />  <!-- width of the black square -->
+  <arg name="ar_marker_max_frequency"   default="5.0" />  <!-- this is the throttled publishing frequency (usually < image publishing frequency) -->
+  <arg name="ar_marker_cam_image_topic" default="camera/rgb/image_raw" />
+  
+  <arg name="max_new_marker_error" default="0.08" />  <!-- 0.08 -->
+  <arg name="max_track_error"      default="0.2" />        <!-- 0.2 -->
+  <arg name="cam_info_topic"       default="camera/rgb/camera_info" />  <!-- change to camera/depth_registered/points if using a kinect (also see openni.xml) -->     
+  <arg name="output_frame"         default="camera_rgb_optical_frame" />
+
+  <node name="ar_track_alvar" pkg="ar_track_alvar" type="individualMarkersNoKinect" respawn="false" output="screen" args="$(arg ar_marker_size) $(arg max_new_marker_error) $(arg max_track_error) $(arg ar_marker_cam_image_topic) $(arg cam_info_topic) $(arg output_frame) $(arg ar_marker_max_frequency)">
+    <param name="max_frequency" value="$(arg ar_marker_max_frequency)"/>  <!-- Set as a parameter so other nodes can read it (e.g. jorge's ar code) -->
+    <!-- Convenience remaps only, avoid clutter in the root. -->
+    <remap from="ARmarker_points"       to="ar_track_alvar/ARmarker_points"/>  <!-- Depth topic only -->
+    <remap from="ar_pose_marker"        to="ar_track_alvar/ar_pose_marker"/>
+    <remap from="visualization_marker"  to="ar_track_alvar/visualization_marker"/>
+  </node>
+</launch>

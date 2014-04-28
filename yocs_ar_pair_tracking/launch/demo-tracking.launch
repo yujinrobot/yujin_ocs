@@ -1,0 +1,19 @@
+<!-- Demo launcher which launches everything in one bundle. -->
+<launch>
+  <include file="$(find yocs_ar_pair_tracking)/launch/tracking.launch">
+    <arg name="ar_pair_left_id"            value="3"/>
+    <arg name="ar_pair_right_id"           value="0"/>
+    <arg name="ar_pair_baseline"           value="0.26"/> <!-- YO!!!! Change this in tandem with the next one! -->
+    <arg name="ar_pair_baseline_half"      value="0.13"/>
+    <arg name="ar_pair_target_pose_offset" value="0.33"/> <!-- Target distance in front of the midpoint of the two ar markers -->
+    <arg name="ar_pair_publish_transforms" value="true"/> <!-- Disable this if a ar_global-base_footprint is being published elseewhere -->
+  </include>
+  
+  <!-- When demo'ing, we need a base footprint to calculate the transforms and poses (will disappear once we remove the transform logic from inside the node) -->
+  <node pkg="tf" type="static_transform_publisher" name="camera_rgb_optical_frame_publisher" args="0.0 0.0 0.36 -1.57 0.0 -1.57 base_footprint camera_rgb_optical_frame 100"/>
+
+  <include file="$(find yocs_ar_marker_tracking)/launch/machinery.launch">
+    <arg name="ar_marker_size"            value="10.0"/>
+    <arg name="ar_marker_cam_image_topic" value="camera/rgb/image_raw" />
+  </include>
+</launch>

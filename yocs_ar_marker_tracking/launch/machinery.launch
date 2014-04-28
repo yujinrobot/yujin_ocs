@@ -1,0 +1,23 @@
+<launch>
+  <!-- ***************************** Notes *****************************
+                      
+     Starts the machinery for ar_tracking - openni and ar_track_alvar.
+     
+     Using rgb only (no kinect) with the ar_track_alvar node. To get it to use the
+     depth information, turn on depth_registration, depth_registered_processing
+     and point cam_image_topic to /camera/depth_registered/points.
+   -->
+   
+  <!-- ************************* Public Arguments ************************* -->
+  <arg name="ar_marker_size" default="10.0" />
+  <arg name="ar_marker_cam_image_topic" default="camera/rgb/image_raw" />
+  <arg name="ar_marker_max_frequency" default="5" />
+
+  <!-- **************************** Includes ****************************** -->
+  <include file="$(find yocs_ar_marker_tracking)/launch/includes/openni.xml"/>
+  <include file="$(find yocs_ar_marker_tracking)/launch/includes/ar_track_alvar.xml">
+    <arg name="ar_marker_size" value="$(arg ar_marker_size)"/>
+    <arg name="ar_marker_cam_image_topic" value="$(arg ar_marker_cam_image_topic)" />
+    <arg name="ar_marker_max_frequency" value="$(arg ar_marker_max_frequency)" />
+  </include>
+</launch>

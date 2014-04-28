@@ -1,0 +1,23 @@
+<launch>
+  <arg name="ar_pair_left_id"            default="3"/>
+  <arg name="ar_pair_right_id"           default="0"/>
+  <arg name="ar_pair_baseline"           default="0.26"/> <!-- YO!!!! Change this in tandem with the next one! -->
+  <arg name="ar_pair_baseline_half"      default="0.13"/>
+  <arg name="ar_pair_target_pose_offset" default="0.33"/> <!-- Target distance in front of the midpoint of the two ar markers -->
+  <arg name="ar_pair_publish_transforms" default="false"/> <!-- Disable this if a ar_global-base_footprint is being published elseewhere -->
+  
+  <node name="ar_pair_tracking" pkg="yocs_ar_pair_tracking" type="yocs_ar_pair_tracking_node" respawn="false">
+    <param name="ar_pair_left_id"             value="$(arg ar_pair_left_id)"/>
+    <param name="ar_pair_right_id"            value="$(arg ar_pair_right_id)"/>
+    <param name="ar_pair_baseline"            value="$(arg ar_pair_baseline)"/>
+    <param name="ar_pair_target_pose_offset"  value="$(arg ar_pair_target_pose_offset)"/>
+    <param name="publish_transforms"          value="$(arg ar_pair_publish_transforms)"/>
+  </node>
+  
+  <!-- TODO: Move these publishers to waiterbot_ctrl_nowireless/launch/includes/_tf_publishers.launch -->
+  <node pkg="tf" type="static_transform_publisher" name="ar_link_left_publisher" args="-$(arg ar_pair_baseline_half) 0.0 0.0 0.0 0.0 0.0 ar_link ar_3 100"/>
+  <node pkg="tf" type="static_transform_publisher" name="ar_link_right_publisher" args="$(arg ar_pair_baseline_half) 0.0 0.0 0.0 0.0 0.0 ar_link ar_0 100"/>
+  <node pkg="tf" type="static_transform_publisher" name="ar_link_target_publisher" args="0.0 0.0 $(arg ar_pair_target_pose_offset) 0.0 0.0 3.14 target_pose ar_link 100"/>
+  <node pkg="tf" type="static_transform_publisher" name="ar_link_global_publisher" args="0.0 -0.36 0.0 0.0 -1.57 -1.57 ar_link ar_global 100"/>
+
+</launch>
