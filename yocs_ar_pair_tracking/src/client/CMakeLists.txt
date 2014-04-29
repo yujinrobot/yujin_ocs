@@ -1,16 +1,15 @@
 ###############################################################################
-# Subdirectories
+# Sources
 ###############################################################################
 
-add_subdirectory(lib)
-add_subdirectory(client)
+file(GLOB SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
 
 ###############################################################################
-# Nodes
+# Build
 ###############################################################################
 
-add_executable(yocs_ar_pair_tracking_node main.cpp)
-target_link_libraries(yocs_ar_pair_tracking_node yocs_ar_pair_tracking)
+add_executable(yocs_ar_pair_client ${SOURCES})
+target_link_libraries(yocs_ar_pair_client ${catkin_LIBRARIES})
 
 ###############################################################################
 # Install
