@@ -20,13 +20,12 @@ find_package(catkin COMPONENTS
         message_generation
         ${MSG_DEPS}
         dynamic_reconfigure
+        cmake_modules
         REQUIRED)
 
 find_package(Eigen REQUIRED)
 find_package(OpenCV REQUIRED)
-
-find_package(PkgConfig)
-pkg_check_modules(PC_TINYXML REQUIRED tinyxml)
+find_package(TinyXML REQUIRED)
 
 # generate messages
 set(MSG_FILES AlvarMarker.msg AlvarMarkers.msg)
@@ -57,10 +56,9 @@ catkin_package(
 )
 
 include_directories(include 
-                    ${PC_TINYXML_INCLUDE_DIRS}
                     ${catkin_INCLUDE_DIRS}
                     ${OpenCV_INCLUDE_DIRS}
-                    ${PC_TINYXML_INCLUDE_DIRS}
+                    ${TinyXML_INCLUDE_DIRS}
 
 )
 
@@ -97,7 +95,7 @@ add_library(ar_track_alvar
     src/MultiMarker.cpp
     src/MultiMarkerBundle.cpp
     src/MultiMarkerInitializer.cpp)
-target_link_libraries(ar_track_alvar ${OpenCV_LIBS} tinyxml ${catkin_LIBRARIES})
+target_link_libraries(ar_track_alvar ${OpenCV_LIBS} ${TinyXML_LIBRARIES} ${catkin_LIBRARIES})
 add_dependencies(ar_track_alvar ${GENCPP_DEPS})
 
 # Kinect filtering code
