@@ -10,6 +10,7 @@ This package is a ROS wrapper for Alvar, an open source AR tag tracking library.
 
  <buildtool_depend>catkin</buildtool_depend>
 
+ <build_depend>cmake_modules</build_depend>
  <build_depend>cv_bridge</build_depend>
  <build_depend>geometry_msgs</build_depend>
  <build_depend>image_transport</build_depend>
