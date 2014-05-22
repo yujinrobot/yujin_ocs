@@ -115,7 +115,7 @@ void ARMarkerTracking::maintainTrackedMarker(TrackedMarker& marker,const ar_trac
     if ((mtk::distance3D(prev.pose, it->pose) > max_valid_d_inc) || (std::abs(mtk::minAngle(prev.pose, it->pose)) > max_valid_h_inc))
     {
       // Incoherent observation; stop going over the list and use current position value to fill confidence values
-      ROS_ERROR("%d  BREAK at %d   %f  %f     %f   %f        %f", msgMarker.id, position, mtk::distance3D(prev.pose, it->pose),  mtk::minAngle(prev.pose, it->pose), max_valid_d_inc, max_valid_h_inc, ar_tracker_freq_);
+      ROS_DEBUG("%d  BREAK at %d   %f  %f     %f   %f        %f", msgMarker.id, position, mtk::distance3D(prev.pose, it->pose),  mtk::minAngle(prev.pose, it->pose), max_valid_d_inc, max_valid_h_inc, ar_tracker_freq_);
       break;
     }
 
