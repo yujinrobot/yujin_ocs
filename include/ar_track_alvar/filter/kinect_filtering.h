@@ -54,6 +54,7 @@
 #include <pcl_ros/point_cloud.h>
 #include <pcl/filters/extract_indices.h>
 #include <boost/lexical_cast.hpp>
+#include <Eigen/StdVector>
 
 #include <opencv2/core/core.hpp>
 
@@ -69,14 +70,14 @@ typedef pcl::PointCloud<ARPoint> ARCloud;
 struct PlaneFitResult
 {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW  
-  PlaneFitResult () : inliers(boost::make_shared<ARCloud>()) {}
+  PlaneFitResult () : inliers(ARCloud::Ptr(new ARCloud)) {}
   ARCloud::Ptr inliers;
   pcl::ModelCoefficients coeffs;
 };
 
 // Select out a subset of a cloud corresponding to a set of pixel coordinates
 ARCloud::Ptr filterCloud (const ARCloud& cloud,
-                          const std::vector<cv::Point>& pixels);
+                          const std::vector<cv::Point, Eigen::aligned_allocator<cv::Point> >& pixels);
 
 // Wrapper for PCL plane fitting
 PlaneFitResult fitPlane (ARCloud::ConstPtr cloud);

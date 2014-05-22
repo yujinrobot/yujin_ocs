@@ -385,7 +385,7 @@ void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
       //printf("\n--------------------------\n\n");
       for (size_t i=0; i<marker_detector.markers->size(); i++)
     	{
-	  vector<cv::Point> pixels;
+	  vector<cv::Point, Eigen::aligned_allocator<cv::Point> > pixels;
 	  Marker *m = &((*marker_detector.markers)[i]);
 	  int id = m->GetId();
 	  //cout << "******* ID: " << id << endl;
