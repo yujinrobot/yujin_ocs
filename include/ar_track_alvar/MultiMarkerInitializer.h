@@ -117,10 +117,8 @@ public:
 	}
 
 	double getMeasurementPose(int measurement, Camera *cam, Pose &pose) {
-//	  std::vector<MarkerMeasurement>::const_iterator test_measure(measurements[measurement].begin());
-//    MarkerIteratorImpl<MarkerMeasurement> m_begin(test_measure);
-	  MarkerIteratorImpl<MarkerMeasurement> m_begin(measurements[measurement].begin());
-    MarkerIteratorImpl<MarkerMeasurement> m_end(measurements[measurement].end());
+		MarkerIteratorImpl<MarkerMeasurement> m_begin(measurements[measurement].begin());
+		MarkerIteratorImpl<MarkerMeasurement> m_end(measurements[measurement].end());
 		return _GetPose(m_begin, m_end, cam, pose, NULL);
 	}
 };
