@@ -6,7 +6,11 @@ find_package(catkin REQUIRED COMPONENTS visualization_msgs yocs_msgs roscpp )
 
 # pkg-config support
 find_package(PkgConfig)
-pkg_search_module(REQUIRED yaml-cpp)
+
+pkg_search_module(yaml-cpp REQUIRED yaml-cpp)
+if(NOT ${yaml-cpp_VERSION} VERSION_LESS "0.5")
+  add_definitions(-DHAVE_NEW_YAMLCPP)
+endif()
 
 catkin_package(
     INCLUDE_DIRS
@@ -24,7 +28,7 @@ target_link_libraries(waypoint_manager_lib ${catkin_LIBRARIES})
 
 add_library(waypoint_manager_yaml_parser_lib src/yaml_parser.cpp)
 add_dependencies(waypoint_manager_yaml_parser_lib yocs_msgs_gencpp)
-target_link_libraries(waypoint_manager_yaml_parser_lib yaml-cpp ${catkin_LIBRARIES})
+target_link_libraries(waypoint_manager_yaml_parser_lib ${catkin_LIBRARIES} ${yaml-cpp_LIBRARIES})
 
 add_executable(waypoint_manager src/main.cpp)
 add_dependencies(waypoint_manager waypoint_manager_lib waypoint_manager_yaml_parser_lib)

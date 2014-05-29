@@ -40,14 +40,25 @@ namespace yocs {
     }
 
     YAML::Parser parser(ifs);
-    parser.GetNextDocument(node);
+    #ifdef HAVE_NEW_YAMLCPP
+      node = YAML::Load(ifs);
+    #else
+      YAML::Parser parser(ifs);
+      parser.GetNextDocument(node);
+    #endif
   }
 
   void parseWaypoints(const YAML::Node& node, yocs_msgs::WaypointList& wps) 
   {
-    const YAML::Node* wp_node = node.FindValue("waypoints");
+    
     unsigned int i;
 
+    #ifdef HAVE_NEW_YAMLCPP
+    const YAML::Node& wp_node_tmp = node["waypoints"];   
+    const YAML::Node* wp_node = wp_node_tmp ? &wp_node_tmp : NULL;   
+    #else
+    const YAML::Node* wp_node = node.FindValue("waypoints");   
+    #endif
     if(wp_node != NULL)
     {
       for(i = 0; i < wp_node->size(); i++) 
