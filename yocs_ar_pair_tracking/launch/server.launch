@@ -1,0 +1,18 @@
+<launch>
+
+  <!-- When demo'ing, we need a base footprint to calculate the transforms and poses (will disappear once we remove the transform logic from inside the node) -->
+  <node pkg="tf" type="static_transform_publisher" name="camera_rgb_optical_frame_publisher" args="0.0 0.0 0.36 -1.57 0.0 -1.57 base_footprint camera_rgb_optical_frame 100"/>
+
+  <include file="$(find yocs_ar_marker_tracking)/launch/machinery.launch">
+    <arg name="ar_marker_size"            value="6.9"/>
+    <arg name="ar_marker_cam_image_topic" value="camera/rgb/image_raw" />
+  </include>
+
+  <node name="ar_pair_tracking" pkg="yocs_ar_pair_tracking" type="yocs_ar_pair_tracking_node" respawn="false" output="screen">
+    <param name="publish_transforms"          value="true"/>
+    <param name="global_frame" value="map"/>
+    <param name="marker_frame" value="camera_rgb_optical_frame"/>
+    <param name="base_frame" value="base_footprint"/>
+    <remap from="ar_pair_tracking/update_ar_pair" to="update_ar_pair"/>
+  </node>
+</launch>

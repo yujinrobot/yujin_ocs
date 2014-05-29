@@ -1,0 +1,10 @@
+<!-- 
+   For testing only - run alongside other shells with machinery.launch and kobuki_node. 
+-->
+<launch>
+  <node pkg="yocs_ar_pair_approach" type="approach.py" name="ar_pair_approach">
+    <remap from="ar_pair_approach/spotted_markers" to="ar_pair_tracking/spotted_markers"/>
+    <remap from="ar_pair_approach/cmd_vel" to="mobile_base/commands/velocity"/>
+    <rosparam param="search_only">true</rosparam>
+  </node>    
+</launch>

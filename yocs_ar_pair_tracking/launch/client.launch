@@ -1,0 +1,5 @@
+<launch>
+  <node pkg="yocs_ar_pair_tracking" name="client" type="yocs_ar_pair_client" output="screen">
+    <remap from="global_markers" to="/annotation/ar_markers"/>
+  </node>
+</launch>

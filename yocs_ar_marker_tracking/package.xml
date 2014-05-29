@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<package>
+  <name>yocs_ar_marker_tracking</name>
+  <version>0.0.0</version>
+  <description>Collecting, tracking and generating statistics for ar markers from ar_track_alvar.</description>
+  <maintainer email="d.stonier@yujinrobot.com">Daniel Stonier</maintainer>
+  <author>Daniel Stonier</author>
+  <author>Jorge Santos</author>
+
+  <license>BSD</license>
+
+  <url type="website">http://wiki.ros.org/yocs_ar_marker_tracking</url> 
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>ar_track_alvar</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>yocs_math_toolkit</build_depend>
+  <run_depend>ar_track_alvar</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>yocs_math_toolkit</run_depend>
+
+</package>

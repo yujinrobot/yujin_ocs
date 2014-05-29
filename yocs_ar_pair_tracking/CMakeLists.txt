@@ -1,0 +1,45 @@
+##############################################################################
+# CMake
+##############################################################################
+
+cmake_minimum_required(VERSION 2.8.3)
+project(yocs_ar_pair_tracking)
+
+##############################################################################
+# Find
+##############################################################################
+
+find_package(catkin REQUIRED COMPONENTS
+  roscpp
+  std_msgs
+  geometry_msgs
+  yocs_math_toolkit
+  yocs_ar_marker_tracking
+  ar_track_alvar
+  yocs_msgs
+)
+
+find_package(Boost REQUIRED COMPONENTS system)
+
+##############################################################################
+# Catkin
+##############################################################################
+
+catkin_package(
+  INCLUDE_DIRS include
+  LIBRARIES yocs_ar_pair_tracking
+  CATKIN_DEPENDS roscpp ar_track_alvar std_msgs geometry_msgs yocs_math_toolkit yocs_ar_marker_tracking yocs_msgs
+  DEPENDS Boost
+)
+
+##############################################################################
+# Build
+##############################################################################
+
+include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
+
+add_subdirectory(src)
+
+##############################################################################
+# Install
+##############################################################################

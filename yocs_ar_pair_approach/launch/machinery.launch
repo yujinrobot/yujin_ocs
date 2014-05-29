@@ -1,0 +1,47 @@
+<!-- 
+  For testing. Run with kobuki and the approach launcher:
+
+    > roslaunch kobuki_node minimal.launch kobuki_publish_tf:=false
+    > roslaunch yocs_ar_pair_approach approach.launch
+  
+ -->
+<launch>
+  <include file="$(find yocs_ar_marker_tracking)/launch/machinery.launch">
+    <arg name="ar_marker_size"            value="10.0"/>
+    <arg name="ar_marker_cam_image_topic" value="camera/rgb/image_raw" />
+  </include>
+  <include file="$(find yocs_ar_pair_tracking)/launch/tracking.launch">
+    <!-- Need this since there won't be an inbetween odom frame to link base footprint to ar_global -->
+    <arg name="ar_pair_publish_transforms" default="true"/>
+  </include>
+
+  <!-- Extra transforms - drop this one right under target_pose -->
+  <node pkg="tf" type="static_transform_publisher" name="ar_global_target_footprint_publisher" args="0.4 0.0 0.0 3.14 0.0 0.0 ar_global target_footprint 100"/>
+
+  <!-- On top of kobuki, we need a camera_rgb_optical_frame -->
+  <node pkg="tf" type="static_transform_publisher" name="camera_rgb_optical_frame_publisher" args="0.0 0.0 0.36 -1.57 0.0 -1.57 base_footprint camera_rgb_optical_frame 100"/>
+
+  <!-- 
+  <include file="$(find yocs_ar_pair_approach)/launch/approach.launch"/>
+   -->
+   
+  <node pkg="nodelet" type="nodelet" name="controller_nodelet_manager" args="manager"/>
+   
+  <node pkg="nodelet" type="nodelet" name="diff_drive_pose_controller"
+        args="load yocs_diff_drive_pose_controller/DiffDrivePoseControllerNodelet controller_nodelet_manager"> <!--  use mobile_base_nodelet_manager for kobuki -->
+    <param name="spin_rate" value="25"/>
+    <param name="start_enabled" value="true"/>
+    <param name="base_frame_name" value="base_footprint"/>
+    <param name="goal_frame_name" value="target_footprint"/>
+    <param name="v_max" value="0.1"/>
+    <param name="k_1" value="1.0"/>
+    <param name="k_2" value="10.0"/>
+    <param name="beta" value="0.2"/>
+    <param name="lambda" value="2.0"/>
+    <param name="dist_thres" value="0.01"/>
+    <param name="orient_thres" value="0.06"/>
+    <remap from="diff_drive_pose_controller/command_velocity" to="mobile_base/commands/velocity"/>
+  </node>  
+  <!-- 
+ -->
+</launch>
