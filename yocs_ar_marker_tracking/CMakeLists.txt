@@ -21,6 +21,11 @@ find_package(Boost REQUIRED COMPONENTS system)
 find_package(PkgConfig)
 pkg_search_module(REQUIRED yaml_cpp)
 
+pkg_search_module(yaml-cpp REQUIRED yaml-cpp)
+if(NOT ${yaml-cpp_VERSION} VERSION_LESS "0.5")
+  add_definitions(-DHAVE_NEW_YAMLCPP)
+endif()
+
 ##############################################################################
 # Catkin
 ##############################################################################

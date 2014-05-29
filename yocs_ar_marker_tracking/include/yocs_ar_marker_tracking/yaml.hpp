@@ -13,6 +13,17 @@
 #include <fstream>
 #include <ros/ros.h>
 #include <yaml-cpp/yaml.h>
+
+#ifdef HAVE_NEW_YAMLCPP
+// The >> operator disappeared in yaml-cpp 0.5, so this function is
+// added to provide support for code written under the yaml-cpp 0.3 API.
+template<typename T>
+void operator >> (const YAML::Node& node, T& i)
+{
+  i = node.as<T>();
+}
+#endif
+
 #include <ar_track_alvar/AlvarMarkers.h>
 
 namespace yocs {

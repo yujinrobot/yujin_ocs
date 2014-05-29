@@ -50,7 +50,12 @@ namespace yocs {
     }
 
     YAML::Parser parser(ifs);
+    #ifdef HAVE_NEW_YAMLCPP
+    node = YAML::Load(ifs);
+    #else
+    YAML::Parser parser(ifs);
     parser.GetNextDocument(node);
+    #endif
   }
 
   void parseMarkers(const YAML::Node& node, ar_track_alvar::AlvarMarkers& ams) 
