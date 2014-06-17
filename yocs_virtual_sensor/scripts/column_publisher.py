@@ -60,7 +60,7 @@ if __name__ == '__main__':
     rospy.init_node('column_loader')
     filename = rospy.get_param('~filename')
     
-    marker_pub = rospy.Publisher('column_marker',    MarkerArray, latch = True)
+    marker_pub = rospy.Publisher('column_marker',    MarkerArray, latch = True, queue_size=100)
     column_pub = rospy.Publisher('column_pose_list', ColumnList,  latch = True)
     
     rospy.loginfo('Publishing obstacles and visualization markers.')
