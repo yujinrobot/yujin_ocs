@@ -37,6 +37,7 @@
 #include "Filter.h"
 #include "FileFormat.h"
 #include <tf/LinearMath/Vector3.h>
+#include <Eigen/StdVector>
 
 namespace alvar {
 
@@ -105,7 +106,7 @@ public:
 		\param image If != 0 some visualizations are drawn.
 	*/
 	template <class M>
-	double GetPose(const std::vector<M>* markers, Camera* cam, Pose& pose, IplImage* image = 0)
+	double GetPose(const std::vector<M, Eigen::aligned_allocator<M> >* markers, Camera* cam, Pose& pose, IplImage* image = 0)
 	{
 		MarkerIteratorImpl<M> begin(markers->begin());
 		MarkerIteratorImpl<M> end(markers->end());
@@ -116,7 +117,7 @@ public:
 	/** \brief Calls GetPose to obtain camera pose.
 	*/
 	template <class M>
-	double Update(const std::vector<M>* markers, Camera* cam, Pose& pose, IplImage* image = 0)
+	double Update(const std::vector<M, Eigen::aligned_allocator<M> >* markers, Camera* cam, Pose& pose, IplImage* image = 0)
 	{
 		if(markers->size() < 1) return -1.0;
 

@@ -44,6 +44,7 @@ using std::rotate;
 #include <vector>
 #include <map>
 #include <cassert>
+#include <Eigen/StdVector>
 
 namespace alvar {
 
@@ -151,20 +152,20 @@ protected:
   Marker* _track_markers_at(size_t i) { return &track_markers->at(i); }
 
   void _swap_marker_tables() {
-		std::vector<M> *tmp_markers = markers;
+		std::vector<M, Eigen::aligned_allocator<M> > *tmp_markers = markers;
 		markers = track_markers;
 		track_markers = tmp_markers;
   }
 
 public:
 
-	std::vector<M> *markers;
-	std::vector<M> *track_markers;
+	std::vector<M, Eigen::aligned_allocator<M> > *markers;
+	std::vector<M, Eigen::aligned_allocator<M> > *track_markers;
 
 	/** Constructor */
   MarkerDetector() : MarkerDetectorImpl() {
-    markers = new std::vector<M>;
-    track_markers = new std::vector<M>;
+    markers = new std::vector<M, Eigen::aligned_allocator<M> >;
+    track_markers = new std::vector<M, Eigen::aligned_allocator<M> >;
 	}
 
 	/** Destructor */
