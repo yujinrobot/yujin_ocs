@@ -39,8 +39,8 @@
 #include "ar_track_alvar/MarkerDetector.h"
 #include "ar_track_alvar/Shared.h"
 #include <cv_bridge/cv_bridge.h>
-#include <ar_track_alvar/AlvarMarker.h>
-#include <ar_track_alvar/AlvarMarkers.h>
+#include <ar_track_alvar_msgs/AlvarMarker.h>
+#include <ar_track_alvar_msgs/AlvarMarkers.h>
 #include <tf/transform_listener.h>
 #include <sensor_msgs/image_encodings.h>
 #include <dynamic_reconfigure/server.h>
@@ -55,7 +55,7 @@ cv_bridge::CvImagePtr cv_ptr_;
 image_transport::Subscriber cam_sub_;
 ros::Publisher arMarkerPub_;
 ros::Publisher rvizMarkerPub_;
-ar_track_alvar::AlvarMarkers arPoseMarkers_;
+ar_track_alvar_msgs::AlvarMarkers arPoseMarkers_;
 visualization_msgs::Marker rvizMarker_;
 tf::TransformListener *tf_listener;
 tf::TransformBroadcaster *tf_broadcaster;
@@ -189,7 +189,7 @@ void getCapCallback (const sensor_msgs::ImageConstPtr & image_msg)
 				tf::Transform tagPoseOutput = CamToOutput * markerPose;
 
 				//Create the pose marker messages
-				ar_track_alvar::AlvarMarker ar_pose_marker;
+				ar_track_alvar_msgs::AlvarMarker ar_pose_marker;
 				tf::poseTFToMsg (tagPoseOutput, ar_pose_marker.pose.pose);
       			ar_pose_marker.header.frame_id = output_frame;
 			    ar_pose_marker.header.stamp = image_msg->header.stamp;
@@ -255,7 +255,7 @@ int main(int argc, char *argv[])
 	cam = new Camera(n, cam_info_topic);
 	tf_listener = new tf::TransformListener(n);
 	tf_broadcaster = new tf::TransformBroadcaster();
-	arMarkerPub_ = n.advertise < ar_track_alvar::AlvarMarkers > ("ar_pose_marker", 0);
+	arMarkerPub_ = n.advertise < ar_track_alvar_msgs::AlvarMarkers > ("ar_pose_marker", 0);
 	rvizMarkerPub_ = n.advertise < visualization_msgs::Marker > ("visualization_marker", 0);
 	
   // Prepare dynamic reconfiguration
