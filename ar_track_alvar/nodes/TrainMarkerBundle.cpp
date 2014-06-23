@@ -41,8 +41,8 @@
 #include "ar_track_alvar/MultiMarkerInitializer.h"
 #include "ar_track_alvar/Shared.h"
 #include <cv_bridge/cv_bridge.h>
-#include <ar_track_alvar/AlvarMarker.h>
-#include <ar_track_alvar/AlvarMarkers.h>
+#include <ar_track_alvar_msgs/AlvarMarker.h>
+#include <ar_track_alvar_msgs/AlvarMarkers.h>
 #include <tf/transform_listener.h>
 #include <sensor_msgs/image_encodings.h>
 
@@ -58,7 +58,7 @@ cv_bridge::CvImagePtr cv_ptr_;
 image_transport::Subscriber cam_sub_;
 ros::Publisher arMarkerPub_;
 ros::Publisher rvizMarkerPub_;
-ar_track_alvar::AlvarMarkers arPoseMarkers_;
+ar_track_alvar_msgs::AlvarMarkers arPoseMarkers_;
 tf::TransformListener *tf_listener;
 tf::TransformBroadcaster *tf_broadcaster;
 MarkerDetector<MarkerData> marker_detector;
@@ -83,7 +83,7 @@ int nof_markers;
 double GetMultiMarkerPose(IplImage *image, Pose &pose);
 void getCapCallback (const sensor_msgs::ImageConstPtr & image_msg);
 int keyCallback(int key);
-void makeMarkerMsgs(int type, int id, Pose &p, sensor_msgs::ImageConstPtr image_msg, tf::StampedTransform &CamToOutput, visualization_msgs::Marker *rvizMarker, ar_track_alvar::AlvarMarker *ar_pose_marker);
+void makeMarkerMsgs(int type, int id, Pose &p, sensor_msgs::ImageConstPtr image_msg, tf::StampedTransform &CamToOutput, visualization_msgs::Marker *rvizMarker, ar_track_alvar_msgs::AlvarMarker *ar_pose_marker);
 
 
 double GetMultiMarkerPose(IplImage *image, Pose &pose) {
@@ -163,7 +163,7 @@ double GetMultiMarkerPose(IplImage *image, Pose &pose) {
     return error;
 }
 
-void makeMarkerMsgs(int type, int id, Pose &p, sensor_msgs::ImageConstPtr image_msg, tf::StampedTransform &CamToOutput, visualization_msgs::Marker *rvizMarker, ar_track_alvar::AlvarMarker *ar_pose_marker){
+void makeMarkerMsgs(int type, int id, Pose &p, sensor_msgs::ImageConstPtr image_msg, tf::StampedTransform &CamToOutput, visualization_msgs::Marker *rvizMarker, ar_track_alvar_msgs::AlvarMarker *ar_pose_marker){
 	double px,py,pz,qx,qy,qz,qw;
 	
 	px = p.translation[0]/100.0;
@@ -264,7 +264,7 @@ void getCapCallback (const sensor_msgs::ImageConstPtr & image_msg)
     		}
 
     		visualization_msgs::Marker rvizMarker;
-    		ar_track_alvar::AlvarMarker ar_pose_marker;
+    		ar_track_alvar_msgs::AlvarMarker ar_pose_marker;
     		arPoseMarkers_.markers.clear ();
 
             //Convert the image
@@ -394,7 +394,7 @@ int main(int argc, char *argv[])
 	cam = new Camera(n, cam_info_topic);
 	tf_listener = new tf::TransformListener(n);
 	tf_broadcaster = new tf::TransformBroadcaster();
-	arMarkerPub_ = n.advertise < ar_track_alvar::AlvarMarkers > ("ar_pose_marker", 0);
+	arMarkerPub_ = n.advertise < ar_track_alvar_msgs::AlvarMarkers > ("ar_pose_marker", 0);
 	rvizMarkerPub_ = n.advertise < visualization_msgs::Marker > ("visualization_marker", 0);
 	
 	//Give tf a chance to catch up before the camera callback starts asking for transforms

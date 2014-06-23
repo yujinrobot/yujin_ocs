@@ -59,7 +59,7 @@ include_directories(include
 
 )
 
-set(GENCPP_DEPS std_msgs_gencpp sensor_msgs_gencpp geometry_msgs_gencpp visualization_msgs_gencpp)
+set(GENCPP_DEPS ar_track_alvar_msgs_gencpp std_msgs_gencpp sensor_msgs_gencpp geometry_msgs_gencpp visualization_msgs_gencpp)
 
 add_library(ar_track_alvar
     src/Camera.cpp

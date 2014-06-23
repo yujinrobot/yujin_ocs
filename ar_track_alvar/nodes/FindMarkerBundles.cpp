@@ -39,8 +39,8 @@
 #include "ar_track_alvar/MultiMarkerInitializer.h"
 #include "ar_track_alvar/Shared.h"
 #include <cv_bridge/cv_bridge.h>
-#include <ar_track_alvar/AlvarMarker.h>
-#include <ar_track_alvar/AlvarMarkers.h>
+#include <ar_track_alvar_msgs/AlvarMarker.h>
+#include <ar_track_alvar_msgs/AlvarMarkers.h>
 #include <tf/transform_listener.h>
 
 #include <sensor_msgs/PointCloud2.h>
@@ -88,7 +88,7 @@ ros::Subscriber cloud_sub_;
 ros::Publisher arMarkerPub_;
 ros::Publisher rvizMarkerPub_;
 ros::Publisher rvizMarkerPub2_;
-ar_track_alvar::AlvarMarkers arPoseMarkers_;
+ar_track_alvar_msgs::AlvarMarkers arPoseMarkers_;
 tf::TransformListener *tf_listener;
 tf::TransformBroadcaster *tf_broadcaster;
 MarkerDetector<MarkerData> marker_detector;
@@ -500,7 +500,7 @@ void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
 
 
 // Given the pose of a marker, builds the appropriate ROS messages for later publishing 
-void makeMarkerMsgs(int type, int id, Pose &p, sensor_msgs::ImageConstPtr image_msg, tf::StampedTransform &CamToOutput, visualization_msgs::Marker *rvizMarker, ar_track_alvar::AlvarMarker *ar_pose_marker, int confidence){
+void makeMarkerMsgs(int type, int id, Pose &p, sensor_msgs::ImageConstPtr image_msg, tf::StampedTransform &CamToOutput, visualization_msgs::Marker *rvizMarker, ar_track_alvar_msgs::AlvarMarker *ar_pose_marker, int confidence){
   double px,py,pz,qx,qy,qz,qw;
 	
   px = p.translation[0]/100.0;
@@ -608,7 +608,7 @@ void getPointCloudCallback (const sensor_msgs::PointCloud2ConstPtr &msg)
 
       //Init and clear visualization markers
       visualization_msgs::Marker rvizMarker;
-      ar_track_alvar::AlvarMarker ar_pose_marker;
+      ar_track_alvar_msgs::AlvarMarker ar_pose_marker;
       arPoseMarkers_.markers.clear ();
 
       //Convert cloud to PCL 
@@ -824,7 +824,7 @@ int main(int argc, char *argv[])
   cam = new Camera(n, cam_info_topic);
   tf_listener = new tf::TransformListener(n);
   tf_broadcaster = new tf::TransformBroadcaster();
-  arMarkerPub_ = n.advertise < ar_track_alvar::AlvarMarkers > ("ar_pose_marker", 0);
+  arMarkerPub_ = n.advertise < ar_track_alvar_msgs::AlvarMarkers > ("ar_pose_marker", 0);
   rvizMarkerPub_ = n.advertise < visualization_msgs::Marker > ("visualization_marker", 0);
   rvizMarkerPub2_ = n.advertise < visualization_msgs::Marker > ("ARmarker_points", 0);
 	
