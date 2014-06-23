@@ -106,7 +106,7 @@ target_link_libraries(kinect_filtering ${catkin_LIBRARIES})
 add_dependencies(kinect_filtering ${GENCPP_DEPS})
 
 add_library(medianFilter src/medianFilter.cpp)
-target_link_libraries(medianFilter ${catkin_LIBRARIES})
+target_link_libraries(medianFilter ar_track_alvar ${catkin_LIBRARIES})
 add_dependencies(medianFilter ${GENCPP_DEPS})
 
 set(ALVAR_TARGETS ar_track_alvar individualMarkers individualMarkersNoKinect trainMarkerBundle findMarkerBundles findMarkerBundlesNoKinect createMarker ar_track_alvar)
