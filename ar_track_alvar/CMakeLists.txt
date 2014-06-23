@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(ar_track_alvar)
 
 set(MSG_DEPS
+    ar_track_alvar_msgs
     std_msgs
     sensor_msgs
     geometry_msgs
@@ -27,11 +28,6 @@ find_package(Eigen REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(TinyXML REQUIRED)
 
-# generate messages
-set(MSG_FILES AlvarMarker.msg AlvarMarkers.msg)
-add_message_files(DIRECTORY msg FILES ${MSG_FILES})
-generate_messages(DEPENDENCIES ${MSG_DEPS})
-
 # dynamic reconfigure support
 generate_dynamic_reconfigure_options(cfg/Params.cfg)
 
@@ -39,6 +35,7 @@ catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ar_track_alvar
   CATKIN_DEPENDS
+        ar_track_alvar_msgs
         std_msgs
         roscpp
         tf
