@@ -75,7 +75,7 @@ namespace ar_track_alvar
     return res;
   }
 
-  ARCloud::Ptr filterCloud (const ARCloud& cloud, const vector<cv::Point>& pixels)
+  ARCloud::Ptr filterCloud (const ARCloud& cloud, const vector<cv::Point, Eigen::aligned_allocator<cv::Point> >& pixels)
   {
     ARCloud::Ptr out(new ARCloud());
     //ROS_INFO("  Filtering %zu pixels", pixels.size());
