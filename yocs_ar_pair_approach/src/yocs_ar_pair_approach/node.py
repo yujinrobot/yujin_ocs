@@ -70,10 +70,10 @@ class Node(object):
           namespace.
         '''
         publishers = {}
-        publishers['result'] = rospy.Publisher('~result', std_msgs.Bool, queue_size=100)
-        publishers['initial_pose_trigger'] = rospy.Publisher('~initialise', std_msgs.Empty, queue_size=100)
-        publishers['enable_approach_controller'] = rospy.Publisher('~enable_approach_controller', std_msgs.Empty, queue_size=100)
-        publishers['disable_approach_controller'] = rospy.Publisher('~disable_approach_controller', std_msgs.Empty, queue_size=100)
+        publishers['result'] = rospy.Publisher('~result', std_msgs.Bool, queue_size=5)
+        publishers['initial_pose_trigger'] = rospy.Publisher('~initialise', std_msgs.Empty, queue_size=5)
+        publishers['enable_approach_controller'] = rospy.Publisher('~enable_approach_controller', std_msgs.Empty, queue_size=5)
+        publishers['disable_approach_controller'] = rospy.Publisher('~disable_approach_controller', std_msgs.Empty, queue_size=5)
         subscribers = {}
         subscribers['enable'] = rospy.Subscriber('~enable', std_msgs.Bool, self._ros_enable_subscriber)
         subscribers['spotted_markers'] = rospy.Subscriber('~spotted_markers', std_msgs.String, self._ros_spotted_subscriber)

@@ -61,7 +61,7 @@ if __name__ == '__main__':
     rospy.init_node('wall_loader')
     filename = rospy.get_param('~filename')
     
-    marker_pub = rospy.Publisher('wall_marker',    MarkerArray, latch=True, queue_size=100)
+    marker_pub = rospy.Publisher('wall_marker',    MarkerArray, latch=True, queue_size=1)
     wall_pub   = rospy.Publisher('wall_pose_list', WallList,    latch = True)
 
     rospy.loginfo('Publishing obstacles and visualization markers.')

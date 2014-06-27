@@ -44,7 +44,7 @@ class Rotate(object):
         self._rate = rospy.Rate(self._cmd_vel_frequency)
         self._stop = False
         self._running = False
-        self._initialise_pose_trigger = rospy.Publisher('~initialise', std_msgs.Empty)
+        self._initialise_pose_trigger = rospy.Publisher('~initialise', std_msgs.Empty, queue_size=5)
 
         twist = geometry_msgs.Twist()
         twist.linear.x = 0
