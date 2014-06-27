@@ -10,7 +10,7 @@ project(yocs_ar_marker_tracking)
 ##############################################################################
 
 find_package(catkin REQUIRED COMPONENTS
-  ar_track_alvar
+  ar_track_alvar_msgs
   roscpp
   geometry_msgs
   sensor_msgs
@@ -33,7 +33,7 @@ endif()
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES yocs_ar_marker_tracking
-  CATKIN_DEPENDS ar_track_alvar roscpp geometry_msgs sensor_msgs yocs_math_toolkit
+  CATKIN_DEPENDS ar_track_alvar_msgs roscpp geometry_msgs sensor_msgs yocs_math_toolkit
   DEPENDS Boost yaml-cpp
 )
 

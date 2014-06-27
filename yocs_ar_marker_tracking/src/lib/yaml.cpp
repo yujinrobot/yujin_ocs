@@ -11,7 +11,7 @@
 
 namespace yocs {
 
-  bool loadAlvarMarkersFromYaml(const std::string& filename,ar_track_alvar::AlvarMarkers& ams)
+  bool loadAlvarMarkersFromYaml(const std::string& filename,ar_track_alvar_msgs::AlvarMarkers& ams)
   {
 
     ams.markers.clear(); 
@@ -58,14 +58,14 @@ namespace yocs {
     #endif
   }
 
-  void parseMarkers(const YAML::Node& node, ar_track_alvar::AlvarMarkers& ams) 
+  void parseMarkers(const YAML::Node& node, ar_track_alvar_msgs::AlvarMarkers& ams) 
   {
     unsigned int i;
 
     for(i = 0; i < node.size(); i++) 
     {
         // Parse AlvarMarker entries on YAML
-        ar_track_alvar::AlvarMarker m;
+        ar_track_alvar_msgs::AlvarMarker m;
 
         node[i]["id"] >> m.id;
         node[i]["frame_id"] >> m.header.frame_id;

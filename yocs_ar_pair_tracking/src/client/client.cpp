@@ -11,7 +11,7 @@ ARPairTrackingClient::ARPairTrackingClient()
   target_frame_postfix_ = std::string("target");
 
   pub_update_ar_pair_ = nh.advertise<yocs_msgs::ARPairList>("update_ar_pairs", 1, true); 
-  sub_global_marker_  = nh.subscribe<ar_track_alvar::AlvarMarkers>("global_markers", 1, &ARPairTrackingClient::globalMarkersCB, this);
+  sub_global_marker_  = nh.subscribe<ar_track_alvar_msgs::AlvarMarkers>("global_markers", 1, &ARPairTrackingClient::globalMarkersCB, this);
 
   tf_broadcast_freq_ = 5.0;
   boost::thread(&ARPairTrackingClient::broadcastMarkersTF, this);
@@ -24,7 +24,7 @@ ARPairTrackingClient::~ARPairTrackingClient()
 {
 }
 
-void ARPairTrackingClient::globalMarkersCB(const ar_track_alvar::AlvarMarkers::ConstPtr& msg)
+void ARPairTrackingClient::globalMarkersCB(const ar_track_alvar_msgs::AlvarMarkers::ConstPtr& msg)
 {
   global_markers_ = *msg;
   createMirrorMarkers();
@@ -48,7 +48,7 @@ void ARPairTrackingClient::createMirrorMarkers()
     tf::Vector3(1.0, 0.0, 0.0));
     marker_gb *= in_front;
 
-    ar_track_alvar::AlvarMarker kk; 
+    ar_track_alvar_msgs::AlvarMarker kk; 
     mtk::tf2pose(marker_gb, kk.pose);
     global_markers_mirrors_.markers.push_back(kk);
 
@@ -65,7 +65,7 @@ void ARPairTrackingClient::notifyARPairTracker()
 
   for(i = 0; i < global_markers_.markers.size(); i ++)
   {
-    ar_track_alvar::AlvarMarker m = global_markers_.markers[i];
+    ar_track_alvar_msgs::AlvarMarker m = global_markers_.markers[i];
     yocs_msgs::ARPair p;
     char frame[32];
     sprintf(frame, "%s_%d_%s",global_marker_prefix_.c_str(), m.id, target_frame_postfix_.c_str());
@@ -98,7 +98,7 @@ void ARPairTrackingClient::broadcastMarkersTF()
 
 }
 
-void ARPairTrackingClient::publishTargetTFs(const std::string prefix, const ar_track_alvar::AlvarMarkers& markers)
+void ARPairTrackingClient::publishTargetTFs(const std::string prefix, const ar_track_alvar_msgs::AlvarMarkers& markers)
 {
   char parent_frame[32];
   char child_frame[32];
@@ -118,7 +118,7 @@ void ARPairTrackingClient::publishTargetTFs(const std::string prefix, const ar_t
   }
 }
 
-void ARPairTrackingClient::publishMarkerTFs(const std::string prefix, const ar_track_alvar::AlvarMarkers& markers)
+void ARPairTrackingClient::publishMarkerTFs(const std::string prefix, const ar_track_alvar_msgs::AlvarMarkers& markers)
 {
   char child_frame[32];
   tf::StampedTransform tf;

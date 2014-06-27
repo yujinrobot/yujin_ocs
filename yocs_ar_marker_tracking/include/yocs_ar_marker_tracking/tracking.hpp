@@ -19,7 +19,7 @@
 #include <yocs_math_toolkit/geometry.hpp>
 
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
-#include <ar_track_alvar/AlvarMarkers.h>
+#include <ar_track_alvar_msgs/AlvarMarkers.h>
 
 namespace yocs
 {
@@ -38,7 +38,7 @@ namespace ARMarkerTrackingDefaultParams {
 
   const uint32_t    MARKERS_COUNT          = 32;
 
-  const std::string SUB_AR_MARKERS = "ar_track_alvar/ar_pose_marker"; 
+  const std::string SUB_AR_MARKERS = "ar_track_alvar_msgs/ar_pose_marker"; 
   const std::string PUB_ROBOT_POSE_AR = "robot_pose_ar";
 }
 
@@ -130,10 +130,10 @@ class ARMarkerTracking
   protected:
 
     // raw list of ar markers from ar_alvar_track pkg
-    void arPoseMarkersCB(const ar_track_alvar::AlvarMarkers::ConstPtr& msg);
-    virtual void customCB(const ar_track_alvar::AlvarMarkers& spotted_markers, const std::vector<TrackedMarker> &tracked_markers) {}
-    void maintainTrackedMarkers(const ar_track_alvar::AlvarMarkers::ConstPtr& msg,std::vector<TrackedMarker>& tracked_markers);
-    void maintainTrackedMarker(TrackedMarker& marker,const ar_track_alvar::AlvarMarker& msgMarker, const int obs_list_max_size, const double max_valid_d_inc, const double max_valid_h_inc);
+    void arPoseMarkersCB(const ar_track_alvar_msgs::AlvarMarkers::ConstPtr& msg);
+    virtual void customCB(const ar_track_alvar_msgs::AlvarMarkers& spotted_markers, const std::vector<TrackedMarker> &tracked_markers) {}
+    void maintainTrackedMarkers(const ar_track_alvar_msgs::AlvarMarkers::ConstPtr& msg,std::vector<TrackedMarker>& tracked_markers);
+    void maintainTrackedMarker(TrackedMarker& marker,const ar_track_alvar_msgs::AlvarMarker& msgMarker, const int obs_list_max_size, const double max_valid_d_inc, const double max_valid_h_inc);
 
     /////////////////// utility functions
     /**
@@ -144,16 +144,16 @@ class ARMarkerTracking
      * @param spotted_markers
      * @return
      */
-    bool spotted(double younger_than, double min_confidence, ar_track_alvar::AlvarMarkers& spotted_markers);
-    bool closest(double younger_than, double min_confidence, ar_track_alvar::AlvarMarker& closest_marker);
-    bool spotted(double younger_than, const ar_track_alvar::AlvarMarkers& including, const ar_track_alvar::AlvarMarkers& excluding, ar_track_alvar::AlvarMarkers& spotted_markers);
-    bool closest(const ar_track_alvar::AlvarMarkers& including, const ar_track_alvar::AlvarMarkers& excluding, ar_track_alvar::AlvarMarker& closest_marker);
+    bool spotted(double younger_than, double min_confidence, ar_track_alvar_msgs::AlvarMarkers& spotted_markers);
+    bool closest(double younger_than, double min_confidence, ar_track_alvar_msgs::AlvarMarker& closest_marker);
+    bool spotted(double younger_than, const ar_track_alvar_msgs::AlvarMarkers& including, const ar_track_alvar_msgs::AlvarMarkers& excluding, ar_track_alvar_msgs::AlvarMarkers& spotted_markers);
+    bool closest(const ar_track_alvar_msgs::AlvarMarkers& including, const ar_track_alvar_msgs::AlvarMarkers& excluding, ar_track_alvar_msgs::AlvarMarker& closest_marker);
 
     // check if the given id ar_marker is in the list. If yes, return the full ar marker data
-    bool included(const uint32_t id, const ar_track_alvar::AlvarMarkers& v, ar_track_alvar::AlvarMarker* e = NULL);
+    bool included(const uint32_t id, const ar_track_alvar_msgs::AlvarMarkers& v, ar_track_alvar_msgs::AlvarMarker* e = NULL);
 
     // Check if the given id is in the list of ar markers
-    bool excluded(const uint32_t id, const ar_track_alvar::AlvarMarkers& v);
+    bool excluded(const uint32_t id, const ar_track_alvar_msgs::AlvarMarkers& v);
 
     // Confidence evaluation attributes
     double min_penalized_dist_;
@@ -167,7 +167,7 @@ class ARMarkerTracking
                                      same value configured on ar_track_alvar node */
 
     std::vector<TrackedMarker> tracked_markers_;
-    ar_track_alvar::AlvarMarkers spotted_markers_;
+    ar_track_alvar_msgs::AlvarMarkers spotted_markers_;
     ros::Subscriber    sub_ar_markers_;
 
 //    tf::Transformer          tf_internal_;

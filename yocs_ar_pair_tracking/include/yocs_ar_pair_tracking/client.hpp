@@ -8,7 +8,7 @@
 #include <tf/transform_listener.h>
 #include <tf/transform_broadcaster.h>
 
-#include <ar_track_alvar/AlvarMarkers.h>
+#include <ar_track_alvar_msgs/AlvarMarkers.h>
 #include <yocs_msgs/ARPairList.h>
 #include <yocs_math_toolkit/common.hpp>                                                                        
 #include <yocs_math_toolkit/geometry.hpp>
@@ -20,16 +20,16 @@ class ARPairTrackingClient {
   public:
     ARPairTrackingClient();
     ~ARPairTrackingClient();
-    void globalMarkersCB(const ar_track_alvar::AlvarMarkers::ConstPtr& msg);
+    void globalMarkersCB(const ar_track_alvar_msgs::AlvarMarkers::ConstPtr& msg);
     void broadcastMarkersTF();
   protected:
     void createMirrorMarkers();
     void createTargets();
     void notifyARPairTracker();
-    void publishMarkerTFs(const std::string prefix, const ar_track_alvar::AlvarMarkers& markers);
-    void publishTargetTFs(const std::string prefix, const ar_track_alvar::AlvarMarkers& markers);
+    void publishMarkerTFs(const std::string prefix, const ar_track_alvar_msgs::AlvarMarkers& markers);
+    void publishTargetTFs(const std::string prefix, const ar_track_alvar_msgs::AlvarMarkers& markers);
   private:
-    ar_track_alvar::AlvarMarkers global_markers_, global_markers_mirrors_;
+    ar_track_alvar_msgs::AlvarMarkers global_markers_, global_markers_mirrors_;
     ros::Subscriber sub_global_marker_;
     ros::Publisher  pub_update_ar_pair_;
 

@@ -53,10 +53,10 @@ void ARPairTracking::updateARPairsCB(const yocs_msgs::ARPairList::ConstPtr& msg)
   }
 }
 
-void ARPairTracking::customCB(const ar_track_alvar::AlvarMarkers& spotted_markers, const std::vector<TrackedMarker> &tracked_markers)
+void ARPairTracking::customCB(const ar_track_alvar_msgs::AlvarMarkers& spotted_markers, const std::vector<TrackedMarker> &tracked_markers)
 {
-  ar_track_alvar::AlvarMarker left;
-  ar_track_alvar::AlvarMarker right;
+  ar_track_alvar_msgs::AlvarMarker left;
+  ar_track_alvar_msgs::AlvarMarker right;
   bool both_spotted;
   unsigned int i;
 
@@ -72,7 +72,7 @@ void ARPairTracking::customCB(const ar_track_alvar::AlvarMarkers& spotted_marker
   }
 }
 
-bool ARPairTracking::spotMarkerPair(const ar_track_alvar::AlvarMarkers& spotted_markers, const yocs_msgs::ARPair& pair, ar_track_alvar::AlvarMarker& left, ar_track_alvar::AlvarMarker& right)
+bool ARPairTracking::spotMarkerPair(const ar_track_alvar_msgs::AlvarMarkers& spotted_markers, const yocs_msgs::ARPair& pair, ar_track_alvar_msgs::AlvarMarker& left, ar_track_alvar_msgs::AlvarMarker& right)
 {
   bool left_spotted = included(pair.left_id, spotted_markers, &left);
   bool right_spotted = included(pair.right_id, spotted_markers, &right);
@@ -93,7 +93,7 @@ bool ARPairTracking::spotMarkerPair(const ar_track_alvar::AlvarMarkers& spotted_
   return left_spotted && right_spotted;
 }
 
-void ARPairTracking::computeRelativeRobotPose(const yocs_msgs::ARPair& spotted_pair, const std::vector<TrackedMarker>& tracked_markers, const ar_track_alvar::AlvarMarker& left, const ar_track_alvar::AlvarMarker& right)
+void ARPairTracking::computeRelativeRobotPose(const yocs_msgs::ARPair& spotted_pair, const std::vector<TrackedMarker>& tracked_markers, const ar_track_alvar_msgs::AlvarMarker& left, const ar_track_alvar_msgs::AlvarMarker& right)
 {
   double baseline = spotted_pair.baseline;
   double target_pose_offset = spotted_pair.target_offset;

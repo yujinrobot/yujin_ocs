@@ -15,7 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   yocs_math_toolkit
   yocs_ar_marker_tracking
-  ar_track_alvar
+  ar_track_alvar_msgs
   yocs_msgs
 )
 
@@ -28,7 +28,7 @@ find_package(Boost REQUIRED COMPONENTS system)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES yocs_ar_pair_tracking
-  CATKIN_DEPENDS roscpp ar_track_alvar std_msgs geometry_msgs yocs_math_toolkit yocs_ar_marker_tracking yocs_msgs
+  CATKIN_DEPENDS roscpp ar_track_alvar_msgs std_msgs geometry_msgs yocs_math_toolkit yocs_ar_marker_tracking yocs_msgs
   DEPENDS Boost
 )
 

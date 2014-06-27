@@ -24,12 +24,12 @@ void operator >> (const YAML::Node& node, T& i)
 }
 #endif
 
-#include <ar_track_alvar/AlvarMarkers.h>
+#include <ar_track_alvar_msgs/AlvarMarkers.h>
 
 namespace yocs {
-  bool loadAlvarMarkersFromYaml(const std::string& filename,ar_track_alvar::AlvarMarkers& ams);
+  bool loadAlvarMarkersFromYaml(const std::string& filename,ar_track_alvar_msgs::AlvarMarkers& ams);
   void getYamlNode(const std::string& filename, YAML::Node& node); 
-  void parseMarkers(const YAML::Node& node, ar_track_alvar::AlvarMarkers& ams); 
+  void parseMarkers(const YAML::Node& node, ar_track_alvar_msgs::AlvarMarkers& ams); 
 }
 
 #endif

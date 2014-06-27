@@ -17,9 +17,9 @@
 namespace yocs {
 
   bool ARMarkerTracking::spotted(double younger_than,
-                             const ar_track_alvar::AlvarMarkers& including,
-                             const ar_track_alvar::AlvarMarkers& excluding,
-                                    ar_track_alvar::AlvarMarkers& spotted)
+                             const ar_track_alvar_msgs::AlvarMarkers& including,
+                             const ar_track_alvar_msgs::AlvarMarkers& excluding,
+                                    ar_track_alvar_msgs::AlvarMarkers& spotted)
   {
     if (spotted_markers_.markers.size() == 0)
       return false;
@@ -43,7 +43,7 @@ namespace yocs {
     return (spotted.markers.size() > 0);
   }
 
-  bool ARMarkerTracking::closest(const ar_track_alvar::AlvarMarkers& including, const ar_track_alvar::AlvarMarkers& excluding, ar_track_alvar::AlvarMarker& closest)
+  bool ARMarkerTracking::closest(const ar_track_alvar_msgs::AlvarMarkers& including, const ar_track_alvar_msgs::AlvarMarkers& excluding, ar_track_alvar_msgs::AlvarMarker& closest)
   {
     double closest_dist = std::numeric_limits<double>::max();
     for (unsigned int i = 0; i < spotted_markers_.markers.size(); i++)
@@ -63,7 +63,7 @@ namespace yocs {
     return (closest_dist < std::numeric_limits<double>::max());
   }
 
-  bool ARMarkerTracking::spotted(double younger_than, double min_confidence, ar_track_alvar::AlvarMarkers& spotted)
+  bool ARMarkerTracking::spotted(double younger_than, double min_confidence, ar_track_alvar_msgs::AlvarMarkers& spotted)
   {
     if (spotted_markers_.markers.size() == 0)
       return false;
@@ -90,9 +90,9 @@ namespace yocs {
     return (spotted.markers.size() > 0);
   }
 
-  bool ARMarkerTracking::closest(double younger_than, double min_confidence, ar_track_alvar::AlvarMarker& closest)
+  bool ARMarkerTracking::closest(double younger_than, double min_confidence, ar_track_alvar_msgs::AlvarMarker& closest)
   {
-    ar_track_alvar::AlvarMarkers spotted_markers;
+    ar_track_alvar_msgs::AlvarMarkers spotted_markers;
     if (spotted(younger_than, min_confidence, spotted_markers) == false)
       return false;
 
@@ -111,7 +111,7 @@ namespace yocs {
   }
 
   // check if the given id ar_marker is in the list. If yes, return the full ar marker data
-  bool ARMarkerTracking::included(const uint32_t id, const ar_track_alvar::AlvarMarkers& v, ar_track_alvar::AlvarMarker* e)
+  bool ARMarkerTracking::included(const uint32_t id, const ar_track_alvar_msgs::AlvarMarkers& v, ar_track_alvar_msgs::AlvarMarker* e)
   {
     for (unsigned int i = 0; i < v.markers.size(); i++)
     {
@@ -128,7 +128,7 @@ namespace yocs {
   }
 
   // Check if the given id is in the list of ar markers
-  bool ARMarkerTracking::excluded(const uint32_t id, const ar_track_alvar::AlvarMarkers& v)
+  bool ARMarkerTracking::excluded(const uint32_t id, const ar_track_alvar_msgs::AlvarMarkers& v)
   {
     for (unsigned int i = 0; i < v.markers.size(); i++)
     {

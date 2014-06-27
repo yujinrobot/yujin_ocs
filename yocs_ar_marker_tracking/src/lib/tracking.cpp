@@ -48,7 +48,7 @@ bool ARMarkerTracking::init()
   return true;
 }
 
-void ARMarkerTracking::arPoseMarkersCB(const ar_track_alvar::AlvarMarkers::ConstPtr& msg)
+void ARMarkerTracking::arPoseMarkersCB(const ar_track_alvar_msgs::AlvarMarkers::ConstPtr& msg)
 {
   // TODO: use confidence to incorporate covariance to global poses
   std::stringstream ss;
@@ -66,7 +66,7 @@ void ARMarkerTracking::arPoseMarkersCB(const ar_track_alvar::AlvarMarkers::Const
   customCB(spotted_markers_, tracked_markers_);
 }
 
-void ARMarkerTracking::maintainTrackedMarkers(const ar_track_alvar::AlvarMarkers::ConstPtr& msg,std::vector<TrackedMarker>& tracked_markers)
+void ARMarkerTracking::maintainTrackedMarkers(const ar_track_alvar_msgs::AlvarMarkers::ConstPtr& msg,std::vector<TrackedMarker>& tracked_markers)
 {
   // Make thresholds relative to the tracking frequency (as it can be dynamically changed)
   int obs_list_max_size  = (int)round(max_tracking_time_*ar_tracker_freq_);
@@ -91,7 +91,7 @@ void ARMarkerTracking::maintainTrackedMarkers(const ar_track_alvar::AlvarMarkers
 }
 
 
-void ARMarkerTracking::maintainTrackedMarker(TrackedMarker& marker,const ar_track_alvar::AlvarMarker& msgMarker, const int obs_list_max_size, const double max_valid_d_inc, const double max_valid_h_inc)
+void ARMarkerTracking::maintainTrackedMarker(TrackedMarker& marker,const ar_track_alvar_msgs::AlvarMarker& msgMarker, const int obs_list_max_size, const double max_valid_d_inc, const double max_valid_h_inc)
 {
   marker.distance = mtk::distance3D(msgMarker.pose.pose);
   marker.distance2d = mtk::distance2D(msgMarker.pose.pose.position.x, msgMarker.pose.pose.position.z, 0,0);

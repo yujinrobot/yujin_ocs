@@ -23,7 +23,7 @@
 #include <tf/transform_broadcaster.h>
 #include <yocs_math_toolkit/common.hpp>
 #include <yocs_math_toolkit/geometry.hpp>
-#include <ar_track_alvar/AlvarMarkers.h>
+#include <ar_track_alvar_msgs/AlvarMarkers.h>
 #include <yocs_ar_marker_tracking/tracking.hpp>
 #include <yocs_msgs/ARPair.h>
 #include <yocs_msgs/ARPairList.h>
@@ -69,9 +69,9 @@ class ARPairTracking : public ARMarkerTracking
 
   protected:
     // raw list of ar markers from ar_alvar_track pkg 
-    void customCB(const ar_track_alvar::AlvarMarkers& spotted_markers, const std::vector<TrackedMarker> &tracked_markers);
-      bool spotMarkerPair(const ar_track_alvar::AlvarMarkers& spotted_markers, const yocs_msgs::ARPair& pair, ar_track_alvar::AlvarMarker& left, ar_track_alvar::AlvarMarker& right);
-      void computeRelativeRobotPose(const yocs_msgs::ARPair& spotted_pair, const std::vector<TrackedMarker>& tracked_markers, const ar_track_alvar::AlvarMarker& left, const ar_track_alvar::AlvarMarker& right);
+    void customCB(const ar_track_alvar_msgs::AlvarMarkers& spotted_markers, const std::vector<TrackedMarker> &tracked_markers);
+      bool spotMarkerPair(const ar_track_alvar_msgs::AlvarMarkers& spotted_markers, const yocs_msgs::ARPair& pair, ar_track_alvar_msgs::AlvarMarker& left, ar_track_alvar_msgs::AlvarMarker& right);
+      void computeRelativeRobotPose(const yocs_msgs::ARPair& spotted_pair, const std::vector<TrackedMarker>& tracked_markers, const ar_track_alvar_msgs::AlvarMarker& left, const ar_track_alvar_msgs::AlvarMarker& right);
 
     void updateARPairsCB(const yocs_msgs::ARPairList::ConstPtr& msg);
 
