@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>yocs_ar_pair_tracking</name>
-  <version>0.0.0</version>
+  <version>0.5.3</version>
   <description>The AR pair tracking package</description>
   <maintainer email="stonier@yujinrobot.com">Daniel Stonier</maintainer>
   <author>Daniel Stonier</author> 

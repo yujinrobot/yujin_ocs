@@ -15,3 +15,7 @@ target_link_libraries(yocs_ar_marker_tracking ${catkin_LIBRARIES} ${yaml-cpp_LIB
 ###############################################################################
 # Install
 ###############################################################################
+
+install(TARGETS yocs_ar_marker_tracking
+  DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+)

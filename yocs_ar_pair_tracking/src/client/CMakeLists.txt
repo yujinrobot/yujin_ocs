@@ -14,3 +14,7 @@ target_link_libraries(yocs_ar_pair_client ${catkin_LIBRARIES})
 ###############################################################################
 # Install
 ###############################################################################
+
+install(TARGETS yocs_ar_pair_client
+ DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)

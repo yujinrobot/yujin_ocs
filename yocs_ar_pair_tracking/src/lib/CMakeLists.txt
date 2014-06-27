@@ -14,3 +14,7 @@ target_link_libraries(yocs_ar_pair_tracking yaml-cpp ${catkin_LIBRARIES})
 ###############################################################################
 # Install
 ###############################################################################
+
+install(TARGETS yocs_ar_pair_tracking
+  DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+)
