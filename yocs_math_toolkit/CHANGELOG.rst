@@ -2,8 +2,8 @@
 Changelog for package yocs_math_toolkit
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.6.0 (2014-07-08)
+------------------
 * updating package informations. remove email for authors. updating maintainer
 * Handle special case on sameFrame function
 * Add functions to compare frame ids ignoring the leading /, as it is

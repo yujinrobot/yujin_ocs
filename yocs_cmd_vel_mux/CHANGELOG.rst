@@ -2,8 +2,8 @@
 Changelog for package yocs_cmd_vel_mux
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.6.0 (2014-07-08)
+------------------
 * updating package informations. remove email for authors. updating maintainer
 * Contributors: Jihoon Lee
 
