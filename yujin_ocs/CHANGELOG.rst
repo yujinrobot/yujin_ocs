@@ -2,6 +2,11 @@
 Changelog for package yujin_ocs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* updating package informations. remove email for authors. updating maintainer
+* Contributors: Jihoon Lee
+
 0.5.3 (2014-03-24)
 ------------------
 

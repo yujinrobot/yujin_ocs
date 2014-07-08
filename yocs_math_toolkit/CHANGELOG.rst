@@ -2,6 +2,15 @@
 Changelog for package yocs_math_toolkit
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* updating package informations. remove email for authors. updating maintainer
+* Handle special case on sameFrame function
+* Add functions to compare frame ids ignoring the leading /, as it is
+  frequently omitted.
+  Geometry doxygen documented.
+* Contributors: Jihoon Lee, Jorge Santos
+
 0.5.3 (2014-03-24)
 ------------------
 

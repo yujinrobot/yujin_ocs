@@ -2,6 +2,16 @@
 Changelog for package yocs_diff_drive_pose_controller
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* updating package informations. remove email for authors. updating maintainer
+* pose_controller: removes result feedback when tracking new pose
+* pose_controller: improves pose approach
+* pose_controller: adds limits for linear vel
+* pose_controller: add goal reached logic and control
+* remove unused parameters.
+* Contributors: Daniel Stonier, Jihoon Lee, Marcus Liebhardt
+
 0.5.3 (2014-03-24)
 ------------------
 
