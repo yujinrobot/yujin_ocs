@@ -2,8 +2,8 @@
 Changelog for package yocs_waypoint_manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.6.1 (2014-07-08)
+------------------
 * updating package informations. remove email for authors. updating maintainer
 * waypoint manager yaml compatibility fix
 * update package info

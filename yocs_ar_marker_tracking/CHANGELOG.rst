@@ -2,8 +2,8 @@
 Changelog for package yocs_ar_marker_tracking
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.6.1 (2014-07-08)
+------------------
 * apply install rules for new packages
 * use ar_track_alvar_msgs instead of ar_track_alvar
 * remove eclipse files from bad src location.
