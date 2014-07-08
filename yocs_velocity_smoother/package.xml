@@ -4,8 +4,8 @@
   <description>
      Bound incoming velocity messages according to robot velocity and acceleration limits.
   </description>
-  <author email="jorge@yujinrobot.com">Jorge Santos Simon</author>
-  <maintainer email="jorge@yujinrobot.com">Jorge Santos Simon</maintainer>
+  <author>Jorge Santos Simon</author>
+  <maintainer email="jihoonl@yujinrobot.com">Jihoon Lee</maintainer>
   <license>BSD</license>
   <url type="website">http://ros.org/wiki/yocs_velocity_smoother</url>
   <url type="repository">https://github.com/yujinrobot/yujin_ocs</url>

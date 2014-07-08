@@ -4,7 +4,7 @@
   <description>
      Library for various controller types and algorithms
   </description>
-  <author email="marcus.liebhardt@yujinrobot.com">Marcus Liebhardt</author>
+  <author>Marcus Liebhardt</author>
   <maintainer email="marcus.liebhardt@yujinrobot.com">Marcus Liebhardt</maintainer>
   <license>BSD</license>
   <url type="website">http://ros.org/wiki/yocs_controllers</url>

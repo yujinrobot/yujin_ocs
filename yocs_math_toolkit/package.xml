@@ -10,9 +10,9 @@
   </description>
   
   <license>BSD</license>
-  <author email="jorge@yujinrobot.com">Jorge Santos</author> 
-  <maintainer email="jorge@yujinrobot.com">Jorge Santos</maintainer>
-  <url type="website">http://ros.org/wiki/yocs_virtual_sensor</url>
+  <author>Jorge Santos</author> 
+  <maintainer email="jihoonl@yujinrobot.com">Jihoon Lee</maintainer>
+  <url type="website">http://ros.org/wiki/yocs_math_toolkit</url>
   <url type="repository">https://github.com/yujinrobot/yujin_ocs</url>
   <url type="bugtracker">https://github.com/yujinrobot/yujin_ocs/issues</url>
 

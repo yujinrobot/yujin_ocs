@@ -7,7 +7,7 @@
     A pose consists of a 2D position (x,y) and a 1D orientation (theta).
   </description>
   <license>BSD</license>
-  <author email="marcus.liebhardt@yujinrobot.com">Marcus Liebhardt</author>
+  <author>Marcus Liebhardt</author>
   <maintainer email="marcus.liebhardt@yujinrobot.com">Marcus Liebhardt</maintainer>
   <url type="website">http://ros.org/wiki/yocs_diff_drive_pose_controller</url>
   <url type="repository">https://github.com/yujinrobot/yujin_ocs</url>

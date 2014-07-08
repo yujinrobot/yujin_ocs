@@ -6,8 +6,8 @@
     <br/> * Command the robot to go to a goal by passing through a series of waypoints.
     <br/> * Command the robot to constantly loop through a series of waypoints, useful for patrol.
   </description>
-  <author email="jorge@yujinrobot.com">Jorge Santos Simon</author>
-  <maintainer email="jorge@yujinrobot.com">Jorge Santos Simon</maintainer>
+  <author>Jorge Santos Simon</author>
+  <maintainer email="jihoonl@yujinrobot.com">Jihoon Lee</maintainer>
   <license>BSD</license>
   <url type="website">http://ros.org/wiki/yocs_waypoints_navi</url>
   <url type="repository">https://github.com/yujinrobot/yujin_ocs</url>
