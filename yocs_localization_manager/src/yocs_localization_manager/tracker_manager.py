@@ -1,0 +1,95 @@
+#
+# License: BSD
+#   https://raw.github.com/yujinrobot/yujin_ocs/license/LICENSE
+#
+
+import rospy
+import ar_track_alvar_msgs
+import yocs_msgs
+import copy
+
+class TrackerManager(object):
+    """
+        Receives AR Pair Annotations from annotation server.
+        Configure yocs_ar_pair_tracking and publish TFs
+    """
+    def __init__(self):
+        self._init_params()
+        self._init_variables()
+
+        self._sub_global_pairs = rospy.Subscriber('global_pairs', ar_track_alvar_msgs.AlvarMarkers, self._process_global_pairs)
+        self._pub_pair_list = rospy.Publisher('update_ar_pairs', yocs_msgs.ARPairList, latch=True, queue_size=1)
+        
+
+    def _init_params(self):
+        param = {}
+        param['tf_broadcast_freq'] = rospy.get_param('tf_broadcast_freq', 0.5)
+        param['ar_pair_baseline'] = rospy.get_param('ar_pair/baseline', 0.28)
+        param['ar_pair_target_offset'] = rospy.get_param('ar_pair/target_offset', 0.5)
+        param['ar_pair_global_prefix'] = rospy.get_param('ar_pair/global_prefix', 'global_marker')
+        param['ar_pair_target_postfix'] = rospy.get_param('ar_pair/global_postfix', 'target')
+
+        self.param = param
+
+    def _init_variables(self):
+        self._tf_broadcaster = tf.TransformBroadcaster():
+        self._global_pairs = []
+
+    def _process_global_pairs(self, msg):
+        # Register Global Marker
+        self._global_pairs = copy.deepcopy(msg.markers)
+        self.loginfo('Received %s markers', len(self._global_pairs))
+
+        # Notify AR Pair Tracker
+        self._notify_ar_pair_tracker()
+
+    def _notify_ar_pair_tracker(self):
+        pair_list = yocs_msgs.ARPairList()
+
+        baseline = self.param['ar_pair_baseline']
+        target_offset = self.param['ar_pair_target_offset']
+        global_prefix = self.param['ar_pair_global_prefix']
+        target_postfix = self.param['ar_pair_target_postfix']
+
+        for marker in self._global_pairs:
+            p = yocs_msgs.ARPair()
+            p.left_id = marker.id
+            p.right_id = p.left_id - 3
+            p.baseline = baseline
+            p.target_offset = target_offset
+            p.target_frame = global_prefix + '_' + str(marker.id) + '_' + target_postfix
+            pair_list.pairs.append(p)
+
+        self._pub_pair_list.publish(pair_list)
+        
+
+
+    def _publish_target_tfs(self):
+        global_prefix = self.param['ar_pair_global_prefix']
+        target_postfix = self.param['ar_pair_target_postfix']
+        for marker in self._global_pairs:
+            parent_frame_id = global_prefix + '_' + str(marker.id)
+            child_frame_id = parent_frame_id + '_' + target_postfix
+            self._tf_broadcaster.sendTransform(marker.pose.pose, rospy.Time.now(), child_frame_id , parent_frame_id)
+
+    def _publish_marker_tfs(self):
+        global_prefix = self.param['ar_pair_global_prefix']
+        for marker in self._global_pairs:
+            parent_frame_id = marker.pose.header.frame_id
+            child_frame_id = global_prefix + '_' + str(marker.id)
+            self._tf_broadcaster.sendTransform(marker.pose.pose, rospy.Time.now(), child_frame_id ,parent_frame_id)
+
+    def loginfo(self, msg):
+        rospy.loginfo('TrackerManager : ' + str(msg))
+
+    def spin(self):
+        hertz = rospy.Duration(1 / self.param['~tf_broadcast_freq'])
+        r = rospy.Rate(hertz)
+
+        if sleeptime == 0:
+            rospy.spin()
+        else:
+            while not rospy.is_shutdown():
+                self._publish_marker_tfs()
+                self._publish_target_tfs()
+                r.sleep()

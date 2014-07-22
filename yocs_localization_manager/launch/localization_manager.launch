@@ -1,0 +1,7 @@
+<launch>
+  <node pkg="yocs_localization_manager" type="localization_manager.py" name="localization_manager">
+  </node>
+
+  <node pkg="yocs_localization_manager" type="tracker_manager.py" name="tracker_manager">
+  </node>
+</launch>
