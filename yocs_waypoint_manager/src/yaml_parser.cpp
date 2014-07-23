@@ -43,7 +43,6 @@ namespace yocs {
     #ifdef HAVE_NEW_YAMLCPP
       node = YAML::Load(ifs);
     #else
-      YAML::Parser parser(ifs);
       parser.GetNextDocument(node);
     #endif
   }
