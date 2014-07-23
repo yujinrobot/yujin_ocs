@@ -13,7 +13,7 @@ BasicMoveController::BasicMoveController(ros::NodeHandle& n)
   init();
 }
 
-BasicMoveController::BasicMoveController(ros::NodeHandle& n, std::string& cmd_vel_topic, std::string& odometry_topic) 
+BasicMoveController::BasicMoveController(ros::NodeHandle& n, const std::string& cmd_vel_topic, const std::string& odometry_topic) 
 : nh_(n), cmd_vel_topic_(cmd_vel_topic), odometry_topic_(odometry_topic)
 {
   init();

@@ -13,18 +13,19 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 ## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
+find_package(Boost REQUIRED COMPONENTS system)
 
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES yocs_navigator
   CATKIN_DEPENDS roscpp actionlib tf yocs_math_toolkit simple_annotation_msgs move_base_msgs nav_msgs yocs_msgs 
-#  DEPENDS system_lib
+  DEPENDS Boost
 )
 
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
 )
 
 # Declare a cpp library

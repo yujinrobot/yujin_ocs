@@ -21,7 +21,7 @@ namespace yocs {
 class BasicMoveController {
   public:
     BasicMoveController(ros::NodeHandle& n);
-    BasicMoveController(ros::NodeHandle& n, std::string& twist_topic, std::string& odometry_topic);
+    BasicMoveController(ros::NodeHandle& n, const std::string& twist_topic, const std::string& odometry_topic);
     virtual ~BasicMoveController();
 
     void init();

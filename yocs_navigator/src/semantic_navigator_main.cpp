@@ -14,10 +14,8 @@ int main(int argc, char** argv)
   yocs::SemanticNavigator* navigator;
 
   navigator = new yocs::SemanticNavigator(n);
-
-  ROS_INFO_NAMED(ros::this_node::getName(), "Initialized");
   navigator->spin();
-  ROS_INFO_NAMED(ros::this_node::getName(), "Bye Bye");
+  navigator->loginfo("Bye Bye");
 
   delete navigator;
 
