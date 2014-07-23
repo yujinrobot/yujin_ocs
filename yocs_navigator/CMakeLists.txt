@@ -35,17 +35,25 @@ add_library(yocs_basic_move_controller
 target_link_libraries(yocs_basic_move_controller ${catkin_LIBRARIES})
 add_dependencies(yocs_basic_move_controller geometry_msgs_gencpp nav_msgs_gencpp)
 
+add_library(yocs_semantic_navigator
+  src/${PROJECT_NAME}/semantic_navigator.cpp
+)
+
+target_link_libraries(yocs_semantic_navigator ${catkin_LIBRARIES} yocs_basic_move_controller)
+add_dependencies(yocs_semantic_navigator move_base_msgs_gencpp yocs_basic_move_controller)
+
+
 ## Declare a cpp executable
-# add_executable(yocs_navigator_node src/yocs_navigator_node.cpp)
+add_executable(yocs_semantic_navigator_node 
+  src/semantic_navigator_main.cpp
+)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-# add_dependencies(yocs_navigator_node yocs_navigator_generate_messages_cpp)
+add_dependencies(yocs_semantic_navigator_node yocs_semantic_navigator)
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(yocs_navigator_node
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(yocs_semantic_navigator_node yocs_semantic_navigator)
 
 #############
 ## Install ##

@@ -12,7 +12,7 @@
 #include <nav_msgs/Odometry.h>
 #include <geometry_msgs/Twist.h>
 
-#include "yocs_navigator/default_params.hpp"
+#include "yocs_navigator/default_params.h"
 
 #ifndef _YOCS_BASIC_MOVE_CONTROLLER_HPP_
 #define _YOCS_BASIC_MOVE_CONTROLLER_HPP_
