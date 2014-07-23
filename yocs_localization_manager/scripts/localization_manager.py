@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # License: BSD
-#   https://raw.github.com/yujinrobot/kobuki-x/license/LICENSE
+#   https://raw.github.com/yujinrobot/yujin_ocs/license/LICENSE
 #
 
 import rospy

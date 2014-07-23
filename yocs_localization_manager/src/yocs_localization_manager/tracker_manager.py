@@ -4,8 +4,8 @@
 #
 
 import rospy
-import ar_track_alvar_msgs
-import yocs_msgs
+import ar_track_alvar_msgs.msg as ar_track_alvar_msgs
+import yocs_msgs.msg as yocs_msgs
 import copy
 
 class TrackerManager(object):
