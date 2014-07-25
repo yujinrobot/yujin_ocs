@@ -38,6 +38,8 @@ add_dependencies(yocs_basic_move_controller geometry_msgs_gencpp nav_msgs_gencpp
 
 add_library(yocs_semantic_navigator
   src/${PROJECT_NAME}/semantic_navigator.cpp
+  src/${PROJECT_NAME}/navigation_handler.cpp
+  src/${PROJECT_NAME}/utils.cpp
 )
 
 target_link_libraries(yocs_semantic_navigator ${catkin_LIBRARIES} yocs_basic_move_controller)

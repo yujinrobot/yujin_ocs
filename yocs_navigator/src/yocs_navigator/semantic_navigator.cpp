@@ -31,7 +31,13 @@ SemanticNavigator::~SemanticNavigator()
 
 bool SemanticNavigator::init()
 {
+  ros::NodeHandle pnh("~");
+
+  pnh.param("global_frame", global_frame_, std::string("map"));
+
+  distance_to_goal_ = 0.0f;
   table_received_ = false;
+  navigation_in_progress_ = false;
 
   loginfo("Wait for move_base");
   ac_move_base_.waitForServer();
@@ -43,7 +49,7 @@ bool SemanticNavigator::init()
   }
   
   loginfo("Initialized");
-  as_navi_.registerGoalCallback(boost::bind(&SemanticNavigator::processNavigateTo, this));
+  as_navi_.registerGoalCallback(boost::bind(&SemanticNavigator::processNavigateToGoal, this));
   as_navi_.registerPreemptCallback(boost::bind(&SemanticNavigator::processPreemptNavigateTo, this));
   as_navi_.start();
 
@@ -56,12 +62,22 @@ void SemanticNavigator::processTableList(const yocs_msgs::TableList::ConstPtr& m
   table_received_ = true;
 }
 
-void SemanticNavigator::processNavigateTo()
+void SemanticNavigator::processNavigateToGoal()
 {
+  if(!navigation_in_progress_)
+  {
+    as_navi_.acceptNewGoal(); 
+    terminateNavigation(false, "Navigation under progress yet.. Ignoring");
+    return;
+  }
+
+  order_process_thread_ = boost::thread(&SemanticNavigator::processNavigation, this, as_navi_.acceptNewGoal());
 }
 
 void SemanticNavigator::processPreemptNavigateTo()
 {
+  logwarn("Navigation Preemption Requested");
+  as_navi_.setPreempted();
 }
 
 void SemanticNavigator::spin()
@@ -77,8 +93,4 @@ void SemanticNavigator::spin()
   }
 }
 
-void SemanticNavigator::loginfo(const std::string& msg)
-{
-  ROS_INFO_STREAM_NAMED(ros::this_node::getName(), msg);
-}
 }
