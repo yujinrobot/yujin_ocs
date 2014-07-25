@@ -40,10 +40,16 @@ class SemanticNavigator {
     void feedbackNavigation(const int status, const double distance, const std::string message);
     bool getGoalLocationTable(const std::string location, yocs_msgs::Table& table);
 
-    void goOn(const yocs_msgs::Table table, const double distance, const int num_retry, const double timeout);
-    void goNear(const yocs_msgs::Table table, const double distance, const int num_retry, const double timeout);
+    void goOn(const yocs_msgs::Table table, const double in_distance, const int num_retry, const double timeout);
+      void waitForMoveBase(int& move_base_result, const ros::Time& start_time, const double timeout);
+      void determineNavigationState(int& navi_result, const int move_base_result, const actionlib::SimpleClientGoalState  move_base_state);
+    void goNear(const yocs_msgs::Table table, const double in_distance, const int num_retry, const double timeout);
 
     void processMoveBaseFeedback(const move_base_msgs::MoveBaseFeedback::ConstPtr& feedback, const geometry_msgs::PoseStamped& target);
+
+
+    bool cancelMoveBaseGoal();
+  
 
   private:
     ros::NodeHandle nh_;
@@ -62,7 +68,13 @@ class SemanticNavigator {
     bool table_received_;
     bool navigation_in_progress_;
     boost::thread order_process_thread_;
-    
+
+    static const int NAVI_IN_PROGRESS =14;
+    static const int NAVI_SUCCESS     =15;
+    static const int NAVI_RETRY       =16;
+    static const int NAVI_FAILED      =17;
+    static const int NAVI_TIMEOUT     =18;
+    static const int NAVI_UNKNOWN     =19;
 };
 }
 

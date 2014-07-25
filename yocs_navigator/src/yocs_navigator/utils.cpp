@@ -47,6 +47,21 @@ void SemanticNavigator::feedbackNavigation(const int status, const double distan
   as_navi_.publishFeedback(feedback);
 }
 
+bool SemanticNavigator::cancelMoveBaseGoal()
+{
+  double timeout = 2.0;
+  ac_move_base_.cancelAllGoals();
+  if (ac_move_base_.waitForResult(ros::Duration(timeout)) == false)
+  {
+    logwarn("Failed to cancel move_base goal...");
+    return false;
+  }
+
+  loginfo("move_base goal has cancelled");
+  return true;
+}
+
+
 void SemanticNavigator::loginfo(const std::string& msg)
 {
   ROS_INFO_STREAM_NAMED(ros::this_node::getName(), msg);
