@@ -39,7 +39,7 @@ class TrackerManager(object):
     def _process_global_pairs(self, msg):
         # Register Global Marker
         self._global_pairs = copy.deepcopy(msg.markers)
-        self.loginfo('Received %s markers', len(self._global_pairs))
+        self.loginfo('Received ' + str(len(self._global_pairs)) + ' markers')
 
         # Notify AR Pair Tracker
         self._notify_ar_pair_tracker()
@@ -71,14 +71,18 @@ class TrackerManager(object):
         for marker in self._global_pairs:
             parent_frame_id = global_prefix + '_' + str(marker.id)
             child_frame_id = parent_frame_id + '_' + target_postfix
-            self._tf_broadcaster.sendTransform(marker.pose.pose, rospy.Time.now(), child_frame_id , parent_frame_id)
+            p = (marker.pose.pose.position.x,marker.pose.pose.position.y, marker.pose.pose.position.z)
+            q = (marker.pose.pose.orientation.x, marker.pose.pose.orientation.y, marker.pose.pose.orientation.z,marker.pose.pose.orientation.w)
+            self._tf_broadcaster.sendTransform(p, q, rospy.Time.now(), child_frame_id , parent_frame_id)
 
     def _publish_marker_tfs(self):
         global_prefix = self.param['ar_pair_global_prefix']
         for marker in self._global_pairs:
             parent_frame_id = marker.pose.header.frame_id
             child_frame_id = global_prefix + '_' + str(marker.id)
-            self._tf_broadcaster.sendTransform(marker.pose.pose, rospy.Time.now(), child_frame_id ,parent_frame_id)
+            p = (marker.pose.pose.position.x,marker.pose.pose.position.y, marker.pose.pose.position.z)
+            q = (marker.pose.pose.orientation.x, marker.pose.pose.orientation.y, marker.pose.pose.orientation.z,marker.pose.pose.orientation.w)
+            self._tf_broadcaster.sendTransform(p, q, rospy.Time.now(), child_frame_id ,parent_frame_id)
 
     def loginfo(self, msg):
         rospy.loginfo('TrackerManager : ' + str(msg))
