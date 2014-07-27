@@ -1,0 +1,8 @@
+<launch>
+  <!-- Semantic Navigator -->
+  <node pkg="yocs_navigator" name="semantic_navigator" type="yocs_semantic_navigator_node">
+    <remap from="cmd_vel" to="navigation_velocity_smoother/raw_cmd_vel"/>
+    <remap from="odom"    to="/odom"/>
+    <remap from="tablelist" to="table_pose_list"/>
+  </node>
+</launch>

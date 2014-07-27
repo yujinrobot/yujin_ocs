@@ -9,20 +9,18 @@ namespace yocs {
 
 SemanticNavigator::SemanticNavigator(ros::NodeHandle& n) 
 : nh_(n), basic_move_(n),
-  as_navigator_topic_(SemanticNavigatorDefaultParam::AS_NAVI),
-  sub_tablelist_topic_(SemanticNavigatorDefaultParam::SUB_TABLELIST),
-  as_navi_(nh_, as_navigator_topic_, false),
+  as_navi_(nh_, SemanticNavigatorDefaultParam::AS_NAVI, false),
   ac_move_base_(nh_, SemanticNavigatorDefaultParam::AC_MOVE_BASE, true)
 {
+  sub_tablelist_topic_= SemanticNavigatorDefaultParam::SUB_TABLELIST;
 }
 
 SemanticNavigator::SemanticNavigator(ros::NodeHandle& n, const std::string& as_navigator_topic, const std::string& sub_tablelist_topic) 
 : nh_(n), basic_move_(n),
-  as_navigator_topic_(as_navigator_topic),
-  sub_tablelist_topic_(sub_tablelist_topic),
   as_navi_(as_navigator_topic, false),
   ac_move_base_(SemanticNavigatorDefaultParam::AC_MOVE_BASE, true)
 {
+  sub_tablelist_topic_= sub_tablelist_topic; 
 }
 
 SemanticNavigator::~SemanticNavigator()

@@ -59,7 +59,6 @@ class SemanticNavigator {
     actionlib::SimpleActionServer<yocs_msgs::NavigateToAction>    as_navi_;
     actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> ac_move_base_;
 
-    std::string as_navigator_topic_;
     std::string sub_tablelist_topic_;
     std::string global_frame_;
 
