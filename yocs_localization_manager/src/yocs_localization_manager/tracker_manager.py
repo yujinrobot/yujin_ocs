@@ -4,6 +4,7 @@
 #
 
 import rospy
+import tf
 import ar_track_alvar_msgs.msg as ar_track_alvar_msgs
 import yocs_msgs.msg as yocs_msgs
 import copy
@@ -32,7 +33,7 @@ class TrackerManager(object):
         self.param = param
 
     def _init_variables(self):
-        self._tf_broadcaster = tf.TransformBroadcaster():
+        self._tf_broadcaster = tf.TransformBroadcaster()
         self._global_pairs = []
 
     def _process_global_pairs(self, msg):
@@ -83,12 +84,11 @@ class TrackerManager(object):
         rospy.loginfo('TrackerManager : ' + str(msg))
 
     def spin(self):
-        hertz = rospy.Duration(1 / self.param['~tf_broadcast_freq'])
-        r = rospy.Rate(hertz)
-
-        if sleeptime == 0:
+        if self.param['tf_broadcast_freq'] == 0:
             rospy.spin()
         else:
+            hertz = 1 / self.param['tf_broadcast_freq']
+            r = rospy.Rate(hertz)
             while not rospy.is_shutdown():
                 self._publish_marker_tfs()
                 self._publish_target_tfs()
