@@ -43,6 +43,7 @@ bool SemanticNavigator::init()
   loginfo("Wait for table lists"); 
   sub_tablelist_ = nh_.subscribe(sub_tablelist_topic_, 1, &SemanticNavigator::processTableList, this); 
   while(ros::ok() && !table_received_) {
+    ros::spinOnce();
     ros::Duration(0.5).sleep();
   }
   
@@ -68,7 +69,7 @@ void SemanticNavigator::processNavigateToGoal()
     terminateNavigation(false, "Navigation under progress yet.. Ignoring");
     return;
   }
-
+ 
   order_process_thread_ = boost::thread(&SemanticNavigator::processNavigation, this, as_navi_.acceptNewGoal());
 }
 
