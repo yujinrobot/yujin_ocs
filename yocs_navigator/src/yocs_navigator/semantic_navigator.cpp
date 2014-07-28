@@ -63,13 +63,14 @@ void SemanticNavigator::processTableList(const yocs_msgs::TableList::ConstPtr& m
 
 void SemanticNavigator::processNavigateToGoal()
 {
-  if(!navigation_in_progress_)
+  if(navigation_in_progress_)
   {
     as_navi_.acceptNewGoal(); 
     terminateNavigation(false, "Navigation under progress yet.. Ignoring");
     return;
   }
  
+  navigation_in_progress_ = true;
   order_process_thread_ = boost::thread(&SemanticNavigator::processNavigation, this, as_navi_.acceptNewGoal());
 }
 

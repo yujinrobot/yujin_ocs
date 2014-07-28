@@ -31,6 +31,7 @@ void SemanticNavigator::terminateNavigation(bool success, const std::string mess
 
   loginfo(message);
 
+  navigation_in_progress_ = false;
   as_navi_.setSucceeded(result);
 
   return;
