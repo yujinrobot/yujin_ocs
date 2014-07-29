@@ -64,6 +64,8 @@ void SemanticNavigator::goOn(const yocs_msgs::Table table, const double in_dista
 
   while(attempt < num_retry && ros::ok())
   {
+
+    move_base_result = NAVI_UNKNOWN;
     mb_goal.target_pose = target;
     ac_move_base_.sendGoal(mb_goal, actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>::SimpleDoneCallback(), 
                                     actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>::SimpleActiveCallback(), 
@@ -103,6 +105,7 @@ void SemanticNavigator::goOn(const yocs_msgs::Table table, const double in_dista
       attempt++;
       ss << "Reattempt to naviate.. " << attempt;
       feedbackNavigation(yocs_msgs::NavigateToFeedback::STATUS_RETRY, distance_to_goal_, ss.str()); 
+      clearCostmaps();
     }
     else {
       final_result = false;
@@ -116,11 +119,13 @@ void SemanticNavigator::goOn(const yocs_msgs::Table table, const double in_dista
 
 void SemanticNavigator::waitForMoveBase(int& move_base_result, const ros::Time& start_time, const double timeout)
 {
-  int result; 
+  int result = NAVI_UNKNOWN;
   while(ros::ok() && ac_move_base_.waitForResult(ros::Duration(0.5)) == false)
   {
     ros::Time current_time = ros::Time::now();
     // timed out. Navigation Failed..
+    double diff = (current_time - start_time).toSec();
+    ROS_INFO("Diff = %.4f,  timeout = %.4f",diff, timeout);
     if((current_time - start_time).toSec() > timeout)
     {
       result = NAVI_TIMEOUT;
@@ -129,8 +134,11 @@ void SemanticNavigator::waitForMoveBase(int& move_base_result, const ros::Time& 
 
     feedbackNavigation(yocs_msgs::NavigateToFeedback::STATUS_INPROGRESS, distance_to_goal_, "In Progress");
   }
+  
+//  if(result != NAVI_TIMEOUT) 
+//    move_base_result = ac_move_base_.getState();
 
-  move_base_result = result;
+  ROS_INFO("Movebase : %d", result);
 }
 
 void SemanticNavigator::determineNavigationState(int& navi_result, const int move_base_result, const actionlib::SimpleClientGoalState  move_base_state)
@@ -142,36 +150,42 @@ void SemanticNavigator::determineNavigationState(int& navi_result, const int mov
     result = NAVI_TIMEOUT;
   }
   else {
-    switch(move_base_result) {
-      case actionlib::SimpleClientGoalState::SUCCEEDED:
-        loginfo("Arrived the destination");
-        result = NAVI_SUCCESS;
-        break;
-      case actionlib::SimpleClientGoalState::ABORTED:
-        loginfo("movebase Aborted");
-        result = NAVI_RETRY;
-        break;
-      case actionlib::SimpleClientGoalState::REJECTED:
-        loginfo("movebase rejected");
-        result = NAVI_FAILED;
-        break;
-      case actionlib::SimpleClientGoalState::PREEMPTED:
-        loginfo("movebase preempted");
-        result = NAVI_FAILED;
-        break;
-      case actionlib::SimpleClientGoalState::LOST:
-        loginfo("robot Lost");
-        result = NAVI_FAILED;
-        break;
-      default:
-        std::stringstream message; 
-        message << "Move base unknown result : " << move_base_result;
-        loginfo(message.str());
-        result = NAVI_UNKNOWN;
-        break;
+    actionlib::SimpleClientGoalState state = ac_move_base_.getState();
+
+    if(state == actionlib::SimpleClientGoalState::SUCCEEDED)
+    {
+      loginfo("Arrived the destination");
+      result = NAVI_SUCCESS;
+    }
+    else if(state == actionlib::SimpleClientGoalState::ABORTED)
+    {
+      loginfo("movebase Aborted");
+      result = NAVI_RETRY;
+    }
+    else if(state == actionlib::SimpleClientGoalState::REJECTED)
+    {
+      loginfo("movebase rejected");
+      result = NAVI_FAILED;
+    }
+    else if(state == actionlib::SimpleClientGoalState::PREEMPTED) 
+    {
+      loginfo("movebase preempted");
+      result = NAVI_FAILED;
+    }
+    else if(state == actionlib::SimpleClientGoalState::LOST)
+    {
+      loginfo("robot Lost");
+      result = NAVI_FAILED;
+    }
+    else {
+      std::stringstream message; 
+      message << "Move base unknown result : " << move_base_result;
+      loginfo(message.str());
+      result = NAVI_UNKNOWN;
     }
   }
 
+  ROS_INFO("Navi : %d", result);
   navi_result = result;
 }
 

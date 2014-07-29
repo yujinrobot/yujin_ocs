@@ -17,6 +17,7 @@ namespace yocs {
     const std::string AS_NAVI       = "navigator";
     const std::string AC_MOVE_BASE  = "move_base";
     const std::string SUB_TABLELIST = "tablelist";
+    const std::string CLEAR_COSTMAP = "move_base/clear_costmaps";
   }
 }
 #endif 

@@ -11,6 +11,7 @@
 #include <yocs_msgs/NavigateToAction.h>
 #include <yocs_msgs/TableList.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <std_srvs/Empty.h>
 
 #include "yocs_navigator/default_params.h"
 #include "yocs_navigator/basic_move_controller.hpp"
@@ -49,6 +50,8 @@ class SemanticNavigator {
 
 
     bool cancelMoveBaseGoal();
+
+    bool clearCostmaps();
   
 
   private:

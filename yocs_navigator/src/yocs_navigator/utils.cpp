@@ -62,6 +62,27 @@ bool SemanticNavigator::cancelMoveBaseGoal()
   return true;
 }
 
+bool SemanticNavigator::clearCostmaps()
+{
+  ros::Time t0 = ros::Time::now();
+
+  ros::NodeHandle nh;
+  ros::ServiceClient client = nh.serviceClient<std_srvs::Empty>(SemanticNavigatorDefaultParam::CLEAR_COSTMAP);
+  std_srvs::Empty srv;
+
+  if (client.call(srv) == true)
+  {
+    ROS_INFO("Successfully cleared costmaps (%f seconds)", (ros::Time::now() - t0).toSec());
+    return true;
+  }
+  else
+  {
+    ROS_ERROR("Failed to clear costmaps (%f seconds)", (ros::Time::now() - t0).toSec());
+    return false;
+  }
+}
+
+
 
 void SemanticNavigator::loginfo(const std::string& msg)
 {

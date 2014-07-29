@@ -8,6 +8,7 @@ import tf
 import ar_track_alvar_msgs.msg as ar_track_alvar_msgs
 import yocs_msgs.msg as yocs_msgs
 import copy
+import math
 
 class TrackerManager(object):
     """
@@ -68,11 +69,13 @@ class TrackerManager(object):
     def _publish_target_tfs(self):
         global_prefix = self.param['ar_pair_global_prefix']
         target_postfix = self.param['ar_pair_target_postfix']
+        target_offset  = self.param['ar_pair_target_offset']
+
         for marker in self._global_pairs:
             parent_frame_id = global_prefix + '_' + str(marker.id)
             child_frame_id = parent_frame_id + '_' + target_postfix
-            p = (marker.pose.pose.position.x,marker.pose.pose.position.y, marker.pose.pose.position.z)
-            q = (marker.pose.pose.orientation.x, marker.pose.pose.orientation.y, marker.pose.pose.orientation.z,marker.pose.pose.orientation.w)
+            p = (0,0, target_offset)
+            q = tf.transformations.quaternion_from_euler(math.pi, 0, 0)
             self._tf_broadcaster.sendTransform(p, q, rospy.Time.now(), child_frame_id , parent_frame_id)
 
     def _publish_marker_tfs(self):
