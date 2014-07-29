@@ -139,6 +139,11 @@ void SemanticNavigator::waitForMoveBase(int& move_base_result, const ros::Time& 
       break;
     }
 
+    if(as_navi_.isPreemptRequested())
+    {
+      cancelMoveBaseGoal();
+    }
+
     feedbackNavigation(yocs_msgs::NavigateToFeedback::STATUS_INPROGRESS, distance_to_goal_, remain_time, "In Progress");
   }
   
