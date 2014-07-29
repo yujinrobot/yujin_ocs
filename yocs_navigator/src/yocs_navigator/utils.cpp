@@ -29,19 +29,18 @@ void SemanticNavigator::terminateNavigation(bool success, const std::string mess
   result.message = message;
   result.distance = distance_to_goal_;
 
-  loginfo(message);
-
   navigation_in_progress_ = false;
   as_navi_.setSucceeded(result);
 
   return;
 }
 
-void SemanticNavigator::feedbackNavigation(const int status, const double distance, const std::string message)
+void SemanticNavigator::feedbackNavigation(const int status, const double distance, const double remain_time, const std::string message)
 {
   yocs_msgs::NavigateToFeedback feedback;
   feedback.status = status;
   feedback.distance = distance;
+  feedback.remain_time = remain_time;
   feedback.message = message;
   loginfo(message);
   

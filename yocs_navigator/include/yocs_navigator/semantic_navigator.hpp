@@ -38,7 +38,7 @@ class SemanticNavigator {
     void processNavigation(yocs_msgs::NavigateToGoal::ConstPtr goal);
 
     void terminateNavigation(bool success, const std::string message);
-    void feedbackNavigation(const int status, const double distance, const std::string message);
+    void feedbackNavigation(const int status, const double distance, const double remain_time, const std::string message);
     bool getGoalLocationTable(const std::string location, yocs_msgs::Table& table);
 
     void goOn(const yocs_msgs::Table table, const double in_distance, const int num_retry, const double timeout);

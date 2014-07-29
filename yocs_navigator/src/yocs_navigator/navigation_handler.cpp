@@ -30,6 +30,7 @@ void SemanticNavigator::processNavigation(yocs_msgs::NavigateToGoal::ConstPtr go
     terminateNavigation(false, "Target is not in global frame");
     return;
   }
+  clearCostmaps();
 
   switch(approach_type) {
     case yocs_msgs::NavigateToGoal::APPROACH_NEAR:
@@ -104,7 +105,12 @@ void SemanticNavigator::goOn(const yocs_msgs::Table table, const double in_dista
       std::stringstream ss;
       attempt++;
       ss << "Reattempt to naviate.. " << attempt;
-      feedbackNavigation(yocs_msgs::NavigateToFeedback::STATUS_RETRY, distance_to_goal_, ss.str()); 
+
+      ros::Time current_time = ros::Time::now();
+      double diff = (current_time - started_time).toSec();
+      double remain_time = timeout - diff; 
+
+      feedbackNavigation(yocs_msgs::NavigateToFeedback::STATUS_RETRY, distance_to_goal_, remain_time, ss.str()); 
       clearCostmaps();
     }
     else {
@@ -125,14 +131,15 @@ void SemanticNavigator::waitForMoveBase(int& move_base_result, const ros::Time& 
     ros::Time current_time = ros::Time::now();
     // timed out. Navigation Failed..
     double diff = (current_time - start_time).toSec();
-    ROS_INFO("Diff = %.4f,  timeout = %.4f",diff, timeout);
-    if((current_time - start_time).toSec() > timeout)
+    double remain_time = timeout - diff; 
+    //ROS_INFO("Diff = %.4f,  timeout = %.4f",diff, timeout);
+    if(diff > timeout)
     {
       result = NAVI_TIMEOUT;
       break;
     }
 
-    feedbackNavigation(yocs_msgs::NavigateToFeedback::STATUS_INPROGRESS, distance_to_goal_, "In Progress");
+    feedbackNavigation(yocs_msgs::NavigateToFeedback::STATUS_INPROGRESS, distance_to_goal_, remain_time, "In Progress");
   }
   
 //  if(result != NAVI_TIMEOUT) 
