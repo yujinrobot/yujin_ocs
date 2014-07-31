@@ -57,15 +57,15 @@ void SemanticNavigator::goOn(const yocs_msgs::Table table, const double in_dista
   int attempt = 0;
   int move_base_result;
   int navi_result;
+  bool retry;
   bool final_result;
   std::string message;
   move_base_msgs::MoveBaseGoal mb_goal;
   
   ros::Time started_time = ros::Time::now();
 
-  while(attempt < num_retry && ros::ok())
+  while(ros::ok())
   {
-
     move_base_result = NAVI_UNKNOWN;
     mb_goal.target_pose = target;
     ac_move_base_.sendGoal(mb_goal, actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>::SimpleDoneCallback(), 
@@ -74,131 +74,29 @@ void SemanticNavigator::goOn(const yocs_msgs::Table table, const double in_dista
     
     waitForMoveBase(move_base_result, started_time, timeout);
     determineNavigationState(navi_result, move_base_result, ac_move_base_.getState());
+    nextState(retry, final_result, message, navi_result, started_time);
 
-    if(navi_result == NAVI_TIMEOUT)
-    {
-      cancelMoveBaseGoal();
-      final_result = false;
-      message = "Navigation Timed out";
-      break;
-    }
-    else if(navi_result == NAVI_SUCCESS)
-    { 
-      final_result = true;
-      message = "SUCCESS!";
-      break;
-    }
-    else if(navi_result == NAVI_FAILED)
+    if(retry == false) break;
+    else if(attempt > num_retry)
     {
       final_result = false;
-      message = "Navigation Failed";
+      message = "Tried enough... I failed to navigate..";
       break;
     }
-    else if(navi_result == NAVI_UNKNOWN)
-    {
-      final_result = false;
-      message = "Navigation has got unknown error....";     
-      break;
-    }
-    else if(navi_result == NAVI_RETRY)
-    {
-      std::stringstream ss;
-      attempt++;
-      ss << "Reattempt to naviate.. " << attempt;
 
-      ros::Time current_time = ros::Time::now();
-      double diff = (current_time - started_time).toSec();
-      double remain_time = timeout - diff; 
+    attempt++;
+    std::stringstream ss;
+    ss << "Reattempt to naviate.. " << attempt;
 
-      feedbackNavigation(yocs_msgs::NavigateToFeedback::STATUS_RETRY, distance_to_goal_, remain_time, ss.str()); 
-      clearCostmaps();
-    }
-    else {
-      final_result = false;
-      message = "Something got wrong... What is going on";
-      break;
-    }
+    ros::Time current_time = ros::Time::now();
+    double diff = (current_time - started_time).toSec();
+    double remain_time = timeout - diff; 
+
+    feedbackNavigation(yocs_msgs::NavigateToFeedback::STATUS_RETRY, distance_to_goal_, remain_time, ss.str()); 
+    clearCostmaps();
   }
 
   terminateNavigation(final_result, message);
-}
-
-void SemanticNavigator::waitForMoveBase(int& move_base_result, const ros::Time& start_time, const double timeout)
-{
-  int result = NAVI_UNKNOWN;
-  while(ros::ok() && ac_move_base_.waitForResult(ros::Duration(0.5)) == false)
-  {
-    ros::Time current_time = ros::Time::now();
-    // timed out. Navigation Failed..
-    double diff = (current_time - start_time).toSec();
-    double remain_time = timeout - diff; 
-    //ROS_INFO("Diff = %.4f,  timeout = %.4f",diff, timeout);
-    if(diff > timeout)
-    {
-      result = NAVI_TIMEOUT;
-      break;
-    }
-
-    if(as_navi_.isPreemptRequested())
-    {
-      cancelMoveBaseGoal();
-    }
-
-    feedbackNavigation(yocs_msgs::NavigateToFeedback::STATUS_INPROGRESS, distance_to_goal_, remain_time, "In Progress");
-  }
-  
-//  if(result != NAVI_TIMEOUT) 
-//    move_base_result = ac_move_base_.getState();
-
-  ROS_INFO("Movebase : %d", result);
-}
-
-void SemanticNavigator::determineNavigationState(int& navi_result, const int move_base_result, const actionlib::SimpleClientGoalState  move_base_state)
-{
-  int result;
-    
-  if(move_base_result == NAVI_TIMEOUT)
-  {
-    result = NAVI_TIMEOUT;
-  }
-  else {
-    actionlib::SimpleClientGoalState state = ac_move_base_.getState();
-
-    if(state == actionlib::SimpleClientGoalState::SUCCEEDED)
-    {
-      loginfo("Arrived the destination");
-      result = NAVI_SUCCESS;
-    }
-    else if(state == actionlib::SimpleClientGoalState::ABORTED)
-    {
-      loginfo("movebase Aborted");
-      result = NAVI_RETRY;
-    }
-    else if(state == actionlib::SimpleClientGoalState::REJECTED)
-    {
-      loginfo("movebase rejected");
-      result = NAVI_FAILED;
-    }
-    else if(state == actionlib::SimpleClientGoalState::PREEMPTED) 
-    {
-      loginfo("movebase preempted");
-      result = NAVI_FAILED;
-    }
-    else if(state == actionlib::SimpleClientGoalState::LOST)
-    {
-      loginfo("robot Lost");
-      result = NAVI_FAILED;
-    }
-    else {
-      std::stringstream message; 
-      message << "Move base unknown result : " << move_base_result;
-      loginfo(message.str());
-      result = NAVI_UNKNOWN;
-    }
-  }
-
-  ROS_INFO("Navi : %d", result);
-  navi_result = result;
 }
 
 void SemanticNavigator::goNear(const yocs_msgs::Table table, const double distance, const int num_retry, const double timeout)
@@ -210,6 +108,7 @@ void SemanticNavigator::goNear(const yocs_msgs::Table table, const double distan
   int attempt = 0;
   int move_base_result;
   int navi_result;
+  bool retry;
   bool final_result;
   std::string message;
   move_base_msgs::MoveBaseGoal mb_goal;
@@ -218,8 +117,30 @@ void SemanticNavigator::goNear(const yocs_msgs::Table table, const double distan
   
   while(attempt < num_retry && ros::ok())
   {
+    move_base_result = NAVI_UNKNOWN;
+    mb_goal.target_pose = target;
+    ac_move_base_.sendGoal(mb_goal, actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>::SimpleDoneCallback(), 
+                                    actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>::SimpleActiveCallback(), 
+                                    boost::bind(&SemanticNavigator::processMoveBaseFeedback, this, _1, target));
+    waitForMoveBase(move_base_result, started_time, timeout);
+    determineNavigationState(navi_result, move_base_result, ac_move_base_.getState());
+    nextState(retry, final_result, message, navi_result, started_time);
+
+    if(retry == false) break;
+    
+    attempt++;
+
+    if(attempt > num_retry)
+    {
+      final_result = false;
+      message = "Tried enough... I failed to navigate..";
+      break;
+    }
   }
+
+  terminateNavigation(final_result, message);
 }
+
 
 void SemanticNavigator::processMoveBaseFeedback(const move_base_msgs::MoveBaseFeedback::ConstPtr& feedback, const geometry_msgs::PoseStamped& target_pose)
 {

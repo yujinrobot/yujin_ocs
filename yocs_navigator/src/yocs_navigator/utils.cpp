@@ -81,7 +81,123 @@ bool SemanticNavigator::clearCostmaps()
   }
 }
 
+void SemanticNavigator::determineNavigationState(int& navi_result, const int move_base_result, const actionlib::SimpleClientGoalState  move_base_state)
+{
+  int result;
+    
+  if(move_base_result == NAVI_TIMEOUT)
+  {
+    result = NAVI_TIMEOUT;
+  }
+  else {
+    actionlib::SimpleClientGoalState state = ac_move_base_.getState();
 
+    if(state == actionlib::SimpleClientGoalState::SUCCEEDED)
+    {
+      loginfo("Arrived the destination");
+      result = NAVI_SUCCESS;
+    }
+    else if(state == actionlib::SimpleClientGoalState::ABORTED)
+    {
+      loginfo("movebase Aborted");
+      result = NAVI_RETRY;
+    }
+    else if(state == actionlib::SimpleClientGoalState::REJECTED)
+    {
+      loginfo("movebase rejected");
+      result = NAVI_FAILED;
+    }
+    else if(state == actionlib::SimpleClientGoalState::PREEMPTED) 
+    {
+      loginfo("movebase preempted");
+      result = NAVI_FAILED;
+    }
+    else if(state == actionlib::SimpleClientGoalState::LOST)
+    {
+      loginfo("robot Lost");
+      result = NAVI_FAILED;
+    }
+    else {
+      std::stringstream message; 
+      message << "Move base unknown result : " << move_base_result;
+      loginfo(message.str());
+      result = NAVI_UNKNOWN;
+    }
+  }
+
+  ROS_INFO("Navi : %d", result);
+  navi_result = result;
+}
+
+void SemanticNavigator::nextState(bool& retry,bool& final_result,std::string& message, const int navi_result,const ros::Time started_time)
+{
+  if(navi_result == NAVI_TIMEOUT)
+  {
+    cancelMoveBaseGoal();
+
+    retry = false;
+    final_result = false;
+    message = "Navigation Timed out";
+  }
+  else if(navi_result == NAVI_SUCCESS)
+  { 
+    retry = false;
+    final_result = true;
+    message = "SUCCESS!";
+  }
+  else if(navi_result == NAVI_FAILED)
+  {
+    retry = false;
+    final_result = false;
+    message = "Navigation Failed";
+  }
+  else if(navi_result == NAVI_UNKNOWN)
+  {
+    retry = false;
+    final_result = false;
+    message = "Navigation has got unknown error....";     
+  }
+  else if(navi_result == NAVI_RETRY)
+  {
+    retry = true;
+    final_result = false;
+    message = "Retry...";
+  }
+  else {
+    retry = false;
+    final_result = false;
+    message = "Something got wrong... What is going on";
+  }
+
+  return;
+}
+
+void SemanticNavigator::waitForMoveBase(int& move_base_result, const ros::Time& start_time, const double timeout)
+{
+  int result = NAVI_UNKNOWN;
+  while(ros::ok() && ac_move_base_.waitForResult(ros::Duration(0.5)) == false)
+  {
+    ros::Time current_time = ros::Time::now();
+    // timed out. Navigation Failed..
+    double diff = (current_time - start_time).toSec();
+    double remain_time = timeout - diff; 
+    //ROS_INFO("Diff = %.4f,  timeout = %.4f",diff, timeout);
+    if(diff > timeout)
+    {
+      result = NAVI_TIMEOUT;
+      break;
+    }
+
+    if(as_navi_.isPreemptRequested())
+    {
+      cancelMoveBaseGoal();
+    }
+
+    feedbackNavigation(yocs_msgs::NavigateToFeedback::STATUS_INPROGRESS, distance_to_goal_, remain_time, "In Progress");
+  }
+  
+  ROS_INFO("Movebase : %d", result);
+}
 
 void SemanticNavigator::loginfo(const std::string& msg)
 {
@@ -92,5 +208,4 @@ void SemanticNavigator::logwarn(const std::string& msg)
 {
   ROS_WARN_STREAM_NAMED(ros::this_node::getName(), msg);
 }
-
 }

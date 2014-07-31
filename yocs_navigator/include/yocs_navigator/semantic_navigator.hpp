@@ -44,6 +44,7 @@ class SemanticNavigator {
     void goOn(const yocs_msgs::Table table, const double in_distance, const int num_retry, const double timeout);
       void waitForMoveBase(int& move_base_result, const ros::Time& start_time, const double timeout);
       void determineNavigationState(int& navi_result, const int move_base_result, const actionlib::SimpleClientGoalState  move_base_state);
+      void nextState(bool& retry,bool& final_result,std::string& message, const int navi_result, const ros::Time started_time);
     void goNear(const yocs_msgs::Table table, const double in_distance, const int num_retry, const double timeout);
 
     void processMoveBaseFeedback(const move_base_msgs::MoveBaseFeedback::ConstPtr& feedback, const geometry_msgs::PoseStamped& target);
