@@ -1,0 +1,15 @@
+<!--
+  Example launcher
+ -->
+<launch>
+  <node pkg="yocs_keyop" type="keyop" name="keyop" output="screen">
+    <remap from="keyop/enable_motors" to="my_robot/enable_motors"/>
+    <remap from="keyop/disable_motors" to="my_robot/disable_motors"/>
+    <remap from="keyop/cmd_vel" to="my_robot/commands/velocity"/>
+    <param name="linear_vel_step"  value="0.05" type="double"/>
+    <param name="linear_vel_max"   value="1.5"  type="double"/>
+    <param name="angular_vel_step" value="0.33" type="double"/>
+    <param name="angular_vel_max"  value="6.6"  type="double"/>
+    <param name="wait_for_connection" value="true" type="bool"/>
+  </node>
+</launch>

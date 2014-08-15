@@ -1,0 +1,47 @@
+/**
+\mainpage
+\htmlinclude manifest.html
+
+\section Overview
+
+Provides a keyboard teleoperation control for your robot. Just enables a simple
+increase velocity mechanism both linearly and angularly as well as power off 
+and power on functions.
+
+\section published Published Topics
+
+- <tt>yocs_keyop/cmd_vel (geometry_msgs/Twist)</tt>
+
+Sends command velocities to the mobile base interface. 
+
+- <tt>yocs_keyop/enable (std_msgs/String)</tt>
+- <tt>yocs_keyop/disable (std_msgs/String)</tt>
+
+Send power-off and power-on commands to the robot core.
+
+\section Usage
+
+Use a launcher to fire up the keyop command as this will allow you to map the above
+topics to the appropriate namespace.
+
+@code
+<launch>
+    <node pkg="yocs_keyop" type="keyop" name="yocs_keyop">
+        <remap from="yocs_keyop/enable" to="/my_robot/enable"/>
+        <remap from="yocs_keyop/disable" to="/my_robot/disable"/>
+        <remap from="yocs_keyop/vel_cmd" to="/my_robot/cmd_vel"/>
+    </node>
+</launch>
+@endcode
+
+You may wish to change the remappings to suit the currently running robot. You can initiate with
+
+@code
+roslaunch yocs_keyop robot_core.launch
+@endcode
+
+and use the arrow keys to navigation, with 'e', 'd' to enable
+or disable the motors and 'q' to quit.
+
+
+*/
