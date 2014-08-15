@@ -14,5 +14,4 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 add_subdirectory(src)
 
 install(DIRECTORY launch
-        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-)
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})

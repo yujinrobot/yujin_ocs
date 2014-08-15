@@ -3,8 +3,8 @@
  *   https://raw.github.com/yujinrobot/yujin_ocs/license/LICENSE
  */
 
-#include <ecl/time.hpp>
 #include <ecl/exceptions.hpp>
+#include <ecl/time.hpp>
 #include <ros/ros.h>
 #include <std_msgs/String.h>
 #include "yocs_keyop/keyop.hpp"
@@ -105,7 +105,7 @@ bool KeyOp::init()
     }
     else
     {
-      ROS_WARN_STREAM("KeyOp: could not connect, trying again after 500ms...");
+      ROS_WARN_STREAM("KeyOp: Could not connect, trying again after 500ms...");
       try
       {
         millisleep(500);
@@ -121,8 +121,8 @@ bool KeyOp::init()
   }
   if (!connected)
   {
-    ROS_ERROR("KeyOp: could not connect.");
-    ROS_ERROR("KeyOp: check remappings for enable/disable topics).");
+    ROS_ERROR("KeyOp: Could not connect.");
+    ROS_ERROR("KeyOp: Check remappings for enable/disable topics.");
   }
   else
   {
@@ -306,7 +306,7 @@ void KeyOp::disable()
 
   if (power_status_)
   {
-    ROS_INFO("KeyOp: die, die, die (disabling power to the device's motor system).");
+    ROS_INFO_STREAM("KeyOp: die, die, die (disabling power to the device's motor system).");
     std_msgs::String msg;
     msg.data = "all";
     disable_motors_publisher_.publish(msg);
@@ -314,7 +314,7 @@ void KeyOp::disable()
   }
   else
   {
-    ROS_WARN("KeyOp: Motor system has already been powered down.");
+    ROS_WARN_STREAM("KeyOp: Motor system has already been powered down.");
   }
 }
 
@@ -333,7 +333,7 @@ void KeyOp::enable()
 
   if (!power_status_)
   {
-    ROS_INFO("KeyOp: Enabling power to the device subsystem.");
+    ROS_INFO_STREAM("KeyOp: Enabling power to the device subsystem.");
     std_msgs::String msg;
     msg.data = "all";
     disable_motors_publisher_.publish(msg);
@@ -341,7 +341,7 @@ void KeyOp::enable()
   }
   else
   {
-    ROS_WARN("KeyOp: Device has already been powered up.");
+    ROS_WARN_STREAM("KeyOp: Device has already been powered up.");
   }
 }
 
