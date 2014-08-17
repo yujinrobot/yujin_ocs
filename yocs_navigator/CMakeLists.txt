@@ -6,7 +6,6 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib
   tf
   yocs_math_toolkit
-  simple_annotation_msgs
   yocs_msgs
   move_base_msgs
   nav_msgs
@@ -18,7 +17,7 @@ find_package(Boost REQUIRED COMPONENTS system)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES yocs_navigator
-  CATKIN_DEPENDS roscpp actionlib tf yocs_math_toolkit simple_annotation_msgs move_base_msgs nav_msgs yocs_msgs 
+  CATKIN_DEPENDS roscpp actionlib tf yocs_math_toolkit move_base_msgs nav_msgs yocs_msgs 
   DEPENDS Boost
 )
 

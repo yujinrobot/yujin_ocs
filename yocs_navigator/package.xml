@@ -20,7 +20,6 @@
   <build_depend>actionlib</build_depend>
   <build_depend>tf</build_depend>
   <build_depend>yocs_math_toolkit</build_depend>
-  <build_depend>simple_annotation_msgs</build_depend>
   <build_depend>move_base_msgs</build_depend>
   <build_depend>nav_msgs</build_depend>
   <build_depend>yocs_msgs</build_depend>
@@ -31,5 +30,4 @@
   <run_depend>move_base_msgs</run_depend>
   <run_depend>yocs_msgs</run_depend>
   <run_depend>nav_msgs</run_depend>
-  <run_depend>simple_annotation_msgs</run_depend>
 </package>
