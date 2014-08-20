@@ -336,7 +336,7 @@ void KeyOp::enable()
     ROS_INFO_STREAM("KeyOp: Enabling power to the device subsystem.");
     std_msgs::String msg;
     msg.data = "all";
-    disable_motors_publisher_.publish(msg);
+    enable_motors_publisher_.publish(msg);
     power_status_ = true;
   }
   else
