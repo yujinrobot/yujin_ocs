@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<package>
+  <name>yocs_joyop</name>
+  <version>0.0.0</version>
+  <description>Joystick teleoperation for your robot robot core</description>
+  <author>Marcus Liebhardt</author>
+  <maintainer email="marcus.liebhardt@yujinrobot.com">Marcus Liebhardt</maintainer>
+  <license>BSD</license>
+  <url type="bugtracker">https://github.com/yujinrobot/yujin_ocs/issues</url>
+  <url type="repository">https://github.com/yujinrobot/yujin_ocs</url>
+  <url type="website">http://ros.org/wiki/yocs_joop</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  
+  <!-- ROS -->
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <!-- ECL -->
+  <build_depend>ecl_exceptions</build_depend>
+  <build_depend>ecl_time</build_depend>
+  
+  <!-- ROS -->
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>joy</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <!-- ECL -->
+  <run_depend>ecl_exceptions</run_depend>
+  <run_depend>ecl_time</run_depend>
+</package>
