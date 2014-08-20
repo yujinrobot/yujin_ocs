@@ -1,5 +1,5 @@
 /*
-   Way point Manager
+   Way point Provider
 
    highly inspired by yocs_waypoint_navi written by Jorge Santos
 
@@ -10,8 +10,8 @@
  */
 
 
-#ifndef _YOCS_WAYPOINT_MANAGER_HPP_
-#define _YOCS_WAYPOINT_MANAGER_HPP_ 
+#ifndef _YOCS_WAYPOINT_PROVIDER_HPP_
+#define _YOCS_WAYPOINT_PROVIDER_HPP_
 
 #include <ros/ros.h>
 #include <yocs_msgs/WaypointListService.h>
@@ -27,10 +27,10 @@
  */
 
 namespace yocs {
-  class WaypointManager {
+  class WaypointProvider {
     public:
-      WaypointManager(ros::NodeHandle& n, yocs_msgs::WaypointList& wp);
-      ~WaypointManager();
+      WaypointProvider(ros::NodeHandle& n, yocs_msgs::WaypointList& wp);
+      ~WaypointProvider();
 
       void spin();
     protected:
@@ -38,7 +38,7 @@ namespace yocs {
 
       void generateVizmarkers(const yocs_msgs::WaypointList& wp, visualization_msgs::MarkerArray& wp_viz);
       bool processWaypointsService(yocs_msgs::WaypointListService::Request& request, yocs_msgs::WaypointListService::Response& response);
-  
+
       void createArrowMarker(const int i,const yocs_msgs::Waypoint& wp, visualization_msgs::Marker& marker);
       void createLabelMarker(const int i,const yocs_msgs::Waypoint& wp, visualization_msgs::Marker& marker);
 
@@ -57,4 +57,4 @@ namespace yocs {
   };
 }
 
-#endif // _YOCS_WAYPOINT_MANAGER_HPP_
+#endif // _YOCS_WAYPOINT_PROVIDER_HPP_

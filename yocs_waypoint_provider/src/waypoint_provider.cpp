@@ -1,5 +1,5 @@
 /*
-   Way point Manager
+   Way point Provider
 
    inspired by yocs_waypoints_navi
 
@@ -9,17 +9,17 @@
    Date   : Dec 2013
  */
 
-#include "yocs_waypoint_manager/waypoint_manager.hpp"
+#include "yocs_waypoint_provider/waypoint_provider.hpp"
 
 namespace yocs {
-  WaypointManager::WaypointManager(ros::NodeHandle& n, yocs_msgs::WaypointList& wp) : nh_(n) 
-  { 
+  WaypointProvider::WaypointProvider(ros::NodeHandle& n, yocs_msgs::WaypointList& wp) : nh_(n)
+  {
 
     // setup pub
     waypoints_pub_ = nh_.advertise<yocs_msgs::WaypointList>("waypoints", 5, true);
-    waypoints_viz_pub_ = nh_.advertise<visualization_msgs::MarkerArray>("waypoints_viz", 5, true); 
+    waypoints_viz_pub_ = nh_.advertise<visualization_msgs::MarkerArray>("waypoints_viz", 5, true);
     // setup srv server
-    waypoints_srv_ = nh_.advertiseService("request_waypoints", &WaypointManager::processWaypointsService, this);
+    waypoints_srv_ = nh_.advertiseService("request_waypoints", &WaypointProvider::processWaypointsService, this);
 
     waypoints_ = wp;
     generateVizmarkers(waypoints_, waypoints_viz_);
@@ -29,9 +29,9 @@ namespace yocs {
   }
 
 
-  WaypointManager::~WaypointManager() {}
+  WaypointProvider::~WaypointProvider() {}
 
-  bool WaypointManager::processWaypointsService(yocs_msgs::WaypointListService::Request& request, yocs_msgs::WaypointListService::Response& response)
+  bool WaypointProvider::processWaypointsService(yocs_msgs::WaypointListService::Request& request, yocs_msgs::WaypointListService::Response& response)
   {
     ROS_INFO("Waypoint Manager : Received request");
     if(!initialized_) // return false if node is not initialized with points
@@ -45,12 +45,12 @@ namespace yocs {
     return true;
   }
 
-  void WaypointManager::generateVizmarkers(const yocs_msgs::WaypointList& wps, visualization_msgs::MarkerArray& wp_viz)
+  void WaypointProvider::generateVizmarkers(const yocs_msgs::WaypointList& wps, visualization_msgs::MarkerArray& wp_viz)
   {
     wp_viz.markers.clear();
 
     unsigned int i;
-    
+
     for(i = 0; i < wps.waypoints.size(); i++)
     {
       visualization_msgs::Marker marker;
@@ -64,7 +64,7 @@ namespace yocs {
     }
   }
 
-  void WaypointManager::createArrowMarker(const int i,const yocs_msgs::Waypoint& wp, visualization_msgs::Marker& marker)
+  void WaypointProvider::createArrowMarker(const int i,const yocs_msgs::Waypoint& wp, visualization_msgs::Marker& marker)
   {
     marker.header.frame_id = wp.header.frame_id;
     marker.header.stamp = ros::Time::now();
@@ -83,7 +83,7 @@ namespace yocs {
 
   }
 
-  void WaypointManager::createLabelMarker(const int i,const yocs_msgs::Waypoint& wp, visualization_msgs::Marker& marker)
+  void WaypointProvider::createLabelMarker(const int i,const yocs_msgs::Waypoint& wp, visualization_msgs::Marker& marker)
   {
     marker.header.frame_id = wp.header.frame_id;
     marker.header.stamp = ros::Time::now();
@@ -103,7 +103,7 @@ namespace yocs {
     marker.text = wp.name;
   }
 
-  void WaypointManager::spin() {
+  void WaypointProvider::spin() {
     waypoints_pub_.publish(waypoints_);
     waypoints_viz_pub_.publish(waypoints_viz_);
     initialized_ = true;

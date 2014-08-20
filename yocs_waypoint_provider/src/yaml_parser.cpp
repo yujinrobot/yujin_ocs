@@ -1,5 +1,5 @@
 
-#include "yocs_waypoint_manager/yaml_parser.hpp"
+#include "yocs_waypoint_provider/yaml_parser.hpp"
 
 namespace yocs {
   bool loadWaypointListFromYaml(const std::string& filename,yocs_msgs::WaypointList& wps) {
@@ -31,11 +31,11 @@ namespace yocs {
     return true;
   }
 
-  void getYamlNode(const std::string& filename, YAML::Node& node) 
+  void getYamlNode(const std::string& filename, YAML::Node& node)
   {
     std::ifstream ifs(filename.c_str(), std::ifstream::in);
     if (ifs.good() == false)
-    {                                                            
+    {
       throw std::string("Waypoints file not found");
     }
 
@@ -47,20 +47,20 @@ namespace yocs {
     #endif
   }
 
-  void parseWaypoints(const YAML::Node& node, yocs_msgs::WaypointList& wps) 
+  void parseWaypoints(const YAML::Node& node, yocs_msgs::WaypointList& wps)
   {
-    
+
     unsigned int i;
 
     #ifdef HAVE_NEW_YAMLCPP
-    const YAML::Node& wp_node_tmp = node["waypoints"];   
-    const YAML::Node* wp_node = wp_node_tmp ? &wp_node_tmp : NULL;   
+    const YAML::Node& wp_node_tmp = node["waypoints"];
+    const YAML::Node* wp_node = wp_node_tmp ? &wp_node_tmp : NULL;
     #else
-    const YAML::Node* wp_node = node.FindValue("waypoints");   
+    const YAML::Node* wp_node = node.FindValue("waypoints");
     #endif
     if(wp_node != NULL)
     {
-      for(i = 0; i < wp_node->size(); i++) 
+      for(i = 0; i < wp_node->size(); i++)
       {
         // Parse waypoint entries on YAML
         yocs_msgs::Waypoint wp;
