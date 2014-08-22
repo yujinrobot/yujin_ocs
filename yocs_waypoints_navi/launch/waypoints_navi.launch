@@ -1,13 +1,15 @@
+<!-- 
+  Starts the way point navigator with default parameters
+ -->
+
 <launch>
-  <node pkg="yocs_waypoints_navi" type="yocs_waypoints_navi_node" name="waypoints_navi" output="screen">
-    <param name="frequency"    value="5.0"/>
-    <param name="close_enough" value="0.2"/>
-    <param name="goal_timeout" value="60.0"/>
-    
-    <param name="waypoints_file" value="$(find yocs_waypoints_navi)/resources/example_goal.yaml"/>
-    
-    <!-- Remap from RViz tools published topics -->
-    <remap from="waypoints"  to="clicked_point"/>
-    <remap from="final_goal" to="move_base_simple/goal"/>
+  <arg name="frequency"     default="5.0"/>
+  <arg name="close_enough"  default="0.2"/>
+  <arg name="goal_timeout"  default="60.0"/>
+  
+  <node pkg="yocs_waypoints_navi" type="yocs_waypoints_navi_node" name="waypoints_navi">
+    <param name="frequency"    value="$(arg frequency)"/>
+    <param name="close_enough" value="$(arg close_enough)"/>
+    <param name="goal_timeout" value="$(arg goal_timeout)"/>
   </node>
 </launch>
