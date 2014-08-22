@@ -3,19 +3,7 @@
  *   https://raw.github.com/yujinrobot/yujin_ocs/license/LICENSE
  */
 
-#include <tf/tf.h>
-#include <tf/transform_listener.h>
-#include <ros/ros.h>
-#include <geometry_msgs/PointStamped.h>
-#include <move_base_msgs/MoveBaseAction.h>
-#include <actionlib/client/simple_action_client.h>
-#include <yocs_math_toolkit/common.hpp>
-#include <yocs_math_toolkit/geometry.hpp>
-#include <yocs_msgs/NavigationControl.h>
-#include <yocs_msgs/NavigationControlStatus.h>
-#include <yocs_msgs/TrajectoryList.h>
-#include <yocs_msgs/WaypointList.h>
-
+#include "yocs_waypoints_navi/waypoints_navi.hpp"
 
 /*
  * TODO
@@ -23,231 +11,237 @@
  *  * add RViz interface to yocs_waypoint_provider
  */
 
-class WaypointsGoalNode
+namespace yocs
 {
-public:
-  WaypointsGoalNode() : mode_(NONE),
-                        state_(IDLE),
-                        idle_status_update_sent_(false),
-                        move_base_ac_("move_base", true)
-  {}
 
-  bool init()
+WaypointsGoalNode::WaypointsGoalNode() : mode_(NONE),
+                                         state_(IDLE),
+                                         frequency_(5), // 5 hz
+                                         close_enough_(0.1), // 10 cm
+                                         goal_timeout_(60.0), // 60 sec
+                                         idle_status_update_sent_(false),
+                                         move_base_ac_("move_base", true)
+{}
+
+WaypointsGoalNode::~WaypointsGoalNode()
+{}
+
+bool WaypointsGoalNode::init()
+{
+  ros::NodeHandle nh;
+  ros::NodeHandle pnh("~");
+
+  pnh.param("frequency",      frequency_,     1.0);
+  pnh.param("close_enough",   close_enough_,  0.3);  // close enough to next waypoint
+  pnh.param("goal_timeout",   goal_timeout_, 30.0);  // maximum time to reach a waypoint
+  pnh.param("robot_frame",    robot_frame_,    std::string("/base_footprint"));
+  pnh.param("world_frame",    world_frame_,    std::string("/map"));
+
+  // Wait for the move_base action servers to come up
+  ros::Time t0 = ros::Time::now();
+  double timeout = 10.0;
+
+  // reset goal way points
+  waypoints_.clear();
+  waypoints_it_ = waypoints_.end();
+
+  while ((move_base_ac_.waitForServer(ros::Duration(1.0)) == false) && (ros::ok() == true))
   {
-    ros::NodeHandle nh;
-    ros::NodeHandle pnh("~");
+    if ((ros::Time::now() - t0).toSec() > timeout/2.0)
+      ROS_WARN_THROTTLE(3, "Waiting for move_base action server to come up...");
 
-    pnh.param("frequency",      frequency_,     1.0);
-    pnh.param("close_enough",   close_enough_,  0.3);  // close enough to next waypoint
-    pnh.param("goal_timeout",   goal_timeout_, 30.0);  // maximum time to reach a waypoint
-    pnh.param("robot_frame",    robot_frame_,    std::string("/base_footprint"));
-    pnh.param("world_frame",    world_frame_,    std::string("/map"));
-
-    // Wait for the move_base action servers to come up
-    ros::Time t0 = ros::Time::now();
-    double timeout = 10.0;
-
-    // reset goal way points
-    waypoints_.clear();
-    waypoints_it_ = waypoints_.end();
-
-    while ((move_base_ac_.waitForServer(ros::Duration(1.0)) == false) && (ros::ok() == true))
+    if ((ros::Time::now() - t0).toSec() > timeout)
     {
-      if ((ros::Time::now() - t0).toSec() > timeout/2.0)
-        ROS_WARN_THROTTLE(3, "Waiting for move_base action server to come up...");
-
-      if ((ros::Time::now() - t0).toSec() > timeout)
-      {
-        ROS_ERROR("Timeout while waiting for move_base action server to come up");
-        return false;
-      }
+      ROS_ERROR("Timeout while waiting for move_base action server to come up");
+      return false;
     }
-    waypoints_sub_  = nh.subscribe("waypoints",  1, &WaypointsGoalNode::waypointsCB, this);
-    trajectories_sub_  = nh.subscribe("trajectories",  1, &WaypointsGoalNode::trajectoriesCB, this);
-    nav_ctrl_sub_  = pnh.subscribe("nav_ctrl", 1, &WaypointsGoalNode::navCtrlCB, this);
-    status_pub_  = pnh.advertise<yocs_msgs::NavigationControlStatus>("nav_ctrl_status", 1, true);
-
-    return true;
   }
+  waypoints_sub_  = nh.subscribe("waypoints",  1, &WaypointsGoalNode::waypointsCB, this);
+  trajectories_sub_  = nh.subscribe("trajectories",  1, &WaypointsGoalNode::trajectoriesCB, this);
+  nav_ctrl_sub_  = pnh.subscribe("nav_ctrl", 1, &WaypointsGoalNode::navCtrlCB, this);
+  status_pub_  = pnh.advertise<yocs_msgs::NavigationControlStatus>("nav_ctrl_status", 1, true);
 
-  void waypointsCB(const yocs_msgs::WaypointList::ConstPtr& wps)
-  {
-    wp_list_ = *wps;
-    ROS_INFO_STREAM("Received " << wp_list_.waypoints.size() << " way points.");
-  }
+  return true;
+}
 
-  void trajectoriesCB(const yocs_msgs::TrajectoryList::ConstPtr& trajs)
-  {
-    traj_list_ = *trajs;
-    ROS_INFO_STREAM("Received " << traj_list_.trajectories.size() << " trajectories.");
-  }
+void WaypointsGoalNode::waypointsCB(const yocs_msgs::WaypointList::ConstPtr& wps)
+{
+  wp_list_ = *wps;
+  ROS_INFO_STREAM("Received " << wp_list_.waypoints.size() << " way points.");
+}
 
-  void navCtrlCB(const yocs_msgs::NavigationControl::ConstPtr& nav_ctrl)
+void WaypointsGoalNode::trajectoriesCB(const yocs_msgs::TrajectoryList::ConstPtr& trajs)
+{
+  traj_list_ = *trajs;
+  ROS_INFO_STREAM("Received " << traj_list_.trajectories.size() << " trajectories.");
+}
+
+void WaypointsGoalNode::navCtrlCB(const yocs_msgs::NavigationControl::ConstPtr& nav_ctrl)
+{
+  if (nav_ctrl->control == yocs_msgs::NavigationControl::STOP)
   {
-    if (nav_ctrl->control == yocs_msgs::NavigationControl::STOP)
+    if ((state_ == START) || (state_ == ACTIVE))
     {
-      if ((state_ == START) || (state_ == ACTIVE))
-      {
-        ROS_INFO_STREAM("Stopping current execution ...");
-        cancelAllGoals();
-        resetWaypoints();
-        ROS_INFO_STREAM("Current execution stopped.");
-        idle_status_update_sent_ = false;
-        state_ = IDLE;
-      }
-      else
-      {
-        ROS_WARN_STREAM("Cannot stop way point/trajectory execution, because nothing is being executed.");
-      }
+      ROS_INFO_STREAM("Stopping current execution ...");
+      cancelAllGoals();
+      resetWaypoints();
+      ROS_INFO_STREAM("Current execution stopped.");
+      idle_status_update_sent_ = false;
+      state_ = IDLE;
     }
-    else if ((nav_ctrl->control == yocs_msgs::NavigationControl::START))
+    else
     {
-      if ((state_ == IDLE) || (state_ == COMPLETED))
+      ROS_WARN_STREAM("Cannot stop way point/trajectory execution, because nothing is being executed.");
+    }
+  }
+  else if ((nav_ctrl->control == yocs_msgs::NavigationControl::START))
+  {
+    if ((state_ == IDLE) || (state_ == COMPLETED))
+    {
+      // If provided goal is among the way points or trajectories, add the way point(s) to the goal way point list
+      bool goal_found = false;
+      for (unsigned int wp = 0; wp < wp_list_.waypoints.size(); ++wp)
       {
-        // If provided goal is among the way points or trajectories, add the way point(s) to the goal way point list
-        bool goal_found = false;
-        for (unsigned int wp = 0; wp < wp_list_.waypoints.size(); ++wp)
+        if (nav_ctrl->goal_name == wp_list_.waypoints[wp].name)
         {
-          if (nav_ctrl->goal_name == wp_list_.waypoints[wp].name)
+          geometry_msgs::PointStamped point;
+          point.header = wp_list_.waypoints[wp].header;
+          point.point = wp_list_.waypoints[wp].pose.position;
+          waypoints_.push_back(point);
+          waypoints_it_ = waypoints_.begin();
+          goal_found = true;
+          ROS_INFO_STREAM("Prepared to navigate to way point '" << nav_ctrl->goal_name << "'.");
+          continue;
+        }
+      }
+      if (!goal_found)
+      {
+        for (unsigned int traj = 0; traj < traj_list_.trajectories.size(); ++traj)
+        {
+          if (nav_ctrl->goal_name == traj_list_.trajectories[traj].name)
           {
-            geometry_msgs::PointStamped point;
-            point.header = wp_list_.waypoints[wp].header;
-            point.point = wp_list_.waypoints[wp].pose.position;
-            waypoints_.push_back(point);
+            for (unsigned int wp = 0; wp < traj_list_.trajectories[traj].waypoints.size(); ++wp)
+            {
+              geometry_msgs::PointStamped point;
+              point.header = traj_list_.trajectories[traj].waypoints[wp].header;
+              point.point = traj_list_.trajectories[traj].waypoints[wp].pose.position;
+              waypoints_.push_back(point);
+            }
             waypoints_it_ = waypoints_.begin();
             goal_found = true;
-            ROS_INFO_STREAM("Prepared to navigate to way point '" << nav_ctrl->goal_name << "'.");
-            continue;
+            ROS_INFO_STREAM("Prepared to navigate along the trajectory '" << nav_ctrl->goal_name << "'.");
+            ROS_INFO_STREAM("# of way points = " << waypoints_.size());
           }
         }
-        if (!goal_found)
-        {
-          for (unsigned int traj = 0; traj < traj_list_.trajectories.size(); ++traj)
-          {
-            if (nav_ctrl->goal_name == traj_list_.trajectories[traj].name)
-            {
-              for (unsigned int wp = 0; wp < traj_list_.trajectories[traj].waypoints.size(); ++wp)
-              {
-                geometry_msgs::PointStamped point;
-                point.header = traj_list_.trajectories[traj].waypoints[wp].header;
-                point.point = traj_list_.trajectories[traj].waypoints[wp].pose.position;
-                waypoints_.push_back(point);
-              }
-              waypoints_it_ = waypoints_.begin();
-              goal_found = true;
-              ROS_INFO_STREAM("Prepared to navigate along the trajectory '" << nav_ctrl->goal_name << "'.");
-              ROS_INFO_STREAM("# of way points = " << waypoints_.size());
-            }
-          }
-        }
-        if (goal_found)
-        {
-          state_ = START;
-          mode_  = GOAL;
-        }
-        else
-        {
-          ROS_WARN_STREAM("Could not find provided way point or trajectory.");
-        }
+      }
+      if (goal_found)
+      {
+        state_ = START;
+        mode_  = GOAL;
       }
       else
       {
-        ROS_WARN_STREAM("Cannot start way point/trajectory execution, because navigator is currently active. "
-                        << "Please stop current activity first.");
+        ROS_WARN_STREAM("Could not find provided way point or trajectory.");
       }
     }
     else
     {
-      // TODO: handle PAUSE
-      ROS_WARN_STREAM("'Pause' not yet implemented.");
+      ROS_WARN_STREAM("Cannot start way point/trajectory execution, because navigator is currently active. "
+                      << "Please stop current activity first.");
     }
   }
-
-  bool cancelAllGoals(double timeout = 2.0)
+  else
   {
-    actionlib::SimpleClientGoalState goal_state = move_base_ac_.getState();
-    if ((goal_state != actionlib::SimpleClientGoalState::ACTIVE) &&
-        (goal_state != actionlib::SimpleClientGoalState::PENDING) &&
-        (goal_state != actionlib::SimpleClientGoalState::RECALLED) &&
-        (goal_state != actionlib::SimpleClientGoalState::PREEMPTED))
-    {
-      // We cannot cancel a REJECTED, ABORTED, SUCCEEDED or LOST goal
-      ROS_WARN("Cannot cancel move base goal, as it has %s state!", goal_state.toString().c_str());
-      return true;
-    }
+    // TODO: handle PAUSE
+    ROS_WARN_STREAM("'Pause' not yet implemented.");
+  }
+}
 
-    ROS_INFO("Canceling move base goal with %s state...", goal_state.toString().c_str());
-    move_base_ac_.cancelAllGoals();
-    if (move_base_ac_.waitForResult(ros::Duration(timeout)) == false)
-    {
-      ROS_WARN("Cancel move base goal didn't finish after %.2f seconds: %s",
-               timeout, goal_state.toString().c_str());
-      return false;
-    }
-
-    ROS_INFO("Cancel move base goal succeed. New state is %s", goal_state.toString().c_str());
+bool WaypointsGoalNode::cancelAllGoals(double timeout)
+{
+  actionlib::SimpleClientGoalState goal_state = move_base_ac_.getState();
+  if ((goal_state != actionlib::SimpleClientGoalState::ACTIVE) &&
+      (goal_state != actionlib::SimpleClientGoalState::PENDING) &&
+      (goal_state != actionlib::SimpleClientGoalState::RECALLED) &&
+      (goal_state != actionlib::SimpleClientGoalState::PREEMPTED))
+  {
+    // We cannot cancel a REJECTED, ABORTED, SUCCEEDED or LOST goal
+    ROS_WARN("Cannot cancel move base goal, as it has %s state!", goal_state.toString().c_str());
     return true;
   }
 
-  void resetWaypoints()
+  ROS_INFO("Canceling move base goal with %s state...", goal_state.toString().c_str());
+  move_base_ac_.cancelAllGoals();
+  if (move_base_ac_.waitForResult(ros::Duration(timeout)) == false)
   {
-    ROS_DEBUG("Full reset: clear markers, delete waypoints and goal and set state to IDLE");
-    waypoints_.clear();
-    waypoints_it_ = waypoints_.end();
-    goal_  = NOWHERE;
-    mode_  = NONE;
+    ROS_WARN("Cancel move base goal didn't finish after %.2f seconds: %s",
+             timeout, goal_state.toString().c_str());
+    return false;
   }
 
-  void spin()
+  ROS_INFO("Cancel move base goal succeed. New state is %s", goal_state.toString().c_str());
+  return true;
+}
+
+void WaypointsGoalNode::resetWaypoints()
+{
+  ROS_DEBUG("Full reset: clear markers, delete waypoints and goal and set state to IDLE");
+  waypoints_.clear();
+  waypoints_it_ = waypoints_.end();
+  goal_  = NOWHERE;
+  mode_  = NONE;
+}
+
+void WaypointsGoalNode::spin()
+{
+  move_base_msgs::MoveBaseGoal mb_goal;
+
+  ros::Rate rate(frequency_);
+
+  while (ros::ok())
   {
-    move_base_msgs::MoveBaseGoal mb_goal;
+    rate.sleep();
+    ros::spinOnce();
 
-    ros::Rate rate(frequency_);
-
-    while (ros::ok())
+    if (state_ == START)
     {
-      rate.sleep();
-      ros::spinOnce();
-
-      if (state_ == START)
+      if (mode_ == LOOP)
       {
-        if (mode_ == LOOP)
+        if (waypoints_it_ == waypoints_.end())
         {
-          if (waypoints_it_ == waypoints_.end())
-          {
-            waypoints_it_ = waypoints_.begin();
-          }
+          waypoints_it_ = waypoints_.begin();
         }
+      }
 
-        if (waypoints_it_ < waypoints_.end())
-        {
-          mb_goal.target_pose.header.stamp = ros::Time::now();
-          mb_goal.target_pose.header.frame_id = world_frame_;
-          mb_goal.target_pose.pose.position = waypoints_it_->point;
-          mb_goal.target_pose.pose.orientation = tf::createQuaternionMsgFromYaw(0.0);  // TODO use the heading from robot loc to next (front)
+      if (waypoints_it_ < waypoints_.end())
+      {
+        mb_goal.target_pose.header.stamp = ros::Time::now();
+        mb_goal.target_pose.header.frame_id = world_frame_;
+        mb_goal.target_pose.pose.position = waypoints_it_->point;
+        mb_goal.target_pose.pose.orientation = tf::createQuaternionMsgFromYaw(0.0);  // TODO use the heading from robot loc to next (front)
 
-          ROS_INFO("New goal: %.2f, %.2f, %.2f",
-                   mb_goal.target_pose.pose.position.x, mb_goal.target_pose.pose.position.y,
-                   tf::getYaw(mb_goal.target_pose.pose.orientation));
-          move_base_ac_.sendGoal(mb_goal);
+        ROS_INFO("New goal: %.2f, %.2f, %.2f",
+                 mb_goal.target_pose.pose.position.x, mb_goal.target_pose.pose.position.y,
+                 tf::getYaw(mb_goal.target_pose.pose.orientation));
+        move_base_ac_.sendGoal(mb_goal);
 
-          yocs_msgs::NavigationControlStatus msg;
-          msg.status = yocs_msgs::NavigationControlStatus::RUNNING;
-          status_pub_.publish(msg);
+        yocs_msgs::NavigationControlStatus msg;
+        msg.status = yocs_msgs::NavigationControlStatus::RUNNING;
+        status_pub_.publish(msg);
 
-          state_ = ACTIVE;
-        }
-        else
-        {
-          ROS_ERROR_STREAM("Cannot start execution. Already at the last way point.");
-          idle_status_update_sent_ = false;
-          state_ = IDLE;
-        }
+        state_ = ACTIVE;
+      }
+      else
+      {
+        ROS_ERROR_STREAM("Cannot start execution. Already at the last way point.");
+        idle_status_update_sent_ = false;
+        state_ = IDLE;
+      }
 
-        // TODO: This is a horrible workaround for a problem I cannot solve: send a new goal
-        // when the previous one has been cancelled return immediately with succeeded state
-        //
-        // Marcus: Don't understand this case (yet). Commenting out until we need it.
+      // TODO: This is a horrible workaround for a problem I cannot solve: send a new goal
+      // when the previous one has been cancelled return immediately with succeeded state
+      //
+      // Marcus: Don't understand this case (yet). Commenting out until we need it.
 //        int times_sent = 0;
 //        while ((move_base_ac_.waitForResult(ros::Duration(0.1)) == true) &&
 //               (move_base_ac_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED))
@@ -259,190 +253,139 @@ public:
 //        {
 //          ROS_WARN("Again the strange case of instantaneous goals... (goal sent %d times)", times_sent);
 //        }
-      }
-      else if (state_ == ACTIVE)
-      {
-        actionlib::SimpleClientGoalState goal_state = move_base_ac_.getState();
+    }
+    else if (state_ == ACTIVE)
+    {
+      actionlib::SimpleClientGoalState goal_state = move_base_ac_.getState();
 
-        // We are still pursuing a goal...
-        if ((goal_state == actionlib::SimpleClientGoalState::ACTIVE) ||
-            (goal_state == actionlib::SimpleClientGoalState::PENDING) ||
-            (goal_state == actionlib::SimpleClientGoalState::RECALLED) ||
-            (goal_state == actionlib::SimpleClientGoalState::PREEMPTED))
+      // We are still pursuing a goal...
+      if ((goal_state == actionlib::SimpleClientGoalState::ACTIVE) ||
+          (goal_state == actionlib::SimpleClientGoalState::PENDING) ||
+          (goal_state == actionlib::SimpleClientGoalState::RECALLED) ||
+          (goal_state == actionlib::SimpleClientGoalState::PREEMPTED))
+      {
+        // check if we timed out
+        if ((ros::Time::now() - mb_goal.target_pose.header.stamp).toSec() >= goal_timeout_)
         {
-          // check if we timed out
-          if ((ros::Time::now() - mb_goal.target_pose.header.stamp).toSec() >= goal_timeout_)
-          {
-            ROS_WARN("Cannot reach goal after %.2f seconds; request a new one (current state is %s)",
-                      goal_timeout_, move_base_ac_.getState().toString().c_str());
-            if (waypoints_it_ < (waypoints_.end() - 1))
-            {
-              ROS_INFO_STREAM("Requesting next way point.");
-              waypoints_it_++;
-              state_ = START;
-            }
-            else
-            {
-              ROS_INFO_STREAM("No more way points to go to.");
-              state_ = COMPLETED;
-            }
-          }
-          // When close enough to current goal (except for the final one!), go for the
-          // next waypoint, so we avoid the final slow approach and subgoal obsession
+          ROS_WARN("Cannot reach goal after %.2f seconds; request a new one (current state is %s)",
+                    goal_timeout_, move_base_ac_.getState().toString().c_str());
           if (waypoints_it_ < (waypoints_.end() - 1))
           {
-            tf::StampedTransform robot_gb, goal_gb;
-            try
-            {
-              tf_listener_.lookupTransform(world_frame_, robot_frame_, ros::Time(0.0), robot_gb);
-            }
-            catch (tf::TransformException& e)
-            {
-              ROS_WARN("Cannot get tf %s -> %s: %s", world_frame_.c_str(), robot_frame_.c_str(), e.what());
-              continue;
-            }
+            ROS_INFO_STREAM("Requesting next way point.");
+            waypoints_it_++;
+            state_ = START;
+          }
+          else
+          {
+            ROS_INFO_STREAM("No more way points to go to.");
+            state_ = COMPLETED;
+          }
+        }
+        // When close enough to current goal (except for the final one!), go for the
+        // next waypoint, so we avoid the final slow approach and subgoal obsession
+        if (waypoints_it_ < (waypoints_.end() - 1))
+        {
+          tf::StampedTransform robot_gb, goal_gb;
+          try
+          {
+            tf_listener_.lookupTransform(world_frame_, robot_frame_, ros::Time(0.0), robot_gb);
+          }
+          catch (tf::TransformException& e)
+          {
+            ROS_WARN("Cannot get tf %s -> %s: %s", world_frame_.c_str(), robot_frame_.c_str(), e.what());
+            continue;
+          }
 
-            mtk::pose2tf(mb_goal.target_pose, goal_gb);
-            double distance = mtk::distance2D(robot_gb, goal_gb);
-            if (distance <= close_enough_)
-            {
-              waypoints_it_++;
-              state_ = START;
-              ROS_INFO("Close enough to current goal (%.2f <= %.2f m).", distance, close_enough_);
-              ROS_INFO_STREAM("Requesting next way point.");
-            }
-            else
-            {
-              // keep going until get close enough
-            }
+          mtk::pose2tf(mb_goal.target_pose, goal_gb);
+          double distance = mtk::distance2D(robot_gb, goal_gb);
+          if (distance <= close_enough_)
+          {
+            waypoints_it_++;
+            state_ = START;
+            ROS_INFO("Close enough to current goal (%.2f <= %.2f m).", distance, close_enough_);
+            ROS_INFO_STREAM("Requesting next way point.");
           }
           else
           {
-            // keep going, since we approaching last way point
+            // keep going until get close enough
           }
         }
-        else // actionlib::SimpleClientGoalState::SUCCEEDED, REJECTED, ABORTED, LOST
+        else
         {
-          if (move_base_ac_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
+          // keep going, since we approaching last way point
+        }
+      }
+      else // actionlib::SimpleClientGoalState::SUCCEEDED, REJECTED, ABORTED, LOST
+      {
+        if (move_base_ac_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
+        {
+          ROS_INFO("Go to goal successfully completed: %.2f, %.2f, %.2f",
+                   mb_goal.target_pose.pose.position.x, mb_goal.target_pose.pose.position.y,
+                   tf::getYaw(mb_goal.target_pose.pose.orientation));
+          if (waypoints_it_ < (waypoints_.end() - 1))
           {
-            ROS_INFO("Go to goal successfully completed: %.2f, %.2f, %.2f",
-                     mb_goal.target_pose.pose.position.x, mb_goal.target_pose.pose.position.y,
-                     tf::getYaw(mb_goal.target_pose.pose.orientation));
-            if (waypoints_it_ < (waypoints_.end() - 1))
-            {
-              ROS_INFO_STREAM("Requesting next way point.");
-              waypoints_it_++;
-              state_ = START;
-            }
-            else
-            {
-              ROS_INFO_STREAM("Reached final way point.");
-              state_ = COMPLETED;
-            }
+            ROS_INFO_STREAM("Requesting next way point.");
+            waypoints_it_++;
+            state_ = START;
           }
           else
           {
-            ROS_ERROR("Go to goal failed: %s.", move_base_ac_.getState().toString().c_str());
-            if (waypoints_it_ < (waypoints_.end() - 1))
-            {
-              ROS_INFO_STREAM("Requesting next way point.");
-              waypoints_it_++;
-              state_ = START;
-            }
-            else
-            {
-              ROS_INFO_STREAM("No more way points to go to.");
-              state_ = COMPLETED;
-            }
+            ROS_INFO_STREAM("Reached final way point.");
+            state_ = COMPLETED;
           }
         }
-      }
-      else if(state_ == COMPLETED)
-      {
-        // publish update
-        yocs_msgs::NavigationControlStatus msg;
-        msg.status = yocs_msgs::NavigationControlStatus::COMPLETED;
-        status_pub_.publish(msg);
-        resetWaypoints();
-        idle_status_update_sent_ = false;
-        state_ = IDLE;
-      }
-      else // IDLE
-      {
-        if (!idle_status_update_sent_)
+        else
         {
-          yocs_msgs::NavigationControlStatus msg;
-          msg.status = yocs_msgs::NavigationControlStatus::IDLING;
-          status_pub_.publish(msg);
-          idle_status_update_sent_ = true;
+          ROS_ERROR("Go to goal failed: %s.", move_base_ac_.getState().toString().c_str());
+          if (waypoints_it_ < (waypoints_.end() - 1))
+          {
+            ROS_INFO_STREAM("Requesting next way point.");
+            waypoints_it_++;
+            state_ = START;
+          }
+          else
+          {
+            ROS_INFO_STREAM("No more way points to go to.");
+            state_ = COMPLETED;
+          }
         }
       }
     }
+    else if(state_ == COMPLETED)
+    {
+      // publish update
+      yocs_msgs::NavigationControlStatus msg;
+      msg.status = yocs_msgs::NavigationControlStatus::COMPLETED;
+      status_pub_.publish(msg);
+      resetWaypoints();
+      idle_status_update_sent_ = false;
+      state_ = IDLE;
+    }
+    else // IDLE
+    {
+      if (!idle_status_update_sent_)
+      {
+        yocs_msgs::NavigationControlStatus msg;
+        msg.status = yocs_msgs::NavigationControlStatus::IDLING;
+        status_pub_.publish(msg);
+        idle_status_update_sent_ = true;
+      }
+    }
   }
-
-private:
-  const geometry_msgs::PoseStamped NOWHERE;
-
-  enum { NONE = 0,
-         GOAL,
-         LOOP
-       } mode_;
-
-  enum { IDLE = 0,
-         START,
-         ACTIVE,
-         COMPLETED
-       } state_;
-
-  double      frequency_;
-  double      close_enough_;
-  double      goal_timeout_;
-  std::string robot_frame_;
-  std::string world_frame_;
-
-  std::vector<geometry_msgs::PointStamped>           waypoints_;
-  std::vector<geometry_msgs::PointStamped>::iterator waypoints_it_;
-
-  geometry_msgs::PoseStamped goal_;
-
-  yocs_msgs::WaypointList wp_list_;
-  yocs_msgs::TrajectoryList traj_list_;
-
-  tf::TransformListener tf_listener_;
-  ros::Subscriber    waypoints_sub_;
-  ros::Subscriber    trajectories_sub_;
-
-  ros::Subscriber nav_ctrl_sub_;
-  ros::Publisher  status_pub_;
-  bool idle_status_update_sent_;
-
-  actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> move_base_ac_;
-
-  bool equals(const geometry_msgs::PoseStamped& a, const geometry_msgs::PoseStamped& b)
-  {
-    return ((a.pose.position.x == b.pose.position.x) &&
-            (a.pose.position.y == b.pose.position.y) &&
-            (a.pose.position.z == b.pose.position.z));
-    // TODO make decent, with rotation (tk::minAngle, I think) and frame_id and put in math toolkit
-  }
-
-  bool equals(const geometry_msgs::Point& a, const geometry_msgs::Point& b)
-  {
-    return ((a.x == b.x) && (a.y == b.y) && (a.z == b.z));
-  }
-};
-
-int main(int argc, char **argv)
-{
-  ros::init(argc, argv, "waypoints_navi");
-
-  WaypointsGoalNode eg;
-  if (eg.init() == false)
-  {
-    ROS_ERROR("%s initialization failed", ros::this_node::getName().c_str());
-    return -1;
-  }
-  ROS_INFO("%s initialized", ros::this_node::getName().c_str());
-  eg.spin();
-  return 0;
 }
+
+bool WaypointsGoalNode::equals(const geometry_msgs::PoseStamped& a, const geometry_msgs::PoseStamped& b)
+{
+  return ((a.pose.position.x == b.pose.position.x) &&
+          (a.pose.position.y == b.pose.position.y) &&
+          (a.pose.position.z == b.pose.position.z));
+  // TODO make decent, with rotation (tk::minAngle, I think) and frame_id and put in math toolkit
+}
+
+bool WaypointsGoalNode::equals(const geometry_msgs::Point& a, const geometry_msgs::Point& b)
+{
+  return ((a.x == b.x) && (a.y == b.y) && (a.z == b.z));
+}
+
+} // namespace yocs
+

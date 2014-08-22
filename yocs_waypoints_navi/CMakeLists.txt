@@ -14,8 +14,10 @@ find_package(catkin REQUIRED COMPONENTS actionlib
 
 catkin_package()
 
-include_directories(${catkin_INCLUDE_DIRS})
-add_executable(${PROJECT_NAME}_node src/waypoints_navi.cpp)
+include_directories(include
+                    ${catkin_INCLUDE_DIRS})
+add_executable(${PROJECT_NAME}_node src/waypoints_navi.cpp
+                                    src/main.cpp)
 target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES}
                                            ${Boost_LIBRARIES})
 
