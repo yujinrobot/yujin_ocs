@@ -88,6 +88,7 @@ void WaypointsGoalNode::navCtrlCB(const yocs_msgs::NavigationControl::ConstPtr& 
       ROS_INFO_STREAM("Current execution stopped.");
       idle_status_update_sent_ = false;
       state_ = IDLE;
+      publishStatusUpdate(yocs_msgs::NavigationControlStatus::CANCELLED);
     }
     else
     {
@@ -98,16 +99,17 @@ void WaypointsGoalNode::navCtrlCB(const yocs_msgs::NavigationControl::ConstPtr& 
   {
     if ((state_ == IDLE) || (state_ == COMPLETED))
     {
+      resetWaypoints();
       // If provided goal is among the way points or trajectories, add the way point(s) to the goal way point list
       bool goal_found = false;
       for (unsigned int wp = 0; wp < wp_list_.waypoints.size(); ++wp)
       {
         if (nav_ctrl->goal_name == wp_list_.waypoints[wp].name)
         {
-          geometry_msgs::PointStamped point;
-          point.header = wp_list_.waypoints[wp].header;
-          point.point = wp_list_.waypoints[wp].pose.position;
-          waypoints_.push_back(point);
+          geometry_msgs::PoseStamped pose;
+          pose.header = wp_list_.waypoints[wp].header;
+          pose.pose = wp_list_.waypoints[wp].pose;
+          waypoints_.push_back(pose);
           waypoints_it_ = waypoints_.begin();
           goal_found = true;
           ROS_INFO_STREAM("Prepared to navigate to way point '" << nav_ctrl->goal_name << "'.");
@@ -122,10 +124,10 @@ void WaypointsGoalNode::navCtrlCB(const yocs_msgs::NavigationControl::ConstPtr& 
           {
             for (unsigned int wp = 0; wp < traj_list_.trajectories[traj].waypoints.size(); ++wp)
             {
-              geometry_msgs::PointStamped point;
-              point.header = traj_list_.trajectories[traj].waypoints[wp].header;
-              point.point = traj_list_.trajectories[traj].waypoints[wp].pose.position;
-              waypoints_.push_back(point);
+              geometry_msgs::PoseStamped pose;
+              pose.header = traj_list_.trajectories[traj].waypoints[wp].header;
+              pose.pose = traj_list_.trajectories[traj].waypoints[wp].pose;
+              waypoints_.push_back(pose);
             }
             waypoints_it_ = waypoints_.begin();
             goal_found = true;
@@ -217,17 +219,15 @@ void WaypointsGoalNode::spin()
       {
         mb_goal.target_pose.header.stamp = ros::Time::now();
         mb_goal.target_pose.header.frame_id = world_frame_;
-        mb_goal.target_pose.pose.position = waypoints_it_->point;
-        mb_goal.target_pose.pose.orientation = tf::createQuaternionMsgFromYaw(0.0);  // TODO use the heading from robot loc to next (front)
+        mb_goal.target_pose.pose = waypoints_it_->pose;
+//        mb_goal.target_pose.pose.orientation = tf::createQuaternionMsgFromYaw(0.0);  // TODO use the heading from robot loc to next (front)
 
         ROS_INFO("New goal: %.2f, %.2f, %.2f",
                  mb_goal.target_pose.pose.position.x, mb_goal.target_pose.pose.position.y,
                  tf::getYaw(mb_goal.target_pose.pose.orientation));
         move_base_ac_.sendGoal(mb_goal);
 
-        yocs_msgs::NavigationControlStatus msg;
-        msg.status = yocs_msgs::NavigationControlStatus::RUNNING;
-        status_pub_.publish(msg);
+        publishStatusUpdate(yocs_msgs::NavigationControlStatus::RUNNING);
 
         state_ = ACTIVE;
       }
@@ -354,10 +354,7 @@ void WaypointsGoalNode::spin()
     else if(state_ == COMPLETED)
     {
       // publish update
-      yocs_msgs::NavigationControlStatus msg;
-      msg.status = yocs_msgs::NavigationControlStatus::COMPLETED;
-      status_pub_.publish(msg);
-      resetWaypoints();
+      publishStatusUpdate(yocs_msgs::NavigationControlStatus::COMPLETED);
       idle_status_update_sent_ = false;
       state_ = IDLE;
     }
@@ -365,9 +362,7 @@ void WaypointsGoalNode::spin()
     {
       if (!idle_status_update_sent_)
       {
-        yocs_msgs::NavigationControlStatus msg;
-        msg.status = yocs_msgs::NavigationControlStatus::IDLING;
-        status_pub_.publish(msg);
+        publishStatusUpdate(yocs_msgs::NavigationControlStatus::IDLING);
         idle_status_update_sent_ = true;
       }
     }
@@ -385,6 +380,51 @@ bool WaypointsGoalNode::equals(const geometry_msgs::PoseStamped& a, const geomet
 bool WaypointsGoalNode::equals(const geometry_msgs::Point& a, const geometry_msgs::Point& b)
 {
   return ((a.x == b.x) && (a.y == b.y) && (a.z == b.z));
+}
+
+void WaypointsGoalNode::publishStatusUpdate(const uint8_t& status)
+{
+  yocs_msgs::NavigationControlStatus msg;
+  if (status == yocs_msgs::NavigationControlStatus::IDLING)
+  {
+    msg.status = yocs_msgs::NavigationControlStatus::IDLING;
+    msg.status_desc = "Idling";
+    status_pub_.publish(msg);
+  }
+  else if (status == yocs_msgs::NavigationControlStatus::RUNNING)
+  {
+    msg.status = yocs_msgs::NavigationControlStatus::RUNNING;
+    msg.status_desc = "Navigating to way point.";
+    status_pub_.publish(msg);
+  }
+  else if (status == yocs_msgs::NavigationControlStatus::PAUSED)
+  {
+    msg.status = yocs_msgs::NavigationControlStatus::PAUSED;
+    msg.status_desc = "Navigation on hold.";
+    status_pub_.publish(msg);
+  }
+  else if (status == yocs_msgs::NavigationControlStatus::COMPLETED)
+  {
+    msg.status = yocs_msgs::NavigationControlStatus::COMPLETED;
+    msg.status_desc = "Reached final destination.";
+    status_pub_.publish(msg);
+  }
+  else if (status == yocs_msgs::NavigationControlStatus::CANCELLED)
+  {
+    msg.status = yocs_msgs::NavigationControlStatus::CANCELLED;
+    msg.status_desc = "Navigation cancelled.";
+    status_pub_.publish(msg);
+  }
+  else if (status == yocs_msgs::NavigationControlStatus::ERROR)
+  {
+    msg.status = yocs_msgs::NavigationControlStatus::ERROR;
+    msg.status_desc = "An error occurred.";
+    status_pub_.publish(msg);
+  }
+  else
+  {
+    ROS_ERROR_STREAM("Cannot publish unknown status updated!");
+  }
 }
 
 } // namespace yocs

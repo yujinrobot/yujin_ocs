@@ -43,10 +43,6 @@ public:
 
   void navCtrlCB(const yocs_msgs::NavigationControl::ConstPtr& nav_ctrl);
 
-  bool cancelAllGoals(double timeout = 2.0);
-
-  void resetWaypoints();
-
   void spin();
 
 private:
@@ -69,8 +65,8 @@ private:
   std::string robot_frame_;
   std::string world_frame_;
 
-  std::vector<geometry_msgs::PointStamped>           waypoints_;
-  std::vector<geometry_msgs::PointStamped>::iterator waypoints_it_;
+  std::vector<geometry_msgs::PoseStamped>           waypoints_;
+  std::vector<geometry_msgs::PoseStamped>::iterator waypoints_it_;
 
   geometry_msgs::PoseStamped goal_;
 
@@ -87,8 +83,15 @@ private:
 
   actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> move_base_ac_;
 
+  bool cancelAllGoals(double timeout = 2.0);
+
+  void resetWaypoints();
+
   bool equals(const geometry_msgs::PoseStamped& a, const geometry_msgs::PoseStamped& b);
+
   bool equals(const geometry_msgs::Point& a, const geometry_msgs::Point& b);
+
+  void publishStatusUpdate(const uint8_t& status);
 };
 
 } // namespace yocs
