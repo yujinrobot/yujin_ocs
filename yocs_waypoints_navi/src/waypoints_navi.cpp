@@ -6,17 +6,22 @@
 #include <tf/tf.h>
 #include <tf/transform_listener.h>
 #include <ros/ros.h>
-//#include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PointStamped.h>
 #include <move_base_msgs/MoveBaseAction.h>
 #include <actionlib/client/simple_action_client.h>
-//#include <visualization_msgs/MarkerArray.h>
 #include <yocs_math_toolkit/common.hpp>
 #include <yocs_math_toolkit/geometry.hpp>
 #include <yocs_msgs/NavigationControl.h>
 #include <yocs_msgs/NavigationControlStatus.h>
 #include <yocs_msgs/TrajectoryList.h>
 #include <yocs_msgs/WaypointList.h>
+
+
+/*
+ * TODO
+ *  * think about how to best visualise the waypoint(s)/trajectory(ies) which are being executed
+ *  * add RViz interface to yocs_waypoint_provider
+ */
 
 class WaypointsGoalNode
 {
@@ -57,67 +62,13 @@ public:
         return false;
       }
     }
-
-//    TODO: think about how to best visualise the waypoint(s)/trajectory(ies) which are being executed
-//    wp_markers_pub_ = nh.advertise<visualization_msgs::MarkerArray>("waypoint_marker", 1, true);
-
-    // TODO: This is part of the RViz interface. Move it to yocs_waypoint_provider
-//    final_goal_sub_ = nh.subscribe("final_goal", 1, &WaypointsGoalNode::finalGoalCB, this);
-//    waypoints_sub_  = nh.subscribe("waypoints",  1, &WaypointsGoalNode::waypointCB, this);
-
     waypoints_sub_  = nh.subscribe("waypoints",  1, &WaypointsGoalNode::waypointsCB, this);
     trajectories_sub_  = nh.subscribe("trajectories",  1, &WaypointsGoalNode::trajectoriesCB, this);
-
     nav_ctrl_sub_  = pnh.subscribe("nav_ctrl", 1, &WaypointsGoalNode::navCtrlCB, this);
     status_pub_  = pnh.advertise<yocs_msgs::NavigationControlStatus>("nav_ctrl_status", 1, true);
 
     return true;
   }
-
-  // TODO: This is part of the RViz interface. Move it to yocs_waypoint_provider
-//  void finalGoalCB(const geometry_msgs::PoseStamped::ConstPtr& goal)
-//  {
-//    if ((state_ > IDLE) && (state_ < COMPLETED))
-//    {
-//      ROS_INFO("Already have a task; cancelling...");
-//      resetWaypoints();
-//      cancelAllGoals();
-//    }
-//    else
-//    {
-//      ROS_INFO("Goal received with %lu waypoints; lets' go!", waypoints_.size());
-//
-//      goal_  = *goal;
-//      mode_  = GOAL;
-//      state_ = START;
-//
-//      waypoints_it_ = waypoints_.begin();
-//    }
-//  }
-
-  // TODO: This is part of the RViz interface. Move it to yocs_waypoint_provider
-//  void waypointCB(const geometry_msgs::PointStamped::ConstPtr& point)
-//  {
-//    if ((state_ > IDLE) && (state_ < COMPLETED))
-//    {
-//      ROS_DEBUG("Already have a task; ignoring additional points");
-//    }
-//    else if ((waypoints_.size() > 1) && (mtk::distance2D(point->point, waypoints_.front().point) < 0.2))
-//    {
-//      // Waypoints loop closed; assume we are in loop mode and start moving
-//      ROS_INFO("Waypoints loop closed with %lu points; lets' go!", waypoints_.size());
-//
-//      mode_  = LOOP;
-//      state_ = START;
-//
-//      waypoints_it_ = waypoints_.begin();
-//    }
-//    else
-//    {
-//      ROS_DEBUG("Waypoint added: %s", mtk::point2str(point->point));
-//      waypoints_.push_back(*point);
-//    }
-//  }
 
   void waypointsCB(const yocs_msgs::WaypointList::ConstPtr& wps)
   {
@@ -241,93 +192,11 @@ public:
   void resetWaypoints()
   {
     ROS_DEBUG("Full reset: clear markers, delete waypoints and goal and set state to IDLE");
-
-//    TODO: think about how to best visualise the waypoint(s)/trajectory(ies) which are being executed
-//    publishMarkers(true);  // clear all markers
-
     waypoints_.clear();
     waypoints_it_ = waypoints_.end();
     goal_  = NOWHERE;
     mode_  = NONE;
   }
-
-//    TODO: think about how to best visualise the waypoint(s)/trajectory(ies) which are being executed
-//  void publishMarkers(bool clear = false)
-//  {
-//    if ((state_ == IDLE) || (wp_markers_pub_.getNumSubscribers() == 0))
-//      return;
-//
-//    visualization_msgs::MarkerArray markers_array;
-//    visualization_msgs::Marker marker, label;
-//
-//    marker.header.frame_id = world_frame_;
-//    marker.header.stamp = ros::Time::now();
-//    marker.scale.x = 0.08;  // scale in meters
-//    marker.scale.y = 0.08;
-//    marker.scale.z = 0.01;
-//    marker.pose.position.z = marker.scale.z/2.0;
-//    marker.color.r = 0.8f;
-//    marker.color.g = 0.2f;
-//    marker.color.b = 0.2f;
-//
-//    int index = 0;
-//    std::vector<geometry_msgs::PointStamped>::iterator it;
-//    for (it = waypoints_.begin(); it != waypoints_.end(); it++)
-//    {
-//      std::stringstream name;
-//      name << "WP " << index;
-//      marker.ns = name.str();
-//      marker.id = index;
-//      marker.pose.position.x = it->point.x;
-//      marker.pose.position.y = it->point.y;
-//      marker.type = visualization_msgs::Marker::CYLINDER;
-//      if ((clear == true) || ((mode_ == GOAL) && (it < waypoints_it_)))  // We are fully reseting waypoints list
-//        marker.action = visualization_msgs::Marker::DELETE;              // or this waypoint has being reached
-//      else
-//        marker.action = visualization_msgs::Marker::ADD;
-//      marker.color.a = (it == waypoints_it_)?1.0f:0.6f; // only next waypoint is solid
-//
-//      label = marker;
-//      label.id = marker.id + 1000000;  // marker id must be unique
-//      label.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-//      label.pose.position.z = marker.pose.position.z + marker.scale.z/2.0 + 0.05; // just above the marker
-//      label.text = marker.ns.substr(3);  // i.e. strlen("WP ")
-//      label.scale.x = 0.1;
-//      label.scale.y = 0.1;
-//      label.scale.z = 0.1;
-//
-//      markers_array.markers.push_back(marker);
-//      markers_array.markers.push_back(label);
-//
-//      index++;
-//    }
-//
-//    if (mode_ == GOAL)
-//    {
-//      marker.ns = "GOAL";
-//      marker.id = 666666;
-//      marker.type = visualization_msgs::Marker::ARROW;
-//      if (clear == true)
-//        marker.action = visualization_msgs::Marker::DELETE;
-//      else
-//        marker.action = visualization_msgs::Marker::ADD;
-//      marker.scale.x = 0.5;   // scale in metres
-//      marker.scale.y = 0.08;  // planar short and wide arrow
-//      marker.scale.z = 0.001;
-//      marker.pose.orientation = goal_.pose.orientation;
-//      marker.pose.position.x = goal_.pose.position.x;
-//      marker.pose.position.y = goal_.pose.position.y;
-//      marker.pose.position.z = 0.0005;
-//      marker.color.r = 0.8f;
-//      marker.color.g = 0.2f;
-//      marker.color.b = 0.2f;
-//      marker.color.a = 1.0f;
-//
-//      markers_array.markers.push_back(marker);
-//    }
-//
-//    wp_markers_pub_.publish(markers_array);
-//  }
 
   void spin()
   {
@@ -339,9 +208,6 @@ public:
     {
       rate.sleep();
       ros::spinOnce();
-
-//    TODO: think about how to best visualise the waypoint(s)/trajectory(ies) which are being executed
-//      publishMarkers();
 
       if (state_ == START)
       {
@@ -543,10 +409,6 @@ private:
   yocs_msgs::TrajectoryList traj_list_;
 
   tf::TransformListener tf_listener_;
-//  TODO: think about how to best visualise the waypoint(s)/trajectory(ies) which are being executed
-//  ros::Publisher     wp_markers_pub_;
-// TODO: This is part of the RViz interface. Move it to yocs_waypoint_provider
-//  ros::Subscriber    final_goal_sub_;
   ros::Subscriber    waypoints_sub_;
   ros::Subscriber    trajectories_sub_;
 
