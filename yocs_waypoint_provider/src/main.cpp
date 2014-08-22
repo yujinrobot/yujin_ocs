@@ -18,6 +18,7 @@ int main(int argc, char** argv)
   ros::NodeHandle n;
   yocs::WaypointProvider* wm;
   yocs_msgs::WaypointList wps;
+  yocs_msgs::TrajectoryList trajs;
   std::string filename;
 
   if(!priv_n.getParam("filename", filename)) {
@@ -25,12 +26,13 @@ int main(int argc, char** argv)
     return -1;
   }
 
-  if(!yocs::loadWaypointListFromYaml(filename, wps)) {
+  if(!yocs::loadWaypointsAndTrajectoriesFromYaml(filename, wps, trajs))
+  {
     ROS_ERROR("Waypoint Provider : Failed to parse yaml[%s]",filename.c_str());
     return -1;
   }
 
-  wm = new yocs::WaypointProvider(n, wps);
+  wm = new yocs::WaypointProvider(n, wps, trajs);
 
   ROS_INFO("Waypoint Provider : Initialized");
   wm->spin();
