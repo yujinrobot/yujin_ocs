@@ -96,11 +96,12 @@ void CmdVelMuxNodelet::onInit()
 void CmdVelMuxNodelet::reloadConfiguration(yocs_cmd_vel_mux::reloadConfig &config, uint32_t unused_level)
 {
   std::string yaml_cfg_file;
-  ros::NodeHandle &nh = this->getPrivateNodeHandle();
+  ros::NodeHandle &nh = this->getNodeHandle();
+  ros::NodeHandle &nh_priv = this->getPrivateNodeHandle();
   if( config.yaml_cfg_file == "" )
   {
     // typically fired on startup, so look for a parameter to set a default
-    nh.getParam("yaml_cfg_file", yaml_cfg_file);
+    nh_priv.getParam("yaml_cfg_file", yaml_cfg_file);
   }
   else
   {
@@ -158,11 +159,11 @@ void CmdVelMuxNodelet::reloadConfiguration(yocs_cmd_vel_mux::reloadConfig &confi
   for (unsigned int i = 0; i < cmd_vel_sub.size(); i++)
   {
     cmd_vel_sub[i].subs =
-        nh.subscribe<geometry_msgs::Twist>(cmd_vel_sub[i].topic, 10, CmdVelFunctor(i, this));
+        nh_priv.subscribe<geometry_msgs::Twist>(cmd_vel_sub[i].topic, 10, CmdVelFunctor(i, this));
 
     // Create (stopped by now) a one-shot timer for every subscriber
     cmd_vel_sub[i].timer =
-        nh.createTimer(ros::Duration(cmd_vel_sub[i].timeout), TimerFunctor(i, this), true, false);
+        nh_priv.createTimer(ros::Duration(cmd_vel_sub[i].timeout), TimerFunctor(i, this), true, false);
 
     NODELET_DEBUG("CmdVelMux : subscribed to '%s' on topic '%s'. pr: %d, to: %.2f",
               cmd_vel_sub[i].name.c_str(), cmd_vel_sub[i].topic.c_str(),

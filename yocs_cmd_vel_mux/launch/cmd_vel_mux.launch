@@ -1,0 +1,13 @@
+<!--
+  YOCS Velocity Multiplexer launcher
+  -->
+
+<launch>
+  <arg name="nodelet_manager_name"  default="nodelet_manager"/>
+  <arg name="config_file"           default="$(find yocs_cmd_vel_mux)/param/example.yaml"/>
+
+  <node pkg="nodelet" type="nodelet" name="yocs_cmd_vel_mux"
+        args="load yocs_cmd_vel_mux/CmdVelMuxNodelet $(arg nodelet_manager_name)">
+    <param name="yaml_cfg_file" value="$(arg config_file)"/>
+  </node>
+</launch>

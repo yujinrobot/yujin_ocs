@@ -1,0 +1,27 @@
+<!--
+  YOCS velocity smoother launcher
+  -->
+
+<launch>
+  <arg name="nodelet_manager_name"  default="nodelet_manager"/>
+  <arg name="config_file"           default="$(find yocs_velocity_smoother)/param/standalone.yaml"/>
+  <arg name="raw_cmd_vel_topic"     default="raw_cmd_vel"/>
+  <arg name="smooth_cmd_vel_topic"  default="smooth_cmd_vel"/>
+  <arg name="robot_cmd_vel_topic"   default="robot_cmd_vel"/>
+  <arg name="odom_topic"            default="odom"/>
+
+  <node pkg="nodelet" type="nodelet" name="velocity_smoother"
+        args="load yocs_velocity_smoother/VelocitySmootherNodelet $(arg nodelet_manager_name)">
+        
+    <!-- parameters -->
+    <rosparam file="$(arg config_file)" command="load"/>
+
+    <!-- velocity commands I/O -->
+    <remap from="velocity_smoother/raw_cmd_vel"     to="$(arg raw_cmd_vel_topic)"/>
+    <remap from="velocity_smoother/smooth_cmd_vel"  to="$(arg smooth_cmd_vel_topic)"/>
+
+    <!-- Robot velocity feedbacks -->
+    <remap from="velocity_smoother/robot_cmd_vel"   to="$(arg robot_cmd_vel_topic)"/>
+    <remap from="velocity_smoother/odometry"        to="$(arg odom_topic)"/>
+  </node>
+</launch>
