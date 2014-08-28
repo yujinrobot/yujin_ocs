@@ -1,0 +1,23 @@
+<!--
+  Example/standalone launcher for the YOCS safety controller
+  -->
+
+<launch>
+  <arg name="nodelet_manager_name"  default="nodelet_manager"/>
+  <arg name="enable_topic_name"     default="enable"/>
+  <arg name="disable_topic_name"    default="disable"/>
+  <arg name="ranger_topic_name"     default="ranger"/>
+  <arg name="cmd_vel_topic_name"    default="cmd_vel"/>
+  
+  <!-- nodelet manager -->
+  <node pkg="nodelet" type="nodelet" name="$(arg nodelet_manager_name)" args="manager"/>
+  
+  <!-- safety controller -->
+  <include file="$(find yocs_safety_controller)/launch/safety_controller.launch">
+    <arg name="nodelet_manager_name"  value="$(arg nodelet_manager_name)"/>
+    <arg name="enable_topic_name"     value="$(arg enable_topic_name)"/>
+    <arg name="disable_topic_name"    value="$(arg disable_topic_name)"/>
+    <arg name="ranger_topic_name"     value="$(arg ranger_topic_name)"/>
+    <arg name="cmd_vel_topic_name"    value="$(arg cmd_vel_topic_name)"/>
+  </include>
+</launch>

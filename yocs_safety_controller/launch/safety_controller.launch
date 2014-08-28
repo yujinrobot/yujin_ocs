@@ -1,0 +1,19 @@
+<!--
+  YOCS safety controller launcher
+  -->
+
+<launch>
+  <arg name="nodelet_manager_name"  default="nodelet_manager"/>
+  <arg name="enable_topic_name"     default="enable"/>
+  <arg name="disable_topic_name"    default="disable"/>
+  <arg name="ranger_topic_name"     default="ranger"/>
+  <arg name="cmd_vel_topic_name"    default="cmd_vel"/>
+
+  <node pkg="nodelet" type="nodelet" name="yocs_safety_controller"
+        args="load yocs_safety_controller/YOCSSafetyControllerNodelet $(arg nodelet_manager_name)">
+    <remap from="yocs_safety_controller/enable"  to="$(arg enable_topic_name)"/>
+    <remap from="yocs_safety_controller/disable" to="$(arg disable_topic_name)"/>
+    <remap from="yocs_safety_controller/rangers" to="$(arg ranger_topic_name)"/>
+    <remap from="yocs_safety_controller/cmd_vel" to="$(arg cmd_vel_topic_name)"/>
+  </node>
+</launch>
