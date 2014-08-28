@@ -1,0 +1,42 @@
+<package>
+  <name>yocs_safety_controller</name>
+  <version>0.0.0</version>
+  <description>
+    A controller ensuring the safe operation of your robot.
+
+    The SafetyController listens to ranger readings in order to stop (and move back), if obstacles get to close.
+
+    This controller can be enabled/disabled.
+
+  </description>
+  <author>Marcus Liebhardt</author>
+  <maintainer email="marcus.liebhardt@yujinrobot.com">Marcus Liebhardt</maintainer>
+  <license>BSD</license>
+  <url type="bugtracker">https://github.com/yujinrobot/yujin_ocs/issues</url>
+  <url type="repository">https://github.com/yujinrobot/yujin_ocs</url>
+  <url type="website">http://ros.org/wiki/yocsd_safety_controller</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>ecl_threads</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>nodelet</build_depend>
+  <build_depend>pluginlib</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>yocs_controllers</build_depend>
+
+  <run_depend>ecl_threads</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>nodelet</run_depend>
+  <run_depend>pluginlib</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>yocs_controllers</run_depend>
+
+  <export>
+    <nodelet plugin="${prefix}/plugins/nodelet_plugins.xml"/>
+  </export>
+</package>

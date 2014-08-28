@@ -12,7 +12,7 @@
   <arg name="enable_topic_name"   default="enable_motors"/>
   <arg name="disable_topic_name"  default="disable_motors"/>
  
-  <node pkg="yocs_keyop" type="keyop" name="keyop" output="screen">
+  <node pkg="yocs_keyop" type="yocs_keyop" name="yocs_keyop" output="screen">
     <param name="linear_vel_step"       value="$(arg linear_vel_step)"/>
     <param name="linear_vel_max"        value="$(arg linear_vel_max)"/>
     <param name="angular_vel_step"      value="$(arg angular_vel_step)"/>
