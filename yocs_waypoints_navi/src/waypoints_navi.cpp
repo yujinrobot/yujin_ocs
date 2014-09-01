@@ -169,6 +169,7 @@ bool WaypointsGoalNode::cancelAllGoals(double timeout)
   {
     // We cannot cancel a REJECTED, ABORTED, SUCCEEDED or LOST goal
     ROS_WARN("Cannot cancel move base goal, as it has %s state!", goal_state.toString().c_str());
+    publishStatusUpdate(yocs_msgs::NavigationControlStatus::ERROR);
     return true;
   }
 
@@ -178,10 +179,12 @@ bool WaypointsGoalNode::cancelAllGoals(double timeout)
   {
     ROS_WARN("Cancel move base goal didn't finish after %.2f seconds: %s",
              timeout, goal_state.toString().c_str());
+    publishStatusUpdate(yocs_msgs::NavigationControlStatus::ERROR);
     return false;
   }
 
   ROS_INFO("Cancel move base goal succeed. New state is %s", goal_state.toString().c_str());
+  publishStatusUpdate(yocs_msgs::NavigationControlStatus::CANCELLED);
   return true;
 }
 
