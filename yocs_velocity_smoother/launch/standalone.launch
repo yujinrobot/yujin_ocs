@@ -2,6 +2,7 @@
   Example standalone launcher for the velocity smoother
  -->
 <launch>
+  <arg name="node_name"             value="velocity_smoother"/>
   <arg name="nodelet_manager_name"  value="nodelet_manager"/>
   <arg name="config_file"           value="$(find yocs_velocity_smoother)/param/standalone.yaml"/>
   <arg name="raw_cmd_vel_topic"     value="raw_cmd_vel"/>
@@ -14,6 +15,7 @@
   
   <!-- velocity smoother -->
   <include file="$(find yocs_velocity_smoother)/launch/velocity_smoother.launch">
+    <arg name="node_name"             value="$(arg node_name)"/>
     <arg name="nodelet_manager_name"  value="$(arg nodelet_manager_name)"/>
     <arg name="config_file"           value="$(arg config_file)"/>
     <arg name="raw_cmd_vel_topic"     value="$(arg raw_cmd_vel_topic)"/>
