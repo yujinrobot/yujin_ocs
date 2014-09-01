@@ -26,40 +26,64 @@ namespace yocs_safety_controller
  * The SafetyController keeps track of ranger readings. If obstacles get too close, your robot is stopped.
  * You can also activate the move backward option, if you like your robot to reverse a bit after stopping.
  *
+ * Note: Currently only supports fixed-distance rangers.
+ *
+ * TODO: Implement logic to handle variable-distance rangers.
+ *
  * This controller can be enabled/disabled.
  */
 class YOCSSafetyController : public yocs::Controller
 {
 public:
-  YOCSSafetyController(ros::NodeHandle& nh, std::string& name) : Controller(),
-                                                                 nh_(nh),
-                                                                 name_(name){};
+  YOCSSafetyController(ros::NodeHandle& nh_priv, std::string& name);
   ~YOCSSafetyController(){};
 
   /**
    * Set-up necessary publishers/subscribers and variables
    * @return true, if successful
    */
-  bool init()
-  {
-    enable_controller_subscriber_ = nh_.subscribe("enable", 10, &YOCSSafetyController::enableCB, this);
-    disable_controller_subscriber_ = nh_.subscribe("disable", 10, &YOCSSafetyController::disableCB, this);
-    ranger_subscriber_ = nh_.subscribe("rangers", 10, &YOCSSafetyController::rangerCB, this);
-    velocity_command_publisher_ = nh_.advertise< geometry_msgs::Twist >("cmd_vel", 10);
-    return true;
-  };
-
+  bool init();
   /**
    * @ brief Checks safety states and publishes velocity commands when necessary
    */
   void spinOnce();
 
 private:
-  ros::NodeHandle nh_;
+  ros::NodeHandle nh_priv_;
   std::string name_;
   ros::Subscriber enable_controller_subscriber_, disable_controller_subscriber_, ranger_subscriber_;
   ros::Publisher controller_state_publisher_, velocity_command_publisher_;
   geometry_msgs::TwistPtr cmd_vel_msg_; // velocity command
+
+  /**
+   * Indicates whether an obstacle has been detected
+   */
+  bool obstacle_detected_;
+  /**
+   * Indicates whether to reverse after an obstacle has been detected
+   */
+  bool reverse_;
+  /**
+   * Reversing state
+   */
+  bool reversing_;
+  /**
+   * the time robot started reversing
+   */
+  ros::Time reversing_start_;
+  /**
+   * the total distance the robot will reverse in [m](configurable)
+   */
+  double reversing_distance_;
+  /**
+   * how fast the robot should move, when reversing in [m/s] (configurable)
+   */
+  double reversing_velocity_;
+  /**
+   * max. duration the robot will reverse in [s]
+   * automatically calculated based on reversing_distance_ and reversing_speed_
+   */
+  ros::Duration reversing_duration_;
 
   /**
    * @brief ROS logging output for enabling the controller
