@@ -37,24 +37,13 @@ bool WaypointsGoalNode::init()
   pnh.param("robot_frame",    robot_frame_,    std::string("/base_footprint"));
   pnh.param("world_frame",    world_frame_,    std::string("/map"));
 
-  // Wait for the move_base action servers to come up
-  ros::Time t0 = ros::Time::now();
-  double timeout = 10.0;
-
   // reset goal way points
   waypoints_.clear();
   waypoints_it_ = waypoints_.end();
 
   while ((move_base_ac_.waitForServer(ros::Duration(1.0)) == false) && (ros::ok() == true))
   {
-    if ((ros::Time::now() - t0).toSec() > timeout/2.0)
-      ROS_WARN_THROTTLE(3, "Waiting for move_base action server to come up...");
-
-    if ((ros::Time::now() - t0).toSec() > timeout)
-    {
-      ROS_ERROR("Timeout while waiting for move_base action server to come up");
-      return false;
-    }
+    ROS_WARN_THROTTLE(1, "Waiting for move_base action server to come up...");
   }
   waypoints_sub_  = nh.subscribe("waypoints",  1, &WaypointsGoalNode::waypointsCB, this);
   trajectories_sub_  = nh.subscribe("trajectories",  1, &WaypointsGoalNode::trajectoriesCB, this);
