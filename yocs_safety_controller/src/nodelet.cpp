@@ -12,11 +12,11 @@
 namespace yocs_safety_controller
 {
 
-class YOCSSafetyControllerNodelet : public nodelet::Nodelet
+class SafetyControllerNodelet : public nodelet::Nodelet
 {
 public:
-  YOCSSafetyControllerNodelet() : shutdown_requested_(false) { };
-  ~YOCSSafetyControllerNodelet()
+  SafetyControllerNodelet() : shutdown_requested_(false) { };
+  ~SafetyControllerNodelet()
   {
     NODELET_DEBUG_STREAM("Waiting for update thread to finish.");
     shutdown_requested_ = true;
@@ -30,11 +30,11 @@ public:
     int pos = name.find_last_of('/');
     name = name.substr(pos + 1);
     NODELET_INFO_STREAM("Initialising nodelet... [" << name << "]");
-    controller_.reset(new YOCSSafetyController(nh, name));
+    controller_.reset(new SafetyController(nh, name));
     if (controller_->init())
     {
       NODELET_INFO_STREAM("Safety controller initialised. Spinning up update thread ... [" << name << "]");
-      update_thread_.start(&YOCSSafetyControllerNodelet::update, *this);
+      update_thread_.start(&SafetyControllerNodelet::update, *this);
       NODELET_INFO_STREAM("Nodelet initialised. [" << name << "]");
     }
     else
@@ -54,12 +54,12 @@ private:
     }
   }
 
-  boost::shared_ptr<YOCSSafetyController> controller_;
+  boost::shared_ptr<SafetyController> controller_;
   ecl::Thread update_thread_;
   bool shutdown_requested_;
 };
 
 } // namespace yocs_safety_controller
 
-PLUGINLIB_EXPORT_CLASS(yocs_safety_controller::YOCSSafetyControllerNodelet,
+PLUGINLIB_EXPORT_CLASS(yocs_safety_controller::SafetyControllerNodelet,
                        nodelet::Nodelet);
