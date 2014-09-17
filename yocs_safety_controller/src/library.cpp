@@ -9,7 +9,7 @@
 namespace yocs_safety_controller
 {
 
-void YOCSSafetyController::enableCB(const std_msgs::EmptyConstPtr msg)
+void SafetyController::enableCB(const std_msgs::EmptyConstPtr msg)
 {
   if (this->enable())
   {
@@ -21,7 +21,7 @@ void YOCSSafetyController::enableCB(const std_msgs::EmptyConstPtr msg)
   }
 }
 
-void YOCSSafetyController::disableCB(const std_msgs::EmptyConstPtr msg)
+void SafetyController::disableCB(const std_msgs::EmptyConstPtr msg)
 {
   if (this->disable())
   {
@@ -33,7 +33,7 @@ void YOCSSafetyController::disableCB(const std_msgs::EmptyConstPtr msg)
   }
 }
 
-void YOCSSafetyController::rangerCB(const sensor_msgs::RangeConstPtr msg)
+void SafetyController::rangerCB(const sensor_msgs::RangeConstPtr msg)
 {
   if (this->getState())
   {
@@ -53,7 +53,7 @@ void YOCSSafetyController::rangerCB(const sensor_msgs::RangeConstPtr msg)
   return;
 }
 
-void YOCSSafetyController::spinOnce()
+void SafetyController::spinOnce()
 {
   return;
 }

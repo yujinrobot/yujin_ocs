@@ -28,13 +28,13 @@ namespace yocs_safety_controller
  *
  * This controller can be enabled/disabled.
  */
-class YOCSSafetyController : public yocs::Controller
+class SafetyController : public yocs::Controller
 {
 public:
-  YOCSSafetyController(ros::NodeHandle& nh, std::string& name) : Controller(),
+  SafetyController(ros::NodeHandle& nh, std::string& name) : Controller(),
                                                                  nh_(nh),
                                                                  name_(name){};
-  ~YOCSSafetyController(){};
+  ~SafetyController(){};
 
   /**
    * Set-up necessary publishers/subscribers and variables
@@ -42,9 +42,9 @@ public:
    */
   bool init()
   {
-    enable_controller_subscriber_ = nh_.subscribe("enable", 10, &YOCSSafetyController::enableCB, this);
-    disable_controller_subscriber_ = nh_.subscribe("disable", 10, &YOCSSafetyController::disableCB, this);
-    ranger_subscriber_ = nh_.subscribe("rangers", 10, &YOCSSafetyController::rangerCB, this);
+    enable_controller_subscriber_ = nh_.subscribe("enable", 10, &SafetyController::enableCB, this);
+    disable_controller_subscriber_ = nh_.subscribe("disable", 10, &SafetyController::disableCB, this);
+    ranger_subscriber_ = nh_.subscribe("rangers", 10, &SafetyController::rangerCB, this);
     velocity_command_publisher_ = nh_.advertise< geometry_msgs::Twist >("cmd_vel", 10);
     return true;
   };
