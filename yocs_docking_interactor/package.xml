@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package>
+  <name>yocs_docking_interactor</name>
+  <version>0.0.0</version>
+  <description>Provides api to get out from dock and navigate back to using autodocking and move_base</description>
+
+  <maintainer email="jihoonl@yujinrobot.com">Jihoon Lee</maintainer>
+  <author>Jihoon Lee</author>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>yocs_math_toolkit</build_depend>
+  <build_depend>ar_track_alvar_msgs</build_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>yocs_math_toolkit</run_depend>
+  <run_depend>ar_track_alvar_msgs</run_depend>
+
+</package>
