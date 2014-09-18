@@ -32,17 +32,18 @@ namespace yocs_safety_controller
  *
  * This controller can be enabled/disabled.
  */
-class YOCSSafetyController : public yocs::Controller
+class SafetyController : public yocs::Controller
 {
 public:
-  YOCSSafetyController(ros::NodeHandle& nh_priv, std::string& name);
-  ~YOCSSafetyController(){};
+  SafetyController(ros::NodeHandle& nh_priv, std::string& name);
+  ~SafetyController(){};
 
   /**
    * Set-up necessary publishers/subscribers and variables
    * @return true, if successful
    */
   bool init();
+
   /**
    * @ brief Checks safety states and publishes velocity commands when necessary
    */

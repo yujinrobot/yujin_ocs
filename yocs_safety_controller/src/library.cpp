@@ -8,7 +8,8 @@
 
 namespace yocs_safety_controller
 {
-YOCSSafetyController::YOCSSafetyController(ros::NodeHandle& nh_priv, std::string& name) :
+
+SafetyController::SafetyController(ros::NodeHandle& nh_priv, std::string& name) :
     Controller(),
     nh_priv_(nh_priv),
     name_(name),
@@ -22,7 +23,7 @@ YOCSSafetyController::YOCSSafetyController(ros::NodeHandle& nh_priv, std::string
 {};
 
 
-bool YOCSSafetyController::init()
+bool SafetyController::init()
 {
   if (!nh_priv_.getParam("reverse", reverse_))
   {
@@ -46,14 +47,14 @@ bool YOCSSafetyController::init()
   // calculate reversing duration
   reversing_duration_ = ros::Duration(reversing_distance_/reversing_velocity_);
 
-  enable_controller_subscriber_ = nh_priv_.subscribe("enable", 10, &YOCSSafetyController::enableCB, this);
-  disable_controller_subscriber_ = nh_priv_.subscribe("disable", 10, &YOCSSafetyController::disableCB, this);
-  ranger_subscriber_ = nh_priv_.subscribe("rangers", 10, &YOCSSafetyController::rangerCB, this);
+  enable_controller_subscriber_ = nh_priv_.subscribe("enable", 10, &SafetyController::enableCB, this);
+  disable_controller_subscriber_ = nh_priv_.subscribe("disable", 10, &SafetyController::disableCB, this);
+  ranger_subscriber_ = nh_priv_.subscribe("rangers", 10, &SafetyController::rangerCB, this);
   velocity_command_publisher_ = nh_priv_.advertise< geometry_msgs::Twist >("cmd_vel", 10);
   return true;
 };
 
-void YOCSSafetyController::enableCB(const std_msgs::EmptyConstPtr msg)
+void SafetyController::enableCB(const std_msgs::EmptyConstPtr msg)
 {
   if (this->enable())
   {
@@ -65,7 +66,7 @@ void YOCSSafetyController::enableCB(const std_msgs::EmptyConstPtr msg)
   }
 }
 
-void YOCSSafetyController::disableCB(const std_msgs::EmptyConstPtr msg)
+void SafetyController::disableCB(const std_msgs::EmptyConstPtr msg)
 {
   if (this->disable())
   {
@@ -77,7 +78,7 @@ void YOCSSafetyController::disableCB(const std_msgs::EmptyConstPtr msg)
   }
 }
 
-void YOCSSafetyController::rangerCB(const sensor_msgs::RangeConstPtr msg)
+void SafetyController::rangerCB(const sensor_msgs::RangeConstPtr msg)
 {
   if (this->getState())
   {
@@ -90,7 +91,7 @@ void YOCSSafetyController::rangerCB(const sensor_msgs::RangeConstPtr msg)
   return;
 }
 
-void YOCSSafetyController::spinOnce()
+void SafetyController::spinOnce()
 {
   if (reversing_)
   {
