@@ -23,6 +23,15 @@ void DockingInteractor::disableTracker() {
 
 bool DockingInteractor::callTrackerService(bool value)
 {
+/*
+  Note from Jorge
+  TODO do not use by now because:
+    - most times takes really long; I cannot find a pattern on timings
+    - with -no kinect version of the tracker is not necessary anymore
+    - a couple of times crashed and arduino gateway cpu usage spiked to 90%  NO IDEA WHY!!!!
+    * Update:  retest with service call;  probably solves the last issue
+  TODO should I call waitForServer? here? on init? mollaio...
+ */
   ros::Time t0 = ros::Time::now();
   dynamic_reconfigure::Reconfigure srv;
   srv.request.config.bools.resize(1);
