@@ -16,7 +16,7 @@ find_package(Boost REQUIRED COMPONENTS system)
 
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES yocs_navigator
+  LIBRARIES yocs_basic_move_controller yocs_semantic_navigator
   CATKIN_DEPENDS roscpp actionlib tf yocs_math_toolkit move_base_msgs nav_msgs yocs_msgs 
   DEPENDS Boost
 )
@@ -66,6 +66,13 @@ install(TARGETS yocs_basic_move_controller
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
+
+install(TARGETS yocs_semantic_navigator
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
 
 # Mark cpp header files for installation
 install(DIRECTORY include/${PROJECT_NAME}/

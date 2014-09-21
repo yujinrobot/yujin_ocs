@@ -6,7 +6,7 @@
 
 #include "yocs_navigator/semantic_navigator.hpp"
 
-namespace yocs {
+namespace yocs_navigator {
 void SemanticNavigator::processNavigation(yocs_msgs::NavigateToGoal::ConstPtr goal)
 {
   std::string location = goal->location;

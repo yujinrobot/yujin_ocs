@@ -5,7 +5,7 @@
 
 #include "yocs_navigator/semantic_navigator.hpp"
 
-namespace yocs {
+namespace yocs_navigator {
 bool SemanticNavigator::getGoalLocationTable(const std::string location,yocs_msgs::Table& table)
 {
   unsigned int i;
