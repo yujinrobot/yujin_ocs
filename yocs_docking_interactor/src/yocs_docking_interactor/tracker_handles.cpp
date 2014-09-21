@@ -38,7 +38,7 @@ bool DockingInteractor::callTrackerService(bool value)
   srv.request.config.bools[0].name = "enabled";
   srv.request.config.bools[0].value = value;
 
-  if (tracker_params_srv_.call(srv))
+  if (srv_tracker_params_.call(srv))
   {
     std::stringstream ss;
     float time = (ros::Time::now() - t0).toSec();

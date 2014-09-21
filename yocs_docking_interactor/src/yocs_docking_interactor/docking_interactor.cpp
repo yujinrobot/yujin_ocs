@@ -31,8 +31,11 @@ bool DockingInteractor::init()
   command_in_progress_ = false;
   
   // ar track alvar tracker handler
-  tracker_params_srv_  = nh_.serviceClient<dynamic_reconfigure::Reconfigure>(DockingInteractorDefaultParam::AR_TRACKER_SET_PARAM);
+  srv_tracker_params_ = nh_.serviceClient<dynamic_reconfigure::Reconfigure>(DockingInteractorDefaultParam::AR_TRACKER_SET_PARAM);
   tracker_enabled_ = false;
+
+  // global marker subscriber
+  sub_global_markers_ = nh_.subscribe(DockingInteractorDefaultParam::SUB_GLOBAL_MARKERS, 1, &DockingInteractor::processGlobalMarkers, this); 
 
   // move base
   loginfo("Wait for movebase");
@@ -77,5 +80,21 @@ void DockingInteractor::processPreemptCommand()
 {
   logwarn("Command Preemption Requested");
   as_command_.setPreempted();
+}
+
+void DockingInteractor::processGlobalMarkers(const ar_track_alvar_msgs::AlvarMarkers::ConstPtr& msg)
+{
+  global_markers_ = *msg;
+
+  for(unsigned int i=0; i < global_markers_.markers.size(); i++)
+  {
+    ar_track_alvar_msgs::AlvarMarker m = global_markers_.markers[i];
+    m.id = m.id - 3;
+    global_markers_.markers.push_back(m);
+  }
+
+  std::stringstream ss;
+  ss << global_markers_.markers.size() << "global marker pose(s) received";
+  loginfo(ss.str());
 }
 }

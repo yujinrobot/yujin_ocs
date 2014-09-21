@@ -7,6 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
   yocs_math_toolkit
   dynamic_reconfigure
   tf
+  ar_track_alvar_msgs
   yocs_msgs
   move_base_msgs
 )
@@ -16,7 +17,7 @@ find_package(Boost REQUIRED COMPONENTS system)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES yocs_docking_interactor
-  CATKIN_DEPENDS roscpp yocs_math_toolkit actionlib move_base_msgs yocs_msgs
+  CATKIN_DEPENDS roscpp yocs_math_toolkit actionlib move_base_msgs yocs_msgs ar_track_alvar_msgs
   DEPENDS Boost
 )
 

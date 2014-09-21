@@ -12,6 +12,7 @@ namespace yocs_docking_interactor {
     const std::string AS_COMMAND = "docking_interactor";
     const std::string AC_MOVE_BASE = "move_base";
     const std::string AR_TRACKER_SET_PARAM = "ar_track_alvar/set_parameters"; 
+    const std::string SUB_GLOBAL_MARKERS = "global_markers";
   }
 }
   
