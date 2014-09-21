@@ -28,7 +28,18 @@ void DockingInteractor::processCommand(yocs_msgs::DockingInteractorGoal::ConstPt
 
 void DockingInteractor::wakeUp()
 {
-// move backward
+  // enable tracker
+  loginfo("Waking up! Slowly moving back...");
+  if (enableTracker() == false)
+  {
+    terminateCommand(false,"Unable to start AR markers tracker; aborting wake up!");
+  }
+ 
+  // Move back until we detect the AR marker identifying this robot's docking station
+  bool timeout = false;
+  ros::Time t0 = ros::Time::now();
+
+
 // until
 // it sees docking ar marker
 }

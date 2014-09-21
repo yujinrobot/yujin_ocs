@@ -9,6 +9,7 @@ namespace yocs_docking_interactor {
 
 DockingInteractor::DockingInteractor(ros::NodeHandle& n) 
 : nh_(n),
+  bmc_(nh_),
   as_command_(nh_, DockingInteractorDefaultParam::AS_COMMAND, false),
   ac_move_base_(nh_, DockingInteractorDefaultParam::AC_MOVE_BASE, true)
 {
@@ -16,6 +17,7 @@ DockingInteractor::DockingInteractor(ros::NodeHandle& n)
 
 DockingInteractor::DockingInteractor(ros::NodeHandle& n, const std::string as_command_topic) 
 : nh_(n),
+  bmc_(nh_),
   as_command_(as_command_topic, false),
   ac_move_base_(nh_, DockingInteractorDefaultParam::AC_MOVE_BASE, true)
 {
@@ -29,17 +31,25 @@ bool DockingInteractor::init()
 {
   // variables
   command_in_progress_ = false;
+  global_marker_received_ = false;
   
   // ar track alvar tracker handler
   srv_tracker_params_ = nh_.serviceClient<dynamic_reconfigure::Reconfigure>(DockingInteractorDefaultParam::AR_TRACKER_SET_PARAM);
   tracker_enabled_ = false;
 
   // global marker subscriber
+  loginfo("Wait for global marker list");
   sub_global_markers_ = nh_.subscribe(DockingInteractorDefaultParam::SUB_GLOBAL_MARKERS, 1, &DockingInteractor::processGlobalMarkers, this); 
+  while(ros::ok() && !global_marker_received_)
+  {
+    ros::spinOnce();
+    ros::Duration(0.5).sleep();
+  }
 
   // move base
   loginfo("Wait for movebase");
   ac_move_base_.waitForServer();
+
 
 
   loginfo("Initialised");
@@ -96,5 +106,11 @@ void DockingInteractor::processGlobalMarkers(const ar_track_alvar_msgs::AlvarMar
   std::stringstream ss;
   ss << global_markers_.markers.size() << "global marker pose(s) received";
   loginfo(ss.str());
+
+  global_marker_received_ = true;
+}
+
+void DockingInteractor::processArMarkers(const ar_track_alvar_msgs::AlvarMarkers::ConstPtr& msg)
+{
 }
 }

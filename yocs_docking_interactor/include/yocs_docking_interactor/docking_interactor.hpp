@@ -18,6 +18,7 @@
 #include <move_base_msgs/MoveBaseAction.h>
 
 #include "yocs_docking_interactor/default_params.h"
+#include "yocs_navigator/basic_move_controller.hpp"
 
 namespace yocs_docking_interactor {
 class DockingInteractor {
@@ -32,13 +33,13 @@ class DockingInteractor {
     void logwarn(const std::string& msg);
 
   protected:
-    void enableTracker();
-    void disableTracker();
+    bool enableTracker();
+    bool disableTracker();
       bool callTrackerService(bool value);
 
     void processGlobalMarkers(const ar_track_alvar_msgs::AlvarMarkers::ConstPtr& msg);
+    void processArMarkers(const ar_track_alvar_msgs::AlvarMarkers::ConstPtr& msg);
     
-
     void processGoalCommand();
       void processCommand(yocs_msgs::DockingInteractorGoal::ConstPtr goal);
         void wakeUp();
@@ -52,13 +53,17 @@ class DockingInteractor {
     ros::NodeHandle nh_;
     ros::ServiceClient srv_tracker_params_;
     ros::Subscriber sub_global_markers_;
+    ros::Subscriber sub_ar_markers_;
     actionlib::SimpleActionServer<yocs_msgs::DockingInteractorAction> as_command_;
     actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> ac_move_base_;
   
     boost::thread command_process_thread_; 
 
+    yocs_navigator::BasicMoveController bmc_;
+
     bool command_in_progress_;
     bool tracker_enabled_;
+    bool global_marker_received_;
     ar_track_alvar_msgs::AlvarMarkers global_markers_;
 };
 }

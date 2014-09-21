@@ -7,18 +7,21 @@
 
 namespace yocs_docking_interactor {
 
-void DockingInteractor::enableTracker() {
+bool DockingInteractor::enableTracker() {
   if(callTrackerService(true))
     tracker_enabled_ = true;
   else
     tracker_enabled_ = false;
+
+  return tracker_enabled_;
 }
 
-void DockingInteractor::disableTracker() {
+bool DockingInteractor::disableTracker() {
   if(callTrackerService(false))
     tracker_enabled_ = false;
   else
     tracker_enabled_ = true;
+  return tracker_enabled_;
 }
 
 bool DockingInteractor::callTrackerService(bool value)
