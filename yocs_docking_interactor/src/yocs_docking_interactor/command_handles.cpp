@@ -38,6 +38,8 @@ void DockingInteractor::wakeUp()
   // Move back until we detect the AR marker identifying this robot's docking station
   bool timeout = false;
   ros::Time t0 = ros::Time::now();
+  ar_track_alvar_msgs::AlvarMarkers spotted_markers;
+
 
 
 // until
