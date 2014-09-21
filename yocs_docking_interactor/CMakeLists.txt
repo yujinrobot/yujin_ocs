@@ -4,6 +4,7 @@ project(yocs_docking_interactor)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   yocs_math_toolkit
+  dynamic_reconfigure
 )
 
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -22,6 +23,7 @@ include_directories(
 add_library(yocs_docking_interactor
   src/${PROJECT_NAME}/docking_interactor.cpp
   src/${PROJECT_NAME}/logs.cpp
+  src/${PROJECT_NAME}/tracker_handles.cpp
 )
 target_link_libraries(yocs_docking_interactor ${catkin_LIBRARIES})
 add_dependencies(yocs_docking_interactor yocs_msgs_gencpp)

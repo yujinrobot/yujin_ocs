@@ -17,6 +17,9 @@ DockingInteractor::~DockingInteractor()
 
 bool DockingInteractor::init()
 {
+  tracker_params_srv_  = nh_.serviceClient<dynamic_reconfigure::Reconfigure>("ar_track_alvar/set_parameters");
+  tracker_enabled_ = false;
+
   return true;
 }
 
@@ -32,5 +35,4 @@ void DockingInteractor::spin()
     r.sleep();
   }
 }
-
 }
