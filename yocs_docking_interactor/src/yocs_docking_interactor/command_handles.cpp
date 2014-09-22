@@ -12,7 +12,7 @@ void DockingInteractor::processCommand(yocs_msgs::DockingInteractorGoal::ConstPt
 
   switch(command) {
     case yocs_msgs::DockingInteractorGoal::WAKE_UP:
-      wakeUp();
+      wakeUp(goal->distance);
       break;
     case yocs_msgs::DockingInteractorGoal::REGISTER_DOCK_IN_GLOBAL_FRAME:
       registerDockMarker();
@@ -26,11 +26,11 @@ void DockingInteractor::processCommand(yocs_msgs::DockingInteractorGoal::ConstPt
   }
 }
 
-void DockingInteractor::wakeUp()
+void DockingInteractor::wakeUp(double distance)
 {
   // enable tracker
   loginfo("Waking up! Slowly moving back...");
-  if (enableTracker() == false)
+  if (docking_ar_tracker_->enableTracker() == false)
   {
     terminateCommand(false,"Unable to start AR markers tracker; aborting wake up!");
   }
@@ -39,8 +39,6 @@ void DockingInteractor::wakeUp()
   bool timeout = false;
   ros::Time t0 = ros::Time::now();
   ar_track_alvar_msgs::AlvarMarkers spotted_markers;
-
-
 
 // until
 // it sees docking ar marker
@@ -53,7 +51,6 @@ void DockingInteractor::registerDockMarker()
 void DockingInteractor::returnToDock()
 {
 }
-
 
 
 

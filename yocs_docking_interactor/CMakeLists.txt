@@ -5,6 +5,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   actionlib
   yocs_math_toolkit
+  yocs_ar_marker_tracking
   dynamic_reconfigure
   yocs_navigator
   tf
@@ -17,8 +18,8 @@ find_package(Boost REQUIRED COMPONENTS system)
 
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES yocs_docking_interactor
-  CATKIN_DEPENDS roscpp yocs_math_toolkit actionlib move_base_msgs yocs_msgs ar_track_alvar_msgs 
+  LIBRARIES yocs_docking_interactor yocs_docking_ar_tracker
+  CATKIN_DEPENDS roscpp yocs_math_toolkit actionlib move_base_msgs yocs_msgs ar_track_alvar_msgs  yocs_ar_marker_tracking
   DEPENDS Boost
 )
 
@@ -28,13 +29,19 @@ include_directories(
   ${Boost_INCLUDE_DIRS}
 )
 
+add_library(yocs_docking_ar_tracker
+  src/${PROJECT_NAME}/docking_ar_tracker.cpp
+  src/${PROJECT_NAME}/tracker_handles.cpp
+)
+target_link_libraries(yocs_docking_ar_tracker ${catkin_LIBRARIES})
+add_dependencies(yocs_docking_ar_tracker yocs_msgs_gencpp)
+
 add_library(yocs_docking_interactor
   src/${PROJECT_NAME}/docking_interactor.cpp
   src/${PROJECT_NAME}/logs.cpp
-  src/${PROJECT_NAME}/tracker_handles.cpp
   src/${PROJECT_NAME}/command_handles.cpp
 )
-target_link_libraries(yocs_docking_interactor ${catkin_LIBRARIES})
+target_link_libraries(yocs_docking_interactor yocs_docking_ar_tracker ${catkin_LIBRARIES})
 add_dependencies(yocs_docking_interactor yocs_msgs_gencpp )
 
 ## Declare a cpp executable

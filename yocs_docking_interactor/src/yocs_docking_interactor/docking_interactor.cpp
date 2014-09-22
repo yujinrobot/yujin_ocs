@@ -25,23 +25,18 @@ DockingInteractor::DockingInteractor(ros::NodeHandle& n, const std::string as_co
 
 DockingInteractor::~DockingInteractor()
 {
+  delete docking_ar_tracker_;
 }
 
 bool DockingInteractor::init()
 {
   // variables
   command_in_progress_ = false;
-  global_marker_received_ = false;
   
-  // ar track alvar tracker handler
-  srv_tracker_params_ = nh_.serviceClient<dynamic_reconfigure::Reconfigure>(DockingInteractorDefaultParam::AR_TRACKER_SET_PARAM);
-  tracker_enabled_ = false;
-
   // global marker subscriber
-  loginfo("Wait for global marker list");
-  sub_global_markers_ = nh_.subscribe(DockingInteractorDefaultParam::SUB_GLOBAL_MARKERS, 1, &DockingInteractor::processGlobalMarkers, this); 
-  while(ros::ok() && !global_marker_received_)
-  {
+  loginfo("Wait for docking ar tracker");
+  docking_ar_tracker_ = new DockingARTracker(nh_);
+  while(ros::ok() && docking_ar_tracker_->isReady()) {
     ros::spinOnce();
     ros::Duration(0.5).sleep();
   }
@@ -49,8 +44,6 @@ bool DockingInteractor::init()
   // move base
   loginfo("Wait for movebase");
   ac_move_base_.waitForServer();
-
-
 
   loginfo("Initialised");
   as_command_.registerGoalCallback(boost::bind(&DockingInteractor::processGoalCommand, this));
@@ -92,25 +85,4 @@ void DockingInteractor::processPreemptCommand()
   as_command_.setPreempted();
 }
 
-void DockingInteractor::processGlobalMarkers(const ar_track_alvar_msgs::AlvarMarkers::ConstPtr& msg)
-{
-  global_markers_ = *msg;
-
-  for(unsigned int i=0; i < global_markers_.markers.size(); i++)
-  {
-    ar_track_alvar_msgs::AlvarMarker m = global_markers_.markers[i];
-    m.id = m.id - 3;
-    global_markers_.markers.push_back(m);
-  }
-
-  std::stringstream ss;
-  ss << global_markers_.markers.size() << "global marker pose(s) received";
-  loginfo(ss.str());
-
-  global_marker_received_ = true;
-}
-
-void DockingInteractor::processArMarkers(const ar_track_alvar_msgs::AlvarMarkers::ConstPtr& msg)
-{
-}
 }

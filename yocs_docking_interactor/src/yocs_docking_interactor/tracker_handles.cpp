@@ -3,11 +3,11 @@
  *  LICENSE : BSD - https://raw.github.com/yujinrobot/yujin_ocs/license/LICENSE
  */
 
-#include "yocs_docking_interactor/docking_interactor.hpp"
+#include "yocs_docking_interactor/ar_tracker.hpp"
 
 namespace yocs_docking_interactor {
 
-bool DockingInteractor::enableTracker() {
+bool DockingARTracker::enableTracker() {
   if(callTrackerService(true))
     tracker_enabled_ = true;
   else
@@ -16,7 +16,7 @@ bool DockingInteractor::enableTracker() {
   return tracker_enabled_;
 }
 
-bool DockingInteractor::disableTracker() {
+bool DockingARTracker::disableTracker() {
   if(callTrackerService(false))
     tracker_enabled_ = false;
   else
@@ -24,7 +24,7 @@ bool DockingInteractor::disableTracker() {
   return tracker_enabled_;
 }
 
-bool DockingInteractor::callTrackerService(bool value)
+bool DockingARTracker::callTrackerService(bool value)
 {
 /*
   Note from Jorge
@@ -43,19 +43,23 @@ bool DockingInteractor::callTrackerService(bool value)
 
   if (srv_tracker_params_.call(srv))
   {
+    /*
     std::stringstream ss;
     float time = (ros::Time::now() - t0).toSec();
     ss << "AR markers tracker enabled (" << time << " seconds)";
     loginfo(ss.str());
+    */
 
     return true;
   }
   else
   {
+    /*
     std::stringstream ss;
     float time = (ros::Time::now() - t0).toSec();
     ss << "Failed to enable AR markers tracker (" << time << " seconds)";
     loginfo(ss.str());
+    */
     return false;
   }
 }
