@@ -11,6 +11,7 @@ namespace yocs_docking_interactor {
   namespace DockingInteractorDefaultParam {
     const std::string AS_COMMAND = "docking_interactor";
     const std::string AC_MOVE_BASE = "move_base";
+    const std::string AC_AUTO_DOCK = "dock_drive_action";
   }
 
   namespace DockingARTrackerDefaultParam {

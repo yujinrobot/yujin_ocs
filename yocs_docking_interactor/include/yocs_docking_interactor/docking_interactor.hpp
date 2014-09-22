@@ -9,12 +9,12 @@
 
 
 #include <ros/ros.h>
-#include <tf/tf.h>
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/server/simple_action_server.h>
 #include <ar_track_alvar_msgs/AlvarMarkers.h>
 #include <yocs_msgs/DockingInteractorAction.h>
 #include <move_base_msgs/MoveBaseAction.h>
+#include <kobuki_msgs/AutoDockingAction.h>
 
 #include "yocs_docking_interactor/default_params.h"
 #include "yocs_docking_interactor/ar_tracker.hpp"
@@ -37,6 +37,7 @@ class DockingInteractor {
       void processCommand(yocs_msgs::DockingInteractorGoal::ConstPtr goal);
         void wakeUp(double distance);
         void registerDockMarker();
+          void getRobotPose(geometry_msgs::PoseStamped& pose);
         void returnToDock();
     void processPreemptCommand();
 
@@ -46,7 +47,8 @@ class DockingInteractor {
     ros::NodeHandle nh_;
     actionlib::SimpleActionServer<yocs_msgs::DockingInteractorAction> as_command_;
     actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> ac_move_base_;
-  
+    actionlib::SimpleActionClient<kobuki_msgs::AutoDockingAction> ac_auto_dock_;
+
     boost::thread command_process_thread_; 
 
     yocs_navigator::BasicMoveController bmc_;
@@ -54,6 +56,7 @@ class DockingInteractor {
 
     bool command_in_progress_;
     std::string global_frame_;
+    std::string base_frame_;
 };
 }
 #endif

@@ -52,7 +52,7 @@ void DockingInteractor::registerDockMarker()
   std::string message;
   bool success;
 
-  success = docking_ar_tracker_->registerDockingOnGlobalFrame(global_frame_, message);
+  success = docking_ar_tracker_->registerDockingOnGlobalFrame(global_frame_, base_frame_, message);
 
   if(success)
     terminateCommand(true, message);
@@ -62,6 +62,13 @@ void DockingInteractor::registerDockMarker()
 
 void DockingInteractor::returnToDock()
 {
+  loginfo("Return to dock");
+
+  // global navigation to dock
+
+  // local navigation to dock
+
+  // auto dock
 }
 
 void DockingInteractor::terminateCommand(bool success, const std::string message) 

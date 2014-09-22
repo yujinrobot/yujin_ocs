@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   ar_track_alvar_msgs
   yocs_msgs
   move_base_msgs
+  kobuki_msgs
 )
 
 find_package(Boost REQUIRED COMPONENTS system)
@@ -19,7 +20,7 @@ find_package(Boost REQUIRED COMPONENTS system)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES yocs_docking_interactor yocs_docking_ar_tracker
-  CATKIN_DEPENDS roscpp yocs_math_toolkit actionlib move_base_msgs yocs_msgs ar_track_alvar_msgs  yocs_ar_marker_tracking
+  CATKIN_DEPENDS roscpp yocs_math_toolkit actionlib move_base_msgs yocs_msgs ar_track_alvar_msgs  yocs_ar_marker_tracking kobuki_msgs
   DEPENDS Boost
 )
 
@@ -42,7 +43,7 @@ add_library(yocs_docking_interactor
   src/${PROJECT_NAME}/command_handles.cpp
 )
 target_link_libraries(yocs_docking_interactor yocs_docking_ar_tracker ${catkin_LIBRARIES})
-add_dependencies(yocs_docking_interactor yocs_msgs_gencpp )
+add_dependencies(yocs_docking_interactor yocs_msgs_gencpp kobuki_msgs_gencpp)
 
 ## Declare a cpp executable
 add_executable(docking_interactor_node src/docking_interactor_main.cpp)

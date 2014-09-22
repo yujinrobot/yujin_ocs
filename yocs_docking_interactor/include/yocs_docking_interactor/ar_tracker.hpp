@@ -28,7 +28,7 @@ class DockingARTracker : public yocs::ARMarkerTracking
     bool enableTracker();
     bool disableTracker();
     bool setClosestAsDockingMarker();
-    bool registerDockingOnGlobalFrame(const std::string global_frame, std::string& message);
+    bool registerDockingOnGlobalFrame(const std::string global_frame, const std::string base_frame, std::string& message);
 
   protected:
     void customCB(const ar_track_alvar_msgs::AlvarMarkers& spotted_markers, const std::vector<yocs::TrackedMarker> &tracked_markers);
@@ -44,9 +44,10 @@ class DockingARTracker : public yocs::ARMarkerTracking
     tf::TransformListener tf_listener_;
 
     ar_track_alvar_msgs::AlvarMarkers global_markers_;
+    ar_track_alvar_msgs::AlvarMarker closest_;
     ar_track_alvar_msgs::AlvarMarker docking_marker_in_robot_frame_;
     ar_track_alvar_msgs::AlvarMarker docking_marker_in_global_frame_;
-    ar_track_alvar_msgs::AlvarMarker closest_;
+    geometry_msgs::PoseStamped robot_dock_pose_;
 
     double min_confidence_;
     bool global_marker_received_;

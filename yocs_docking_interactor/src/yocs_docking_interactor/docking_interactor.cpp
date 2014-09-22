@@ -11,7 +11,8 @@ DockingInteractor::DockingInteractor(ros::NodeHandle& n)
 : nh_(n),
   bmc_(nh_),
   as_command_(nh_, DockingInteractorDefaultParam::AS_COMMAND, false),
-  ac_move_base_(nh_, DockingInteractorDefaultParam::AC_MOVE_BASE, true)
+  ac_move_base_(nh_, DockingInteractorDefaultParam::AC_MOVE_BASE, true),
+  ac_auto_dock_(nh_, DockingInteractorDefaultParam::AC_AUTO_DOCK, true)
 {
 }
 
@@ -19,7 +20,8 @@ DockingInteractor::DockingInteractor(ros::NodeHandle& n, const std::string as_co
 : nh_(n),
   bmc_(nh_),
   as_command_(as_command_topic, false),
-  ac_move_base_(nh_, DockingInteractorDefaultParam::AC_MOVE_BASE, true)
+  ac_move_base_(nh_, DockingInteractorDefaultParam::AC_MOVE_BASE, true),
+  ac_auto_dock_(nh_, DockingInteractorDefaultParam::AC_AUTO_DOCK, true)
 {
 }
 

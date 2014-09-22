@@ -64,7 +64,7 @@ bool DockingARTracker::setClosestAsDockingMarker()
   return ARMarkerTracking::closest(1.0, min_confidence_, global_markers_,  docking_marker_in_robot_frame_);
 }
 
-bool DockingARTracker::registerDockingOnGlobalFrame(const std::string global_frame, std::string& message)
+bool DockingARTracker::registerDockingOnGlobalFrame(const std::string global_frame, const std::string base_frame,  std::string& message)
 {
   ar_track_alvar_msgs::AlvarMarkers spotted_markers;
   ar_track_alvar_msgs::AlvarMarker current_dock_marker;
@@ -84,6 +84,7 @@ bool DockingARTracker::registerDockingOnGlobalFrame(const std::string global_fra
   docking_marker_in_robot_frame_ = current_dock_marker;
   geometry_msgs::PoseStamped before = docking_marker_in_robot_frame_.pose;
   geometry_msgs::PoseStamped after;
+  geometry_msgs::PoseStamped robot_pose;
 
   try
   {
@@ -91,6 +92,10 @@ bool DockingARTracker::registerDockingOnGlobalFrame(const std::string global_fra
     docking_marker_in_global_frame_ = docking_marker_in_robot_frame_;
     docking_marker_in_global_frame_.header = after.header;
     docking_marker_in_global_frame_.pose = after;
+
+    tf::StampedTransform robot_tf;
+    tf_listener_.lookupTransform(global_frame, base_frame, ros::Time(0.0), robot_tf);
+    mtk::tf2pose(robot_tf, robot_dock_pose_); 
   }catch(tf::TransformException& e)
   {
     ROS_ERROR("Cannot get tf %s -> %s : %s", docking_marker_in_robot_frame_.pose.header.frame_id.c_str(), global_frame.c_str(), e.what());
@@ -102,4 +107,5 @@ bool DockingARTracker::registerDockingOnGlobalFrame(const std::string global_fra
   message = "success";
   return true;
 }
+
 }
