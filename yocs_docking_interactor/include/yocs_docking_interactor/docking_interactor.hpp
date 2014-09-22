@@ -53,6 +53,7 @@ class DockingInteractor {
     DockingARTracker* docking_ar_tracker_;
 
     bool command_in_progress_;
+    std::string global_frame_;
 };
 }
 #endif

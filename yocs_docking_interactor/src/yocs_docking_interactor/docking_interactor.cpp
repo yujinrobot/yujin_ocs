@@ -30,6 +30,9 @@ DockingInteractor::~DockingInteractor()
 
 bool DockingInteractor::init()
 {
+  ros::NodeHandle pnh("~");
+  pnh.param("global_frame", global_frame_, std::string("map"));
+
   // variables
   command_in_progress_ = false;
   

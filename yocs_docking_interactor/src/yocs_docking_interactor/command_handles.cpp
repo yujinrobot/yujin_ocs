@@ -30,29 +30,39 @@ void DockingInteractor::wakeUp(double distance)
 {
   // enable tracker
   loginfo("Waking up! Slowly moving back...");
+  docking_ar_tracker_->reset();
   if (docking_ar_tracker_->enableTracker() == false)
   {
     terminateCommand(false,"Unable to start AR markers tracker; aborting wake up!");
   }
  
-  // Move back until we detect the AR marker identifying this robot's docking station
-  bool timeout = false;
-  ros::Time t0 = ros::Time::now();
-  ar_track_alvar_msgs::AlvarMarkers spotted_markers;
+  bmc_.backward(distance);
 
-// until
-// it sees docking ar marker
+  bool success = docking_ar_tracker_->setClosestAsDockingMarker();
+
+  if(success)
+    terminateCommand(true, "Wake up!");
+  else
+    terminateCommand(false, "Failed to spot docking makrer");
 }
 
 void DockingInteractor::registerDockMarker()
 {
+  loginfo("Registering Docking Marker on global frame");
+  std::string message;
+  bool success;
+
+  success = docking_ar_tracker_->registerDockingOnGlobalFrame(global_frame_, message);
+
+  if(success)
+    terminateCommand(true, message);
+  else
+    terminateCommand(false,message);
 }
 
 void DockingInteractor::returnToDock()
 {
 }
-
-
 
 void DockingInteractor::terminateCommand(bool success, const std::string message) 
 { 

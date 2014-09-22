@@ -49,7 +49,6 @@ bool DockingARTracker::callTrackerService(bool value)
     ss << "AR markers tracker enabled (" << time << " seconds)";
     loginfo(ss.str());
     */
-
     return true;
   }
   else
