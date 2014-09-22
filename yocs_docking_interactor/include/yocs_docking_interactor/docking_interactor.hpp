@@ -37,8 +37,8 @@ class DockingInteractor {
       void processCommand(yocs_msgs::DockingInteractorGoal::ConstPtr goal);
         void wakeUp(double distance);
         void registerDockMarker();
-          void getRobotPose(geometry_msgs::PoseStamped& pose);
         void returnToDock();
+          bool callAutoDock(std::string& message);
     void processPreemptCommand();
 
     void terminateCommand(bool success, const std::string message); 
@@ -55,6 +55,7 @@ class DockingInteractor {
     DockingARTracker* docking_ar_tracker_;
 
     bool command_in_progress_;
+    double auto_dock_timeout_;
     std::string global_frame_;
     std::string base_frame_;
 };

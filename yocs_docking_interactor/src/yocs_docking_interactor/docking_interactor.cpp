@@ -34,6 +34,7 @@ bool DockingInteractor::init()
 {
   ros::NodeHandle pnh("~");
   pnh.param("global_frame", global_frame_, std::string("map"));
+  pnh.param("auto_dock_timeout", auto_dock_timeout_, 90.0);
 
   // variables
   command_in_progress_ = false;
