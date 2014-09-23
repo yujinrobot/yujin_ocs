@@ -86,24 +86,18 @@ bool DockingARTracker::registerDockingOnGlobalFrame(const std::string global_fra
     return false;
   }
 
-  docking_marker_in_robot_frame_ = current_dock_marker;
-  geometry_msgs::PoseStamped before = docking_marker_in_robot_frame_.pose;
-  geometry_msgs::PoseStamped after;
-  geometry_msgs::PoseStamped robot_pose;
-
   try
   {
-    tf_listener_.transformPose(global_frame, before, after);
+    geometry_msgs::PoseStamped after;
+    docking_marker_in_robot_frame_ = current_dock_marker;
     docking_marker_in_global_frame_ = docking_marker_in_robot_frame_;
+    after = getDockPoseInGlobal(global_frame, docking_marker_in_robot_frame_.pose);
     docking_marker_in_global_frame_.header = after.header;
     docking_marker_in_global_frame_.pose = after;
-
-    tf::StampedTransform robot_tf;
-    tf_listener_.lookupTransform(global_frame, base_frame, ros::Time(0.0), robot_tf);
-    mtk::tf2pose(robot_tf, robot_dock_pose_); 
+    robot_dock_pose_ =  getRobotPose(global_frame, base_frame);
   }catch(tf::TransformException& e)
   {
-    ROS_ERROR("Cannot get tf %s -> %s : %s", docking_marker_in_robot_frame_.pose.header.frame_id.c_str(), global_frame.c_str(), e.what());
+//    ROS_ERROR("Cannot get tf %s -> %s : %s", docking_marker_in_robot_frame_.pose.header.frame_id.c_str(), global_frame.c_str(), e.what());
     message = "cannot get tranform to global frame";
     return false;
   }
@@ -113,11 +107,42 @@ bool DockingARTracker::registerDockingOnGlobalFrame(const std::string global_fra
   return true;
 }
 
+geometry_msgs::PoseStamped DockingARTracker::getDockPoseInGlobal(const std::string& global_frame, const geometry_msgs::PoseStamped before)
+{
+  geometry_msgs::PoseStamped after;
+  tf_listener_.transformPose(global_frame, before, after);
+
+  return after;
+}
+
+geometry_msgs::PoseStamped DockingARTracker::getRobotPose(const std::string& global_frame, const std::string& base_frame) {
+  geometry_msgs::PoseStamped robot_pose;
+  tf::StampedTransform robot_tf;
+  tf_listener_.lookupTransform(global_frame, base_frame, ros::Time(0.0), robot_tf);
+  mtk::tf2pose(robot_tf, robot_pose); 
+  return robot_pose;
+}
+
 void DockingARTracker::getRobotDockPose(geometry_msgs::PoseStamped& pose)
 {
   pose = robot_dock_pose_;
 }
 
-//bool isDockMarkerSpotted(geometry_msgs::Pose
+bool DockingARTracker::isDockMarkerSpotted(geometry_msgs::PoseStamped& dock_pose, std::string& message)
+{
+  ar_track_alvar_msgs::AlvarMarkers spotted_markers;
+  ar_track_alvar_msgs::AlvarMarker current_dock_marker;
 
+  if(spotted(1.0, min_confidence_, global_markers_, spotted_markers) == false)
+  {
+    message = "failed to spot dock marker";
+    return false;
+  }
+
+  if(included(docking_marker_in_robot_frame_.id, spotted_markers, &current_dock_marker) == false)
+  {
+    message = "failed to spot dock marker";
+    return false;
+  }
+}
 }

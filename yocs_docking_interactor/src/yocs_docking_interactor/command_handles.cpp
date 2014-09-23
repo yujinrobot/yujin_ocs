@@ -28,6 +28,7 @@ void DockingInteractor::processCommand(yocs_msgs::DockingInteractorGoal::ConstPt
 
 void DockingInteractor::wakeUp(double distance)
 {
+  bool success;
   // enable tracker
   loginfo("Waking up! Slowly moving back...");
   docking_ar_tracker_->reset();
@@ -37,8 +38,7 @@ void DockingInteractor::wakeUp(double distance)
   }
  
   bmc_->backward(distance);
-
-  bool success = docking_ar_tracker_->setClosestAsDockingMarker();
+  success = docking_ar_tracker_->setClosestAsDockingMarker();
 
   if(success)
     terminateCommand(true, "Wake up!");
@@ -75,6 +75,7 @@ void DockingInteractor::returnToDock()
   // auto dock
   if(success)
     success = callAutoDock(message);
+
   terminateCommand(success, message);
 }
 
@@ -151,8 +152,14 @@ bool DockingInteractor::moveToDockFront(std::string& message)
           // no-parameters dockInBase method). If not, probably we have a problem; switch on auto-docking anyway
           dock_infront = true;
         }
-
-        
+        if(docking_ar_tracker_->isDockMarkerSpotted(pose, message))
+        {
+          // 1. check distance
+          // 2. if it is less than relay distance, change to local navigation 
+        }
+        else {
+          // send feedback?
+        }
         break;
       case START_MARKER_DOCKING:
         break;
