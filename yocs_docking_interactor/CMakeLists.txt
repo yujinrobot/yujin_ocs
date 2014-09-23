@@ -39,7 +39,7 @@ add_dependencies(yocs_docking_ar_tracker yocs_msgs_gencpp)
 
 add_library(yocs_docking_interactor
   src/${PROJECT_NAME}/docking_interactor.cpp
-  src/${PROJECT_NAME}/logs.cpp
+  src/${PROJECT_NAME}/utils.cpp
   src/${PROJECT_NAME}/command_handles.cpp
 )
 target_link_libraries(yocs_docking_interactor yocs_docking_ar_tracker ${catkin_LIBRARIES})

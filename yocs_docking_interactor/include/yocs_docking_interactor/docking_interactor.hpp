@@ -7,7 +7,6 @@
 #ifndef _YOCS_DOCKING_INTERACTOR_HPP_
 #define _YOCS_DOCKING_INTERACTOR_HPP_
 
-
 #include <ros/ros.h>
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/server/simple_action_server.h>
@@ -21,6 +20,12 @@
 #include "yocs_navigator/basic_move_controller.hpp"
 
 namespace yocs_docking_interactor {
+  
+typedef actionlib::SimpleActionServer<yocs_msgs::DockingInteractorAction> DockingInteractorActionServer;
+typedef actionlib::SimpleActionClient<kobuki_msgs::AutoDockingAction> KobukiAutoDockActionClient;
+typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseActionClient;
+
+
 class DockingInteractor {
   public:
     DockingInteractor(ros::NodeHandle& n);
@@ -38,26 +43,67 @@ class DockingInteractor {
         void wakeUp(double distance);
         void registerDockMarker();
         void returnToDock();
+          bool moveToDockFront(std::string& message);
           bool callAutoDock(std::string& message);
     void processPreemptCommand();
 
-    void terminateCommand(bool success, const std::string message); 
+    void terminateCommand(const bool success, const std::string message); 
+    void sendFeedback(const int level, const std::string message);
+
+    void sendMovebaseGoal(const geometry_msgs::PoseStamped& pose);
   
   private:
     ros::NodeHandle nh_;
-    actionlib::SimpleActionServer<yocs_msgs::DockingInteractorAction> as_command_;
-    actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> ac_move_base_;
-    actionlib::SimpleActionClient<kobuki_msgs::AutoDockingAction> ac_auto_dock_;
+    ros::Publisher goal_pose_pub_;
+    boost::shared_ptr<DockingARTracker> docking_ar_tracker_;
+    boost::shared_ptr<DockingInteractorActionServer> as_command_;
+    boost::shared_ptr<KobukiAutoDockActionClient> ac_auto_dock_;
+    boost::shared_ptr<MoveBaseActionClient> ac_move_base_;
+    boost::shared_ptr<yocs_navigator::BasicMoveController> bmc_;
 
     boost::thread command_process_thread_; 
-
-    yocs_navigator::BasicMoveController bmc_;
-    DockingARTracker* docking_ar_tracker_;
+    
+    std::string as_command_topic_;
 
     bool command_in_progress_;
     double auto_dock_timeout_;
+    double relay_on_marker_distance_;
     std::string global_frame_;
     std::string base_frame_;
+
+    enum 
+    {
+      START_GLOBAL_DOCKING,
+      GLOBAL_DOCKING,
+      START_MARKER_DOCKING,
+      MARKER_DOCKING,
+    } state_;
 };
+
+template <typename T>
+bool cancelAllGoals(actionlib::SimpleActionClient<T> & action_client, double timeout=2.0)
+{
+  actionlib::SimpleClientGoalState goal_state = action_client.getState();
+  if ((goal_state != actionlib::SimpleClientGoalState::ACTIVE) &&
+      (goal_state != actionlib::SimpleClientGoalState::PENDING) &&
+      (goal_state != actionlib::SimpleClientGoalState::RECALLED) &&
+      (goal_state != actionlib::SimpleClientGoalState::PREEMPTED))
+  {
+    // We cannot cancel a REJECTED, ABORTED, SUCCEEDED or LOST goal
+//    ROS_WARN("Cannot cancel %s goal, as it has %s state!", acName(action_client), goal_state.toString().c_str());
+    return true;
+  }
+                                                                                               
+//  ROS_INFO("Canceling %s goal with %s state...", acName(action_client), goal_state.toString().c_str());
+  action_client.cancelAllGoals();                                                              
+  if (action_client.waitForResult(ros::Duration(timeout)) == false)                            
+  {
+//    ROS_WARN("Cancel %s goal didn't finish after %.2f seconds: %s", acName(action_client), timeout, goal_state.toString().c_str());
+    return false;
+  }
+
+//  ROS_INFO("Cancel %s goal succeed. New state is %s", acName(action_client), goal_state.toString().c_str());
+  return true;
+}
 }
 #endif

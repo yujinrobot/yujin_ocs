@@ -34,6 +34,11 @@ bool DockingARTracker::isReady()
   return global_marker_received_;
 }
 
+bool DockingARTracker::isDockRegistered()
+{
+  return dock_marker_registered_;
+}
+
 bool DockingARTracker::reset()
 {
   dock_marker_registered_ = false;
@@ -107,5 +112,12 @@ bool DockingARTracker::registerDockingOnGlobalFrame(const std::string global_fra
   message = "success";
   return true;
 }
+
+void DockingARTracker::getRobotDockPose(geometry_msgs::PoseStamped& pose)
+{
+  pose = robot_dock_pose_;
+}
+
+//bool isDockMarkerSpotted(geometry_msgs::Pose
 
 }

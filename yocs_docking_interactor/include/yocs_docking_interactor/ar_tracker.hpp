@@ -25,10 +25,12 @@ class DockingARTracker : public yocs::ARMarkerTracking
     bool init();
     bool reset();
     bool isReady();
+    bool isDockRegistered();
     bool enableTracker();
     bool disableTracker();
     bool setClosestAsDockingMarker();
     bool registerDockingOnGlobalFrame(const std::string global_frame, const std::string base_frame, std::string& message);
+    void getRobotDockPose(geometry_msgs::PoseStamped& pose);
 
   protected:
     void customCB(const ar_track_alvar_msgs::AlvarMarkers& spotted_markers, const std::vector<yocs::TrackedMarker> &tracked_markers);
