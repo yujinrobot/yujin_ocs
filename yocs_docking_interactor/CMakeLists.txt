@@ -41,6 +41,7 @@ add_library(yocs_docking_interactor
   src/${PROJECT_NAME}/docking_interactor.cpp
   src/${PROJECT_NAME}/utils.cpp
   src/${PROJECT_NAME}/command_handles.cpp
+  src/${PROJECT_NAME}/return_to_dock_handles.cpp
 )
 target_link_libraries(yocs_docking_interactor yocs_docking_ar_tracker ${catkin_LIBRARIES})
 add_dependencies(yocs_docking_interactor yocs_msgs_gencpp kobuki_msgs_gencpp)

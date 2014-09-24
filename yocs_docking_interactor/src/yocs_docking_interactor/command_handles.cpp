@@ -40,6 +40,8 @@ void DockingInteractor::wakeUp(double distance)
   bmc_->backward(distance);
   success = docking_ar_tracker_->setClosestAsDockingMarker();
 
+  docking_ar_tracker_->disableTracker();
+
   if(success)
     terminateCommand(true, "Wake up!");
   else
@@ -70,7 +72,9 @@ void DockingInteractor::returnToDock()
   }
 
   // navigation to dock
+  docking_ar_tracker_->enableTracker(); // Keep an eye open to detect the marker as we approach it
   success = moveToDockFront(message);
+  docking_ar_tracker_->disableTracker();
 
   // auto dock
   if(success)
@@ -131,44 +135,41 @@ bool DockingInteractor::callAutoDock(std::string& message)
 bool DockingInteractor::moveToDockFront(std::string& message)
 {
   bool dock_infront = false;
-  state_ = START_GLOBAL_DOCKING;
+  DockingState state = START_GLOBAL_DOCKING;
 
   ros::Time t0;
-  geometry_msgs::PoseStamped pose;
+
   while(!dock_infront) {
-    switch(state_) { 
+    switch(state) { 
       case START_GLOBAL_DOCKING:
-        docking_ar_tracker_->getRobotDockPose(pose);
-        docking_ar_tracker_->enableTracker(); // Keep an eye open to detect the marker as we approach it
-        goal_pose_pub_.publish(pose);
-        sendMovebaseGoal(pose);
+        state = startGlobalNaviToDock();
         t0 = ros::Time::now();
-        state_ = GLOBAL_DOCKING;
         break;
       case GLOBAL_DOCKING:
-        if(ac_move_base_->getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
-        {
-          // We cannot see the marker; that's normal if we are trying the odometry origin fallback solution (see
-          // no-parameters dockInBase method). If not, probably we have a problem; switch on auto-docking anyway
-          dock_infront = true;
-        }
-        if(docking_ar_tracker_->isDockMarkerSpotted(pose, message))
-        {
-          // 1. check distance
-          // 2. if it is less than relay distance, change to local navigation 
-        }
-        else {
-          // send feedback?
-        }
+        state = underGlobalNavigation();
         break;
-      case START_MARKER_DOCKING:
+      case CANCEL_GLOBAL_NAVIGATION_AND_START_MARKER_DOCKING:
+        state = startSpottedMarkerBasedNaivgation();
         break;
       case MARKER_DOCKING:
+        state = underSpottedMarkerBasedNavigation(); 
         break;
+      case TERMINATE_GLOBAL_DOCKING:
+      case TERMINATE_MARKER_DOCKING:
+      case TERMINATE_ON_ERROR:
+        dock_infront = true;
       default:
         break;
     }
   }
+
+  if(state == TERMINATE_ON_ERROR)
+  {
+    message = "Failed to return back to docking station..";  
+    return false;
+  }
+
+  // no matter it finishes in global docking or marker docking. It is success
   return true;
 }
 

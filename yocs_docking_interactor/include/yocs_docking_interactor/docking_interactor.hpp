@@ -14,6 +14,7 @@
 #include <yocs_msgs/DockingInteractorAction.h>
 #include <move_base_msgs/MoveBaseAction.h>
 #include <kobuki_msgs/AutoDockingAction.h>
+#include "yocs_math_toolkit/geometry.hpp"
 
 #include "yocs_docking_interactor/default_params.h"
 #include "yocs_docking_interactor/ar_tracker.hpp"
@@ -25,6 +26,7 @@ typedef actionlib::SimpleActionServer<yocs_msgs::DockingInteractorAction> Dockin
 typedef actionlib::SimpleActionClient<kobuki_msgs::AutoDockingAction> KobukiAutoDockActionClient;
 typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseActionClient;
 
+typedef enum { START_GLOBAL_DOCKING, GLOBAL_DOCKING, CANCEL_GLOBAL_NAVIGATION_AND_START_MARKER_DOCKING, MARKER_DOCKING, TERMINATE_GLOBAL_DOCKING, TERMINATE_MARKER_DOCKING, TERMINATE_ON_ERROR} DockingState;
 
 class DockingInteractor {
   public:
@@ -51,6 +53,12 @@ class DockingInteractor {
     void sendFeedback(const int level, const std::string message);
 
     void sendMovebaseGoal(const geometry_msgs::PoseStamped& pose);
+    
+    DockingState startGlobalNaviToDock();
+    DockingState underGlobalNavigation();
+    DockingState startSpottedMarkerBasedNaivgation();
+      void getRobotTargetPose(const geometry_msgs::PoseStamped& dock_pose, geometry_msgs::PoseStamped& robot_target_pose);
+    DockingState underSpottedMarkerBasedNavigation();
   
   private:
     ros::NodeHandle nh_;
@@ -70,14 +78,6 @@ class DockingInteractor {
     double relay_on_marker_distance_;
     std::string global_frame_;
     std::string base_frame_;
-
-    enum 
-    {
-      START_GLOBAL_DOCKING,
-      GLOBAL_DOCKING,
-      START_MARKER_DOCKING,
-      MARKER_DOCKING,
-    } state_;
 };
 
 template <typename T>

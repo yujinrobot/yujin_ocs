@@ -91,10 +91,11 @@ bool DockingARTracker::registerDockingOnGlobalFrame(const std::string global_fra
     geometry_msgs::PoseStamped after;
     docking_marker_in_robot_frame_ = current_dock_marker;
     docking_marker_in_global_frame_ = docking_marker_in_robot_frame_;
-    after = getDockPoseInGlobal(global_frame, docking_marker_in_robot_frame_.pose);
+
+    getDockPoseInGlobal(global_frame, docking_marker_in_robot_frame_.pose, after);
     docking_marker_in_global_frame_.header = after.header;
     docking_marker_in_global_frame_.pose = after;
-    robot_dock_pose_ =  getRobotPose(global_frame, base_frame);
+    getRobotPose(global_frame, base_frame, robot_dock_pose_);
   }catch(tf::TransformException& e)
   {
 //    ROS_ERROR("Cannot get tf %s -> %s : %s", docking_marker_in_robot_frame_.pose.header.frame_id.c_str(), global_frame.c_str(), e.what());
@@ -107,20 +108,21 @@ bool DockingARTracker::registerDockingOnGlobalFrame(const std::string global_fra
   return true;
 }
 
-geometry_msgs::PoseStamped DockingARTracker::getDockPoseInGlobal(const std::string& global_frame, const geometry_msgs::PoseStamped before)
+void DockingARTracker::getDockPoseInGlobal(const std::string& global_frame, const geometry_msgs::PoseStamped before, geometry_msgs::PoseStamped& pose)
 {
   geometry_msgs::PoseStamped after;
   tf_listener_.transformPose(global_frame, before, after);
 
-  return after;
+  pose = after;
 }
 
-geometry_msgs::PoseStamped DockingARTracker::getRobotPose(const std::string& global_frame, const std::string& base_frame) {
+void DockingARTracker::getRobotPose(const std::string& global_frame, const std::string& base_frame, geometry_msgs::PoseStamped& pose) {
   geometry_msgs::PoseStamped robot_pose;
   tf::StampedTransform robot_tf;
   tf_listener_.lookupTransform(global_frame, base_frame, ros::Time(0.0), robot_tf);
   mtk::tf2pose(robot_tf, robot_pose); 
-  return robot_pose;
+
+  pose = robot_pose;
 }
 
 void DockingARTracker::getRobotDockPose(geometry_msgs::PoseStamped& pose)

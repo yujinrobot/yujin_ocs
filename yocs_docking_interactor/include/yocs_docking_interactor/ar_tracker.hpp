@@ -32,6 +32,8 @@ class DockingARTracker : public yocs::ARMarkerTracking
     bool registerDockingOnGlobalFrame(const std::string global_frame, const std::string base_frame, std::string& message);
     void getRobotDockPose(geometry_msgs::PoseStamped& pose);
     bool isDockMarkerSpotted(geometry_msgs::PoseStamped& pose, std::string& message);
+    void getRobotPose(const std::string& global_frame, const std::string& base_frame, geometry_msgs::PoseStamped& pose);
+    void getDockPoseInGlobal(const std::string& global_frame, const geometry_msgs::PoseStamped before, geometry_msgs::PoseStamped& pose);
 
   protected:
     void customCB(const ar_track_alvar_msgs::AlvarMarkers& spotted_markers, const std::vector<yocs::TrackedMarker> &tracked_markers);
@@ -39,8 +41,6 @@ class DockingARTracker : public yocs::ARMarkerTracking
 
     bool callTrackerService(bool value);
 
-    geometry_msgs::PoseStamped getDockPoseInGlobal(const std::string& global_frame, const geometry_msgs::PoseStamped before);
-    geometry_msgs::PoseStamped getRobotPose(const std::string& global_frame, const std::string& base_frame);
 
   private:
     ros::NodeHandle nh_;

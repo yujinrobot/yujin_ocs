@@ -25,6 +25,7 @@ void DockingInteractor::sendMovebaseGoal(const geometry_msgs::PoseStamped& pose)
   move_base_msgs::MoveBaseGoal goal;
   goal.target_pose = pose;
   goal.target_pose.header.stamp = ros::Time::now();
+  
 
   do                                                                                           
   {                                                                                            
@@ -32,6 +33,8 @@ void DockingInteractor::sendMovebaseGoal(const geometry_msgs::PoseStamped& pose)
     times_sent++;
   } while ((ac_move_base_->waitForResult(ros::Duration(0.1)) == true) &&
            (ac_move_base_->getState() == actionlib::SimpleClientGoalState::SUCCEEDED));
+
+  goal_pose_pub_.publish(pose);
 
   if (times_sent > 1)
     ROS_DEBUG("Again the strange case of instantaneous goals... (goal sent %d times)", times_sent);
