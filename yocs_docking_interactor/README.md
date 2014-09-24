@@ -20,8 +20,8 @@ It allows to interact with Kobuki Docking statino with AR Marker. It provides ap
 
 # Parameters
 
-* global_frame 
-* base_frame
-* auto_dock_timeout
-* relay_on_marker_distance
-* docking_ar_min_confidence
+* global_frame(map) 
+* base_frame(base_footprint)
+* auto_dock_timeout(90.0)
+* relay_on_marker_distance(1.0)
+* docking_ar_min_confidence(0.3)
