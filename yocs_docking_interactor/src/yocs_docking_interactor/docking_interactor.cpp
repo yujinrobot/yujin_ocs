@@ -9,18 +9,12 @@ namespace yocs_docking_interactor {
 
 DockingInteractor::DockingInteractor(ros::NodeHandle& n) 
 : nh_(n)
-//  as_command_(nh_, DockingInteractorDefaultParam::AS_COMMAND, false),
-//  ac_move_base_(nh_, DockingInteractorDefaultParam::AC_MOVE_BASE, true)
-//  ac_auto_dock_(nh_, DockingInteractorDefaultParam::AC_AUTO_DOCK, true)
 {
   as_command_topic_ = DockingInteractorDefaultParam::AS_COMMAND;
 }
 
 DockingInteractor::DockingInteractor(ros::NodeHandle& n, const std::string as_command_topic) 
 : nh_(n)
-//  as_command_(as_command_topic, false),
-//  ac_move_base_(nh_, DockingInteractorDefaultParam::AC_MOVE_BASE, true)
-//  ac_auto_dock_(nh_, DockingInteractorDefaultParam::AC_AUTO_DOCK, true)
 {
   as_command_topic_ = as_command_topic;
 }
@@ -33,6 +27,7 @@ bool DockingInteractor::init()
 {
   ros::NodeHandle pnh("~");
   pnh.param("global_frame", global_frame_, std::string("map"));
+  pnh.param("base_frame", base_frame_, std::string("base_footprint"));
   pnh.param("auto_dock_timeout", auto_dock_timeout_, 90.0);
   pnh.param("relay_on_marker_distance", relay_on_marker_distance_, 1.0);
 
