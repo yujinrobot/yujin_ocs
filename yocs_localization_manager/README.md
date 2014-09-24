@@ -5,6 +5,8 @@ YOCS Localization Manager
 
 Provides action to localize the robot using AR Pair Markers
 
+![ar_pair][./imgs/ar_pair.jpg =250x]
+
 # APIs
 
 `localize` action

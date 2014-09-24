@@ -5,6 +5,8 @@ YOCS Docking Interactor
 
 It allows to interact with Kobuki Docking statino with AR Marker. It provides apis to the following written in [yocs_msgs/DockingInteractor.action]
 
+![docking Station][./imgs/docking_station.jpg=250x]
+
 `docking_interactor` action
 
 * WAKE_UP : It move backwards a bit and recognizes Docking AR Marker.
