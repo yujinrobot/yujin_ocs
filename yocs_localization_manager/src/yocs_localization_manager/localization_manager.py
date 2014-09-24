@@ -150,5 +150,6 @@ class LocalizationManager(object):
 
     def spin(self):
         sleep_time = self.param['sleep_time']
+        self._as_localize.start()
         while not rospy.is_shutdown():
             rospy.sleep(sleep_time)
