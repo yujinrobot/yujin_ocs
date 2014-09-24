@@ -18,6 +18,8 @@ class LocalizationManager(object):
         using a pose initialisation node such as fake_localization
     """
 
+    _localize_action_name = 'localize'
+
     def __init__(self):
         self._initialise = False
         self._thread =  None
@@ -35,9 +37,6 @@ class LocalizationManager(object):
         self._as_localize = actionlib.SimpleActionServer(self._localize_action_name, yocs_msgs.LocalizeAction, auto_start=False)
         self._as_localize.register_goal_callback(self._process_localize_goal)
         self._as_localize.register_preempt_callback(self._process_localize_preempt)
-
-        self._pub_result = rospy.Publisher('~initialised', std_msgs.Empty, latch=True, queue_size=3)
-        self._sub_init = rospy.Subscriber('~initialise', std_msgs.Empty, self._init_callback)
 
     def _init_params(self):
         param = {}
