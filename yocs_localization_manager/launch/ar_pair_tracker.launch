@@ -1,0 +1,40 @@
+<launch>
+  <!-- Tracker configuration -->
+  <arg name="global_ar_pair_topic"/> <!-- topic to receive global marker pair information -->
+  <arg name="predicted_robot_pose_topic"/> <!-- topic to notify localization manager to localize robot -->
+  <arg name="global_frame"         default="map"/>
+  <arg name="base_frame"           default="base_footprint"/>
+
+  <!-- AR Track Alvar configuration -->
+  <arg name="marker_size"          default="6.9" />
+  <arg name="max_new_marker_error" default="0.08" />
+  <arg name="max_track_error"      default="0.2" />
+  <arg name="max_frequency"        default="5.0" />
+  <arg name="output_frame"         default="camera_rgb_optical_frame" />  <!-- output frame must be camera frame. ar pair tracking does not work if it sets to robot frame -->
+  <arg name="cam_image_topic"      default="camera/rgb/image_raw" />
+  <arg name="cam_info_topic"       default="camera/rgb/camera_info" />
+ 
+  <node name="ar_track_alvar" pkg="ar_track_alvar" type="individualMarkersNoKinect" respawn="false" output="screen"
+        args="$(arg marker_size) $(arg max_new_marker_error) $(arg max_track_error) $(arg cam_image_topic) $(arg cam_info_topic) $(arg output_frame) $(arg max_frequency)">
+    <param name="max_frequency" value="$(arg max_frequency)"/>  <!-- Must be be set as a parameter so other nodes can read it (e.g. ar_markers) -->
+
+    <remap from="ARmarker_points"       to="ar_track_alvar/ARmarker_points"/>
+    <remap from="ar_pose_marker"        to="ar_track_alvar/ar_pose_marker"/>
+    <remap from="visualization_marker"  to="ar_track_alvar/visualization_marker"/>
+  </node>
+
+  <node name="ar_pair_tracking" pkg="yocs_ar_pair_tracking" type="yocs_ar_pair_tracking_node" respawn="false" output="screen">
+    <param name="publish_transforms" value="false"/>
+    <param name="global_frame" value="$(arg global_frame)"/>
+    <param name="base_frame" value="$(arg base_frame)"/>
+    <param name="marker_frame" value="$(arg output_frame)"/>
+    <remap from="ar_pair_tracking/update_ar_pairs"        to="update_ar_pairs"/>
+    <remap from="ar_pair_tracking/initial_pose"           to="$(predicted_robot_pose)"/> <!-- output to outside -->
+  </node>
+
+
+  <node pkg="yocs_localization_manager" name="tracker_manager" type="tracker_manager.py">
+    <remap from="update_ar_pairs" to="update_ar_pairs"/>
+    <remap from="global_pairs" to="$(arg global_ar_pair_topic)"/> <!-- input from outside -->
+   </node>
+</include>
