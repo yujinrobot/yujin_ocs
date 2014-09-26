@@ -29,12 +29,12 @@
     <param name="base_frame" value="$(arg base_frame)"/>
     <param name="marker_frame" value="$(arg output_frame)"/>
     <remap from="ar_pair_tracking/update_ar_pairs"        to="update_ar_pairs"/>
-    <remap from="ar_pair_tracking/initial_pose"           to="$(predicted_robot_pose)"/> <!-- output to outside -->
+    <remap from="ar_pair_tracking/initial_pose"           to="$(arg predicted_robot_pose_topic)"/> <!-- output to outside -->
   </node>
 
 
   <node pkg="yocs_localization_manager" name="tracker_manager" type="tracker_manager.py">
     <remap from="update_ar_pairs" to="update_ar_pairs"/>
     <remap from="global_pairs" to="$(arg global_ar_pair_topic)"/> <!-- input from outside -->
-   </node>
-</include>
+ </node>
+</launch>
