@@ -2,6 +2,7 @@
   <!-- Localization manager configuration -->
   <arg name="predicted_robot_pose_topic"/>
   <arg name="localize_action"/>
+  <arg name="cmd_vel_mux_input" default="/cmd_vel_mux/inputs/navigation">
   <arg name="global_frame"  default="map"/>
   <arg name="odom_frame"    default="odom"/> 
   <arg name="base_frame"    default="base_footprint"/>
@@ -17,6 +18,7 @@
     <remap from="pose_tracker/poses"    to="$(arg predicted_robot_pose_topic)"/>
     <remap from="localize"              to="$(arg localize_action)"/> 
     <remap from="initialpose"           to="$(arg initialpose_topic)"/>
+    <remap from="cmd_vel"               to="$(arg cmd_vel_mux_input)"/>
   </node>
 
   <include file="$(find yocs_localization_manager)/launch/includes/amcl.launch.xml">

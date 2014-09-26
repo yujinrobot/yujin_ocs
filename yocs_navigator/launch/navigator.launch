@@ -1,8 +1,34 @@
 <launch>
+  <arg name="location_list_topic"/>
+  <arg name="navigator_action"/>
+
+  <arg name="start_move_base"         default="true"/>
+  <arg name="cmd_vel_mux_input"       default="/cmd_vel_mux/inputs/navigation"/>
+  <arg name="move_base_topic"         default="move_base"/>
+  <arg name="odom_topic"              default="/odom"/>
+  <arg name="robot_cmd_feed"          default="/mobile_base/commands/velocity"/>
+  <arg name="global_frame"            default="map"/>
+  <arg name="base_frame"              default="base_footprint"/>
+  <arg name="move_base_param_path"    default="$(find turtlebot_navigation)/param"/>
+  <arg name="vel_smoother_param"      default="$(find yocs_velocity_smoother)/param/standalone.yaml"/>
+
   <!-- Semantic Navigator -->
   <node pkg="yocs_navigator" name="semantic_navigator" type="yocs_semantic_navigator_node">
-    <remap from="cmd_vel" to="navigation_velocity_smoother/raw_cmd_vel"/>
-    <remap from="odom"    to="/odom"/>
-    <remap from="tablelist" to="table_pose_list"/>
+    <remap from="odom"        to="$(arg odom_topic)"/>
+    <remap from="tablelist"   to="$(arg location_list_topic)"/>
+    <remap from="navigate_to" to="$(arg navigator_action)"/>
+    <remap from="cmd_vel"     to="$(arg cmd_vel_mux_input)"/>
   </node>
+
+  <!-- move base -->
+  <include if="$(arg start_move_base)" file="$(find yocs_navigator)/launch/move_base_with_vel_smoother">
+    <arg name="cmd_vel_mux_input"     value="$(arg cmd_vel_mux_input)"/>
+    <arg name="move_base_topic"       value="$(arg move_base_topic)"/>
+    <arg name="odom_topic"            value="$(arg odom_topic)"/>
+    <arg name="global_frame"          value="$(arg global_frame)"/>
+    <arg name="base_frame"            value="$(arg base_frame)"/>
+    <arg name="vel_smoother_param"    value="$(arg vel_smoother_param)"/>
+    <arg name="move_base_param_path"  value="$(arg move_base_param_path)"/>
+    <arg name="robot_cmd_feed"        value="$(arg robot_cmd_feed)"/>
+  </include>
 </launch>

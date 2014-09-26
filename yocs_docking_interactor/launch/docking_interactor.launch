@@ -1,0 +1,37 @@
+<launch>
+  <arg name="docking_interactor_action"/>
+  <arg name="auto_dock_timeout"         default="90.0"/>
+  <arg name="relay_on_marker_distance"  default="1.0"/>
+  
+  <arg name="start_move_base"           default="true"/>
+  <arg name="cmd_vel_mux_input"         default="/cmd_vel_mux/inputs/navigation"/>
+  <arg name="move_base_topic"           default="move_base"/>
+  <arg name="odom_topic"                default="/odom"/>
+  <arg name="robot_cmd_feed"            default="/mobile_base/commands/velocity"/>
+  <arg name="global_frame"              default="map"/>
+  <arg name="base_frame"                default="base_footprint"/>
+  <arg name="move_base_param_path"      default="$(find turtlebot_navigation)/param"/>
+  <arg name="vel_smoother_param"        default="$(find yocs_velocity_smoother)/param/standalone.yaml"/>
+  
+  <!-- Docking Interactor -->
+  <node pkg="yocs_docking_interactor" name="docking_interactor" type="docking_interactor_node">
+    <arg name="global_frame"              value="$(arg global_frame)"/>
+    <arg name="base_frame"                value="$(arg base_frame)"/>
+    <arg name="auto_dock_timeout"         value="$(arg auto_dock_timeout)"/>
+    <remap from="cmd_vel"                 to="$(arg cmd_vel_mux_input)"/>
+    <remap from="odom_topic"              to="$(arg odom_topic)"/>
+  </node>
+
+  <!-- move base & Vel smoother-->
+  <include if="$(arg start_move_base)" file="$(find yocs_navigator)/launch/move_base_with_vel_smoother">
+    <arg name="cmd_vel_mux_input"     value="$(arg cmd_vel_mux_input)"/>
+    <arg name="move_base_topic"       value="$(arg move_base_topic)"/>
+    <arg name="odom_topic"            value="$(arg odom_topic)"/>
+    <arg name="global_frame"          value="$(arg global_frame)"/>
+    <arg name="base_frame"            value="$(arg base_frame)"/>
+    <arg name="vel_smoother_param"    value="$(arg vel_smoother_param)"/>
+    <arg name="move_base_param_path"  value="$(arg move_base_param_path)"/>
+    <arg name="robot_cmd_feed"        value="$(arg robot_cmd_feed)"/>
+  </include>
+
+</launch>
