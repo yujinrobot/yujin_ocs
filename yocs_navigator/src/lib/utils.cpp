@@ -201,11 +201,11 @@ void SemanticNavigator::waitForMoveBase(int& move_base_result, const ros::Time& 
 
 void SemanticNavigator::loginfo(const std::string& msg)
 {
-  ROS_INFO_STREAM_NAMED(ros::this_node::getName(), msg);
+  ROS_INFO_STREAM(ros::this_node::getName() << " : " << msg);
 }
 
 void SemanticNavigator::logwarn(const std::string& msg)
 {
-  ROS_WARN_STREAM_NAMED(ros::this_node::getName(), msg);
+  ROS_WARN_STREAM(ros::this_node::getName() << " : " <<  msg);
 }
 }

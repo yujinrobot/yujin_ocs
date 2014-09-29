@@ -16,12 +16,12 @@
   <node pkg="yocs_navigator" name="semantic_navigator" type="yocs_semantic_navigator_node">
     <remap from="odom"        to="$(arg odom_topic)"/>
     <remap from="tablelist"   to="$(arg location_list_topic)"/>
-    <remap from="navigate_to" to="$(arg navigator_action)"/>
+    <remap from="navigator" to="$(arg navigator_action)"/>
     <remap from="cmd_vel"     to="$(arg cmd_vel_mux_input)"/>
   </node>
 
   <!-- move base -->
-  <include if="$(arg start_move_base)" file="$(find yocs_navigator)/launch/move_base_with_vel_smoother">
+  <include if="$(arg start_move_base)" file="$(find yocs_navigator)/launch/move_base_with_vel_smoother.launch">
     <arg name="cmd_vel_mux_input"     value="$(arg cmd_vel_mux_input)"/>
     <arg name="move_base_topic"       value="$(arg move_base_topic)"/>
     <arg name="odom_topic"            value="$(arg odom_topic)"/>

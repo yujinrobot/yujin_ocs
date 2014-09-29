@@ -1,5 +1,6 @@
 <launch>
   <arg name="docking_interactor_action"/>
+  <arg name="global_ar_pair_topic"/>
   <arg name="auto_dock_timeout"         default="90.0"/>
   <arg name="relay_on_marker_distance"  default="1.0"/>
   
@@ -15,11 +16,12 @@
   
   <!-- Docking Interactor -->
   <node pkg="yocs_docking_interactor" name="docking_interactor" type="docking_interactor_node">
-    <arg name="global_frame"              value="$(arg global_frame)"/>
-    <arg name="base_frame"                value="$(arg base_frame)"/>
-    <arg name="auto_dock_timeout"         value="$(arg auto_dock_timeout)"/>
+    <param name="global_frame"              value="$(arg global_frame)"/>
+    <param name="base_frame"                value="$(arg base_frame)"/>
+    <param name="auto_dock_timeout"         value="$(arg auto_dock_timeout)"/>
     <remap from="cmd_vel"                 to="$(arg cmd_vel_mux_input)"/>
     <remap from="odom_topic"              to="$(arg odom_topic)"/>
+    <remap from="global_ar_pair_topic"    to="$(arg global_ar_pair_topic)"/>
   </node>
 
   <!-- move base & Vel smoother-->
@@ -33,5 +35,8 @@
     <arg name="move_base_param_path"  value="$(arg move_base_param_path)"/>
     <arg name="robot_cmd_feed"        value="$(arg robot_cmd_feed)"/>
   </include>
+
+  <!-- auto dock -->
+  <include file="$(find waiterbot_bringup)/launch/includes/_autodock.launch"/>
 
 </launch>

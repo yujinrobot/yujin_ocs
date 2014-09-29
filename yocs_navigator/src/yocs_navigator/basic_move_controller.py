@@ -2,13 +2,11 @@
  basic_move_controller.py
  LICENSE : BSD - https://raw.github.com/yujinrobot/yujin_ocs/license/LICENSE
 '''
-
 import copy
 import rospy
 import tf
 import nav_msgs.msg as nav_msgs
 import geometry_msgs.msg as geometry_msgs
-
 
 class BasicMoveController(object):
     def __init__(self, odom_topic='odom', cmd_vel_topic='cmd_vel'):
@@ -40,7 +38,7 @@ class BasicMoveController(object):
     def spin_clockwise(self):
         yaw = self._get_odom_yaw()
 
-        while self._get_odom_yaw() =< yaw:
+        while self._get_odom_yaw() <= yaw:
             self.turnClockwise()
 
         while self._get_odom_yaw() > yaw:

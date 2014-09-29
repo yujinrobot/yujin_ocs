@@ -2,17 +2,17 @@
   <!-- Localization manager configuration -->
   <arg name="predicted_robot_pose_topic"/>
   <arg name="localize_action"/>
-  <arg name="cmd_vel_mux_input" default="/cmd_vel_mux/inputs/navigation">
-  <arg name="global_frame"  default="map"/>
-  <arg name="odom_frame"    default="odom"/> 
-  <arg name="base_frame"    default="base_footprint"/>
+  <arg name="cmd_vel_mux_input" default="/cmd_vel_mux/inputs/navigation"/>
+  <arg name="global_frame"      default="map"/>
+  <arg name="odom_frame"        default="odom"/> 
+  <arg name="base_frame"        default="base_footprint"/>
 
-  <arg name="use_map_topic" default="true"/>
-  <arg name="scan_topic"    default="scan"/>
+  <arg name="use_map_topic"     default="true"/>
+  <arg name="scan_topic"        default="scan"/>
   <arg name="initialpose_topic" default="initialpose"/>
-  <arg name="initial_pose_x" default="0.0"/>
-  <arg name="initial_pose_y" default="0.0"/>
-  <arg name="initial_pose_a" default="0.0"/>
+  <arg name="initial_pose_x"    default="0.0"/>
+  <arg name="initial_pose_y"    default="0.0"/>
+  <arg name="initial_pose_a"    default="0.0"/>
 
   <node pkg="yocs_localization_manager" name="localization_manager" type="localization_manager.py">
     <remap from="pose_tracker/poses"    to="$(arg predicted_robot_pose_topic)"/>
@@ -25,11 +25,11 @@
     <arg name="global_frame"          value="$(arg global_frame)"/>
     <arg name="base_frame"            value="$(arg base_frame)"/>
     <arg name="odom_frame"            value="$(arg odom_frame)"/>
-    <arg name="initialpose_topic" value="$(arg initialpose_topic)"/>
-    <arg name="scan_topic"    value="$(arg scan_topic)"/>
-    <arg name="use_map_topic" value="$(arg use_map_topic)"/>
-    <arg name="initial_pose_x" value="$(arg initial_pose_x)"/>
-    <arg name="initial_pose_y" value="$(arg initial_pose_y)"/>
-    <arg name="initial_pose_a" value="$(arg initial_pose_a)"/>
+    <arg name="initialpose_topic"     value="$(arg initialpose_topic)"/>
+    <arg name="scan_topic"            value="$(arg scan_topic)"/>
+    <arg name="use_map_topic"         value="$(arg use_map_topic)"/>
+    <arg name="initial_pose_x"        value="$(arg initial_pose_x)"/>
+    <arg name="initial_pose_y"        value="$(arg initial_pose_y)"/>
+    <arg name="initial_pose_a"        value="$(arg initial_pose_a)"/>
   </include>
 </launch>
