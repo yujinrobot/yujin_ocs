@@ -5,7 +5,7 @@
 
 #include "yocs_navigator/semantic_navigator.hpp"
 
-namespace yocs {
+namespace yocs_navigator {
 
 SemanticNavigator::SemanticNavigator(ros::NodeHandle& n) 
 : nh_(n), basic_move_(n),

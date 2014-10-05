@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(yocs_navigator)
 
 find_package(catkin REQUIRED COMPONENTS
+  rospy
   roscpp
   actionlib
   tf
@@ -14,9 +15,10 @@ find_package(catkin REQUIRED COMPONENTS
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS system)
 
+catkin_python_setup()
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES yocs_navigator
+  LIBRARIES yocs_basic_move_controller yocs_semantic_navigator
   CATKIN_DEPENDS roscpp actionlib tf yocs_math_toolkit move_base_msgs nav_msgs yocs_msgs 
   DEPENDS Boost
 )
@@ -29,16 +31,16 @@ include_directories(
 
 # Declare a cpp library
 add_library(yocs_basic_move_controller
-  src/${PROJECT_NAME}/basic_move_controller.cpp
+  src/lib/basic_move_controller.cpp
 )
 
 target_link_libraries(yocs_basic_move_controller ${catkin_LIBRARIES})
 add_dependencies(yocs_basic_move_controller yocs_msgs_gencpp geometry_msgs_gencpp nav_msgs_gencpp)
 
 add_library(yocs_semantic_navigator
-  src/${PROJECT_NAME}/semantic_navigator.cpp
-  src/${PROJECT_NAME}/navigation_handler.cpp
-  src/${PROJECT_NAME}/utils.cpp
+  src/lib/semantic_navigator.cpp
+  src/lib/navigation_handler.cpp
+  src/lib/utils.cpp
 )
 
 target_link_libraries(yocs_semantic_navigator ${catkin_LIBRARIES} yocs_basic_move_controller)
@@ -66,6 +68,13 @@ install(TARGETS yocs_basic_move_controller
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
+
+install(TARGETS yocs_semantic_navigator
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
 
 # Mark cpp header files for installation
 install(DIRECTORY include/${PROJECT_NAME}/
