@@ -2,6 +2,7 @@
   <arg name="cmd_vel_mux_input"         default="/cmd_vel_mux/inputs/navigation"/>
   <arg name="move_base_topic"           default="move_base"/>
   <arg name="odom_topic"                default="/odom"/>
+  <arg name="map_topic"                 default="map"/>
   <arg name="robot_cmd_feed"            default="/mobile_base/commands/velocity"/>
   <arg name="global_frame"              default="map"/>
   <arg name="base_frame"                default="base_footprint"/>
@@ -40,5 +41,6 @@
     <remap from="cmd_vel"   to="navigation_velocity_smoother/raw_cmd_vel"/>
     <remap from="odom"      to="$(arg odom_topic)"/>
     <remap from="move_base" to="$(arg move_base_topic)"/>
+    <remap from="map"       to="$(arg map_topic)"/>
   </node>
 </launch>

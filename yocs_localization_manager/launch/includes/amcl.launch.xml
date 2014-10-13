@@ -6,6 +6,7 @@
   <arg name="use_map_topic" default="true"/>
   <arg name="scan_topic"    default="scan"/>
   <arg name="initialpose_topic" default="initialpose"/>
+  <arg name="map_topic"      default="map"/>
   <arg name="initial_pose_x" default="0.0"/>
   <arg name="initial_pose_y" default="0.0"/>
   <arg name="initial_pose_a" default="0.0"/>
@@ -13,6 +14,7 @@
   <node pkg="amcl" type="amcl" name="amcl">
     <remap from="scan" to="$(arg scan_topic)"/>
     <remap from="initialpose" to="$(arg initialpose_topic)"/>
+    <remap from="map"         to="$(arg map_topic)"/>
 
     <param name="use_map_topic" value="$(arg use_map_topic)"/>
     <!-- Publish scans from best pose at a max of 10 Hz -->

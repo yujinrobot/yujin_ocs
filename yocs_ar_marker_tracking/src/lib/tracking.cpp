@@ -103,12 +103,12 @@ void ARMarkerTracking::maintainTrackedMarker(TrackedMarker& marker,const ar_trac
   for (ObsList::iterator it = marker.obs_list_.begin(); it != marker.obs_list_.end(); ++it)
   {
     double age = (now - it->header.stamp).toSec();
-    if (age > ((position + 1)/ar_tracker_freq_) + 1.0)
+    if (age > ((position + 1)/ar_tracker_freq_) + 1.5)
     {
       int s0 = marker.obs_list_.size();
       marker.obs_list_.erase(it, marker.obs_list_.end());
       int s1 = marker.obs_list_.size();
-      ROS_INFO("%d observations discarded (first one with position %d in the list) for being %f seconds old ( > %f)", s0 - s1, position, age, ((position + 1)/ar_tracker_freq_) + 1.0);
+      ROS_DEBUG("%d observations discarded (first one with position %d in the list) for being %f seconds old ( > %f)", s0 - s1, position, age, ((position + 1)/ar_tracker_freq_) + 1.5);
       break;
     }
 

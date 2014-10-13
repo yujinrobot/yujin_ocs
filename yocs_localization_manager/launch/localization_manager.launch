@@ -10,6 +10,7 @@
   <arg name="use_map_topic"     default="true"/>
   <arg name="scan_topic"        default="scan"/>
   <arg name="initialpose_topic" default="initialpose"/>
+  <arg name="map_topic"         default="map"/>
   <arg name="initial_pose_x"    default="0.0"/>
   <arg name="initial_pose_y"    default="0.0"/>
   <arg name="initial_pose_a"    default="0.0"/>
@@ -28,6 +29,7 @@
     <arg name="initialpose_topic"     value="$(arg initialpose_topic)"/>
     <arg name="scan_topic"            value="$(arg scan_topic)"/>
     <arg name="use_map_topic"         value="$(arg use_map_topic)"/>
+    <arg name="map_topic"             value="$(arg map_topic)"/>
     <arg name="initial_pose_x"        value="$(arg initial_pose_x)"/>
     <arg name="initial_pose_y"        value="$(arg initial_pose_y)"/>
     <arg name="initial_pose_a"        value="$(arg initial_pose_a)"/>

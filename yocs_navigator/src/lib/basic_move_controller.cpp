@@ -72,14 +72,20 @@ void BasicMoveController::forward(double distance)
 {
   geometry_msgs::Point pos0 = odometry_.pose.pose.position;
   while (mtk::distance2D(pos0, odometry_.pose.pose.position) < distance)
+  {
+    ros::spinOnce();
     slowForward();
+  }
 }
 
 void BasicMoveController::backward(double distance)
 {
   geometry_msgs::Point pos0 = odometry_.pose.pose.position;
   while (mtk::distance2D(pos0, odometry_.pose.pose.position) < distance)
+  {
+    ros::spinOnce();
     slowBackward();
+  }
 }
 
 void BasicMoveController::turn(double angle)
