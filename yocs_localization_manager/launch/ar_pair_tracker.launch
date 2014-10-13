@@ -13,7 +13,6 @@
   <arg name="output_frame"         default="camera_rgb_optical_frame" />  <!-- output frame must be camera frame. ar pair tracking does not work if it sets to robot frame -->
   <arg name="cam_image_topic"      default="camera/rgb/image_raw" />
   <arg name="cam_info_topic"       default="camera/rgb/camera_info" />
- 
   <node name="ar_track_alvar" pkg="ar_track_alvar" type="individualMarkersNoKinect" respawn="false" output="screen"
         args="$(arg marker_size) $(arg max_new_marker_error) $(arg max_track_error) $(arg cam_image_topic) $(arg cam_info_topic) $(arg output_frame) $(arg max_frequency)">
     <param name="max_frequency" value="$(arg max_frequency)"/>  <!-- Must be be set as a parameter so other nodes can read it (e.g. ar_markers) -->
@@ -29,7 +28,7 @@
     <param name="base_frame" value="$(arg base_frame)"/>
     <param name="marker_frame" value="$(arg output_frame)"/>
     <remap from="ar_pair_tracking/update_ar_pairs"        to="update_ar_pairs"/>
-    <remap from="ar_pair_tracking/initial_pose"           to="$(arg predicted_robot_pose_topic)"/> <!-- output to outside -->
+    <remap from="ar_pair_tracking/initial_pose"           to="$(arg predicted_robot_pose_topic)"/>  <!-- output to outside -->
   </node>
 
 

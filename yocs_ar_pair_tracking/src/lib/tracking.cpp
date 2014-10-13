@@ -183,8 +183,7 @@ void ARPairTracking::computeRelativeRobotPose(const yocs_msgs::ARPair& spotted_p
     pwcs->pose.pose = ps.pose;
     pwcs->pose.covariance[6*0+0] = 0.2 * 0.2;
     pwcs->pose.covariance[6*1+1] = 0.2 * 0.2;
-   pwcs->pose.covariance[6*5+5] = M_PI/12.0 * M_PI/12.0;
-
+    pwcs->pose.covariance[6*5+5] = M_PI/12.0 * M_PI/12.0;
 
     // publish robot pose to nav watch dog
     pub_initial_pose_.publish(pwcs);

@@ -5,7 +5,9 @@
   <arg name="robot_cmd_feed"            default="/mobile_base/commands/velocity"/>
   <arg name="global_frame"              default="map"/>
   <arg name="base_frame"                default="base_footprint"/>
+  <arg name="odom_frame"                default="odom"/>
   <arg name="move_base_param_path"      default="$(find turtlebot_navigation)/param"/>
+  <arg name="custom_param_file"    default="$(find turtlebot_navigation)/param/dummy.yaml"/>
   <arg name="vel_smoother_param"        default="$(find yocs_velocity_smoother)/param/standalone.yaml"/>
 
   <!-- Velocity smoother nodelet; we must provide the absolute name of nodelet manager, as we can be in an application namespace -->
@@ -25,6 +27,15 @@
 
     <rosparam file="$(arg move_base_param_path)/dwa_local_planner_params.yaml" command="load" />
     <rosparam file="$(arg move_base_param_path)/move_base_params.yaml" command="load" />
+    <rosparam file="$(arg custom_param_file)" command="load" />
+
+ <!-- reset frame_id parameters using user input data -->
+    <param name="global_costmap/global_frame" value="$(arg global_frame)"/>
+    <param name="global_costmap/robot_base_frame" value="$(arg base_frame)"/>
+    <param name="local_costmap/global_frame" value="$(arg odom_frame)"/>
+    <param name="local_costmap/robot_base_frame" value="$(arg base_frame)"/>
+    <param name="DWAPlannerROS/global_frame_id" value="$(arg odom_frame)"/>
+
 
     <remap from="cmd_vel"   to="navigation_velocity_smoother/raw_cmd_vel"/>
     <remap from="odom"      to="$(arg odom_topic)"/>
