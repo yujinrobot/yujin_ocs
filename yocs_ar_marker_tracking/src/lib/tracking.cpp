@@ -131,7 +131,7 @@ void ARMarkerTracking::maintainTrackedMarker(TrackedMarker& marker,const ar_trac
                        : 1.0 - std::pow((std::abs(marker.heading) - min_penalized_head_) / (max_reliable_head_ - min_penalized_head_), 2);
   marker.stability     = marker.obs_list_.size() == 0 ? 0.0 : std::sqrt((double)position/(double)marker.obs_list_.size());
   marker.persistence   = std::sqrt((double)marker.obs_list_.size() / (double)obs_list_max_size);
-  marker.confidence    = marker.conf_distance * marker.conf_heading * marker.stability * marker.persistence;
+  marker.confidence    = marker.conf_distance * marker.stability * marker.persistence; // * marker.conf_heading I don't understand how conf_heading works. it always <=-1.4 or 1.4 >= disable it until becomes necessary
   marker.obs_list_.insert(marker.obs_list_.begin(), msgMarker.pose);
   marker.obs_list_.begin()->header = msgMarker.header;  // bloody alvar tracker doesn't fill pose's header
   if (marker.obs_list_.size() > obs_list_max_size)
