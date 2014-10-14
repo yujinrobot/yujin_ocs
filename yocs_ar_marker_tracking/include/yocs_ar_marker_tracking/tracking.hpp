@@ -105,6 +105,8 @@ OutputStream& operator<<(OutputStream &ostream , const TrackedMarker& marker) {
     ostream << "  Distance2d : " << marker.distance2d << "\n";
     ostream << "  Heading    : " << marker.heading << "\n";
     ostream << "  Confidence : " << marker.confidence << "\n";
+    ostream << "  Conf Dist  : " << marker.conf_distance<< "\n";
+    ostream << "  Conf Head  : " << marker.conf_heading<< "\n";
     ostream << "  Persistence: " << marker.persistence << "\n";
     ostream << "  Stability  : " << marker.stability << "\n";
     ostream.flush();
