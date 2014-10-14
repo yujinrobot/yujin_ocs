@@ -11,6 +11,7 @@
   <arg name="scan_topic"        default="scan"/>
   <arg name="initialpose_topic" default="initialpose"/>
   <arg name="map_topic"         default="map"/>
+  <arg name="odom_topic"        default="odom"/>
   <arg name="initial_pose_x"    default="0.0"/>
   <arg name="initial_pose_y"    default="0.0"/>
   <arg name="initial_pose_a"    default="0.0"/>
@@ -20,6 +21,7 @@
     <remap from="localize"              to="$(arg localize_action)"/> 
     <remap from="initialpose"           to="$(arg initialpose_topic)"/>
     <remap from="cmd_vel"               to="$(arg cmd_vel_mux_input)"/>
+    <remap from="odom"                  to="$(arg odom_topic)"/>
   </node>
 
   <include file="$(find yocs_localization_manager)/launch/includes/amcl.launch.xml">
