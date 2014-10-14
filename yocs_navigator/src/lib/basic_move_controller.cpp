@@ -26,12 +26,12 @@ BasicMoveController::~BasicMoveController()
 void BasicMoveController::init() 
 {
   pub_cmd_vel_ = nh_.advertise<geometry_msgs::Twist>(cmd_vel_topic_, 5);
-  sub_odom_    = nh_.subscribe(odometry_topic_, 5, &BasicMoveController::processOdometry, this);
+  sub_odom_    = nh_.subscribe(odometry_topic_, 1, &BasicMoveController::processOdometry, this);
 }
 
 void BasicMoveController::processOdometry(const nav_msgs::Odometry::ConstPtr& msg)
 {   
-  odometry_ = *msg;                                                        
+  odometry_ = *msg;
 }   
 
 void BasicMoveController::slowForward()
@@ -73,7 +73,6 @@ void BasicMoveController::forward(double distance)
   geometry_msgs::Point pos0 = odometry_.pose.pose.position;
   while (mtk::distance2D(pos0, odometry_.pose.pose.position) < distance)
   {
-    ros::spinOnce();
     slowForward();
   }
 }
@@ -81,9 +80,8 @@ void BasicMoveController::forward(double distance)
 void BasicMoveController::backward(double distance)
 {
   geometry_msgs::Point pos0 = odometry_.pose.pose.position;
-  while (mtk::distance2D(pos0, odometry_.pose.pose.position) < distance)
+  while(mtk::distance2D(pos0, odometry_.pose.pose.position) < distance)
   {
-    ros::spinOnce();
     slowBackward();
   }
 }
