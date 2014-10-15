@@ -41,7 +41,7 @@ class LocalizationManager(object):
 
     def _init_params(self):
         param = {}
-        param['sleep_time'] = rospy.Duration(1 / rospy.get_param('~spin_freq', 10))
+        param['sleeptime'] = rospy.Duration(1 / rospy.get_param('~spin_freq', 10))
         param['simulation'] = rospy.get_param('~simulation', False)
         param['ar_pair_baseline'] = rospy.get_param('ar_pair/baseline', 0.28)
         param['ar_pair_target_offset'] = rospy.get_param('ar_pair/target_offset', 0.5)
@@ -152,8 +152,9 @@ class LocalizationManager(object):
         rospy.logwarn('Localization Manager : ' + str(msg))
 
     def spin(self):
-        sleep_time = self.param['sleep_time']
+        sleeptime = self.param['sleeptime']
         self._as_localize.start()
         while not rospy.is_shutdown():
-            rospy.sleep(sleep_time)
-        self._thread.join()
+            rospy.sleep(sleeptime)
+        if self._thread:
+            self._thread.join()
