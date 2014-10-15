@@ -11,6 +11,7 @@
   <arg name="global_frame"            default="map"/>
   <arg name="base_frame"              default="base_footprint"/>
   <arg name="move_base_param_path"    default="$(find turtlebot_navigation)/param"/>
+  <arg name="custom_param_file"       default="$(find turtlebot_navigation)/param/dummy.yaml"/>
   <arg name="vel_smoother_param"      default="$(find yocs_velocity_smoother)/param/standalone.yaml"/>
 
   <!-- Semantic Navigator -->
@@ -31,6 +32,7 @@
     <arg name="base_frame"            value="$(arg base_frame)"/>
     <arg name="vel_smoother_param"    value="$(arg vel_smoother_param)"/>
     <arg name="move_base_param_path"  value="$(arg move_base_param_path)"/>
+    <arg name="custom_param_file"     value="$(arg custom_param_file)"/>
     <arg name="robot_cmd_feed"        value="$(arg robot_cmd_feed)"/>
   </include>
 </launch>

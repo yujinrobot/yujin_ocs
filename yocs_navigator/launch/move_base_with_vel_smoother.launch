@@ -8,7 +8,7 @@
   <arg name="base_frame"                default="base_footprint"/>
   <arg name="odom_frame"                default="odom"/>
   <arg name="move_base_param_path"      default="$(find turtlebot_navigation)/param"/>
-  <arg name="custom_param_file"    default="$(find turtlebot_navigation)/param/dummy.yaml"/>
+  <arg name="custom_param_file"         default="$(find turtlebot_navigation)/param/dummy.yaml"/>
   <arg name="vel_smoother_param"        default="$(find yocs_velocity_smoother)/param/standalone.yaml"/>
 
   <!-- Velocity smoother nodelet; we must provide the absolute name of nodelet manager, as we can be in an application namespace -->
