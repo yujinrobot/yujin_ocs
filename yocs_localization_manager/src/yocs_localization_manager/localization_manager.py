@@ -59,6 +59,7 @@ class LocalizationManager(object):
 
     def _process_localize_goal(self):
         goal = self._as_localize.accept_new_goal()
+        self.loginfo("Received Localize goal %s"%str(goal))
 
         if self._initialise:
             message = 'robot is initialising already. Ignore the command'
@@ -78,8 +79,10 @@ class LocalizationManager(object):
                 self._send_result(True,'Initialisation done in simulation.')
             elif goal.command == goal.STAND_AND_LOCALIZE:
                 self._thread = threading.Thread(target=self._stand_and_localize)
+                self._thread.start()
             elif goal.command == goal.SPIN_AND_LOCALIZE:
                 self._thread = threading.Thread(target=self._spin_and_localize)
+                self._thread.start()
             else:
                 message = 'Invalid command %s'%str(goal.command)
                 self._send_result(False, message)
@@ -133,10 +136,10 @@ class LocalizationManager(object):
             self.loginfo(str(message))
         else:
             self.logwarn(str(message))
-        r. yocs_msgs.LocalizeResult()
+        r = yocs_msgs.LocalizeResult()
         r.success = success
         r.message = message
-        r.set_succeeded(r)
+        self._as_localize.set_succeeded(r)
 
     def _update_tracker(self, enabled):
         params = { 'enabled' : enabled}
@@ -153,3 +156,4 @@ class LocalizationManager(object):
         self._as_localize.start()
         while not rospy.is_shutdown():
             rospy.sleep(sleep_time)
+        self._thread.join()

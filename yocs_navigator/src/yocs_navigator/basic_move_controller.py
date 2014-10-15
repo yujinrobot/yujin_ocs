@@ -27,10 +27,10 @@ class BasicMoveController(object):
         rospy.sleep(t)
 
     def turn_clockwise(self):
-        self.moveAt(0.0, -0.5, 0.1)
+        self.move_at(0.0, -0.5, 0.1)
 
     def turn_counter_clockwise(self):
-        self.moveAt(0.0, 0.5, 0.1)
+        self.move_at(0.0, 0.5, 0.1)
 
     def turn(self, angle):
         raise NotImplementedError()
@@ -38,11 +38,15 @@ class BasicMoveController(object):
     def spin_clockwise(self):
         yaw = self._get_odom_yaw()
 
-        while self._get_odom_yaw() <= yaw:
-            self.turnClockwise()
+        i = 0
+        while (self._get_odom_yaw() <= yaw) or i < 5:
+            self.turn_clockwise()
+            i = i + 1
 
-        while self._get_odom_yaw() > yaw:
-            self.turnClockwise()
+        i = 0
+        while (self._get_odom_yaw() > yaw) or i < 5:
+            self.turn_clockwise()
+            i = i +1
 
     def _get_odom_yaw(self):
         quaternion = (self._odom.pose.pose.orientation.x, self._odom.pose.pose.orientation.y, self._odom.pose.pose.orientation.z, self._odom.pose.pose.orientation.w)
