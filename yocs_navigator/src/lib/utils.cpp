@@ -42,7 +42,7 @@ void SemanticNavigator::feedbackNavigation(const int status, const double distan
   feedback.distance = distance;
   feedback.remain_time = remain_time;
   feedback.message = message;
-  loginfo(message);
+  //loginfo(message);
   
   as_navi_.publishFeedback(feedback);
 }
