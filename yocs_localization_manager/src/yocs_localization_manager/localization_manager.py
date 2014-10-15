@@ -113,6 +113,7 @@ class LocalizationManager(object):
 
            
         if self._initialise:  # Timeout
+            self._initialise = False
             self._send_result(False, "couldn't localize in time %s"%str(dif))
         else:  # localized
             self._send_result(True, "Localized")
@@ -127,6 +128,7 @@ class LocalizationManager(object):
 
         self._update_tracker(False)
         if self._initialise:
+            self._initialise = False
             self._send_result(False, "couldn't localise after full spining")
         else:
             self._send_result(True, "Localised")
