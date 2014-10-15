@@ -21,7 +21,9 @@ void SemanticNavigator::processNavigation(yocs_msgs::NavigateToGoal::ConstPtr go
   result = getGoalLocationTable(location, table);
   if(!result) // if it fails to find the requested table
   {
-    terminateNavigation(false, "Failed to find the requested table");
+    std::stringstream ss;
+    ss << "failed to find the requested destination : " << location;
+    terminateNavigation(false, ss.str());
     return;
   }
 
