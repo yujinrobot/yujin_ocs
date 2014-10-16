@@ -25,9 +25,11 @@
     <rosparam file="$(arg move_base_param_path)/costmap_common_params.yaml" command="load" ns="local_costmap" />
     <rosparam file="$(arg move_base_param_path)/local_costmap_params.yaml"  command="load" />
     <rosparam file="$(arg move_base_param_path)/global_costmap_params.yaml" command="load" />
+    <rosparam file="$(arg move_base_param_path)/move_base_params.yaml" command="load" />
+    <rosparam file="$(arg move_base_param_path)/global_planner_params.yaml" command="load" />
+    <rosparam file="$(arg move_base_param_path)/navfn_global_planner_params.yaml" command="load" />
 
     <rosparam file="$(arg move_base_param_path)/dwa_local_planner_params.yaml" command="load" />
-    <rosparam file="$(arg move_base_param_path)/move_base_params.yaml" command="load" />
     <rosparam file="$(arg custom_param_file)" command="load" />
 
  <!-- reset frame_id parameters using user input data -->
