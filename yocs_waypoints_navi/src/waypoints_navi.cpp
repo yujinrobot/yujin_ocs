@@ -47,8 +47,8 @@ bool WaypointsGoalNode::init()
   }
   waypoints_sub_  = nh.subscribe("waypoints",  1, &WaypointsGoalNode::waypointsCB, this);
   trajectories_sub_  = nh.subscribe("trajectories",  1, &WaypointsGoalNode::trajectoriesCB, this);
-  nav_ctrl_sub_  = pnh.subscribe("nav_ctrl", 1, &WaypointsGoalNode::navCtrlCB, this);
-  status_pub_  = pnh.advertise<yocs_msgs::NavigationControlStatus>("nav_ctrl_status", 1, true);
+  nav_ctrl_sub_  = nh.subscribe("nav_ctrl", 1, &WaypointsGoalNode::navCtrlCB, this);
+  status_pub_  = nh.advertise<yocs_msgs::NavigationControlStatus>("nav_ctrl_status", 1, true);
 
   return true;
 }
