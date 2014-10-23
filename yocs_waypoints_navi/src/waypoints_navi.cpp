@@ -309,7 +309,7 @@ void WaypointsGoalNode::spin()
       }
       else // actionlib::SimpleClientGoalState::SUCCEEDED, REJECTED, ABORTED, LOST
       {
-        if (move_base_ac_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
+        if (goal_state == actionlib::SimpleClientGoalState::SUCCEEDED)
         {
           ROS_INFO("Go to goal successfully completed: %.2f, %.2f, %.2f",
                    mb_goal.target_pose.pose.position.x, mb_goal.target_pose.pose.position.y,
