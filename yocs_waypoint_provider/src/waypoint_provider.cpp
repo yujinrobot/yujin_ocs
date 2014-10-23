@@ -95,7 +95,7 @@ namespace yocs {
                                            visualization_msgs::Marker& marker)
   {
     marker.header.frame_id = wp.header.frame_id;
-    marker.header.stamp = ros::Time::now();
+    marker.header.stamp = ros::Time();
     marker.ns = "waypoints";
     marker.id = i + marker_index_;
     marker.pose = wp.pose;
@@ -119,7 +119,7 @@ namespace yocs {
                                            visualization_msgs::Marker& marker)
   {
     marker.header.frame_id = frame_id;
-    marker.header.stamp = ros::Time::now();
+    marker.header.stamp = ros::Time();
     marker.ns = ns;
     marker.id = id + label_index_;
     marker.scale.x = 0.1;
@@ -141,7 +141,7 @@ namespace yocs {
                                                visualization_msgs::Marker& marker)
   {
     marker.header.frame_id = traj.waypoints[0].header.frame_id;
-    marker.header.stamp = ros::Time::now();
+    marker.header.stamp = ros::Time();
     marker.ns = "trajectories";
     marker.id = i + marker_index_;
     marker.pose = geometry_msgs::Pose();
