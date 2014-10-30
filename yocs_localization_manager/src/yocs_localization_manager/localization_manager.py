@@ -47,6 +47,12 @@ class LocalizationManager(object):
         param['ar_pair_target_offset'] = rospy.get_param('ar_pair/target_offset', 0.5)
         param['timeout'] = rospy.get_param('~timeout', 10.0)
 
+        # configurations for simulation
+        param['sim_global_frame'] = rospy.get_param('~simulation_global_frame','map')
+        param['sim_x'] = rospy.get_param('~simulation_x', 0.0)
+        param['sim_y'] = rospy.get_param('~simulation_y', 0.0)
+        param['sim_a'] = rospy.get_param('~simulation_a', 0.0)
+
         self.param = param
 
     def _tracked_poses_callback(self, msg):
@@ -67,12 +73,12 @@ class LocalizationManager(object):
         else:
             if self.param['simulation']:
                 pose_msg = geometry_msgs.PoseWithCovarianceStamped()
-                pose_msg.header.frame_id = "ar_global"
+                pose_msg.header.frame_id = self.param['sim_global_frame']
                 pose_msg.header.stamp = rospy.Time.now() - rospy.Duration(0.2) # TODO: get latest common time
-                pose_msg.pose.pose.position.x = 1.0
-                pose_msg.pose.pose.position.y = 0.0
+                pose_msg.pose.pose.position.x = self.param['sim_x']
+                pose_msg.pose.pose.position.y = self.param['sim_y']
                 pose_msg.pose.pose.position.z = 0.0
-                quat = tf.transformations.quaternion_from_euler(0, 0, 3.1416)
+                quat = tf.transformations.quaternion_from_euler(0, 0, self.param['sim_a'])
                 pose_msg.pose.pose.orientation = geometry_msgs.Quaternion(*quat)
                 self._pub_init_pose.publish(pose_msg)
                 # send success right away
