@@ -2,6 +2,7 @@
   <arg name="location_list_topic"/>
   <arg name="navigator_action"/>
 
+  <arg name="simulation"              default="false"/>
   <arg name="start_move_base"         default="true"/>
   <arg name="cmd_vel_mux_input"       default="/cmd_vel_mux/inputs/navigation"/>
   <arg name="move_base_topic"         default="move_base"/>
@@ -25,6 +26,7 @@
 
   <!-- move base -->
   <include if="$(arg start_move_base)" file="$(find yocs_navigator)/launch/move_base_with_vel_smoother.launch">
+    <arg name="simulation"            value="$(arg simulation)"/>
     <arg name="cmd_vel_mux_input"     value="$(arg cmd_vel_mux_input)"/>
     <arg name="move_base_topic"       value="$(arg move_base_topic)"/>
     <arg name="odom_topic"            value="$(arg odom_topic)"/>
