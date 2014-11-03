@@ -13,6 +13,8 @@ find_package(Boost REQUIRED COMPONENTS thread)
 
 catkin_package()
 
+include_directories(${catkin_INCLUDE_DIRS})
+
 add_executable(joyop src/joyop.cpp)
 target_link_libraries(joyop ${catkin_LIBRARIES})
 
