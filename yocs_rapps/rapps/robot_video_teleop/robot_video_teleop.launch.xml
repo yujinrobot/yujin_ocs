@@ -1,0 +1,18 @@
+<!--
+  Launcher for TurtleBot's teleop rapp
+     
+  Most features of this rapp are implemented by the required capabilities.
+  We use topic relays to enable flipping for pairing/concert usage and throttle the message stream.
+  -->
+<launch>
+  <arg name="capability_server_nodelet_manager_name" default="/capability_server_nodelet_manager" />
+  
+  <include file="$(find rocon_apps)/apps/robot_teleop/robot_teleop.launch.xml">
+    <arg name="capability_server_nodelet_manager_name" value="$(arg capability_server_nodelet_manager_name)" />
+  </include>
+
+  <!-- Relay for the video feedback -->
+  <node pkg="topic_tools" type="throttle" name="relay_video" args="messages /rgbd_sensor/rgb/image_color/compressed 5 /teleop/compressed_image" required="true">
+    <param name="lazy" value="false"/>
+  </node>
+</launch>
