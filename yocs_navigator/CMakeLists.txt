@@ -49,7 +49,7 @@ add_dependencies(yocs_semantic_navigator yocs_msgs_gencpp move_base_msgs_gencpp 
 
 ## Declare a cpp executable
 add_executable(yocs_semantic_navigator_node 
-  src/semantic_navigator_main.cpp
+  src/node/semantic_navigator_main.cpp
 )
 
 ## Add cmake target dependencies of the executable/library
