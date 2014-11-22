@@ -8,7 +8,7 @@
 namespace yocs_navigator {
 
 SemanticNavigator::SemanticNavigator(ros::NodeHandle& n) 
-: nh_(n), basic_move_(n),
+: nh_(n), basic_move_(n), r_(2),
   as_navi_(nh_, SemanticNavigatorDefaultParam::AS_NAVI, false),
   ac_move_base_(nh_, SemanticNavigatorDefaultParam::AC_MOVE_BASE, true)
 {
@@ -16,7 +16,7 @@ SemanticNavigator::SemanticNavigator(ros::NodeHandle& n)
 }
 
 SemanticNavigator::SemanticNavigator(ros::NodeHandle& n, const std::string& as_navigator_topic, const std::string& sub_tablelist_topic) 
-: nh_(n), basic_move_(n),
+: nh_(n), basic_move_(n), r_(2),
   as_navi_(as_navigator_topic, false),
   ac_move_base_(SemanticNavigatorDefaultParam::AC_MOVE_BASE, true)
 {
@@ -32,6 +32,10 @@ bool SemanticNavigator::init()
   ros::NodeHandle pnh("~");
 
   pnh.param("global_frame", global_frame_, std::string("map"));
+
+  double rate;
+  pnh.param("spin_rate", rate, 2.0);
+  r_ = ros::Rate(rate);
 
   distance_to_goal_ = 0.0f;
   table_received_ = false;
@@ -82,14 +86,10 @@ void SemanticNavigator::processPreemptNavigateTo()
 
 void SemanticNavigator::spin()
 {
-  ros::Rate r(2);
-
-  init();
-  
   while(ros::ok())
   {
     ros::spinOnce();
-    r.sleep();
+    r_.sleep();
   }
 }
 

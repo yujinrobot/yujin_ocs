@@ -57,6 +57,7 @@ class SemanticNavigator {
 
   private:
     ros::NodeHandle nh_;
+    ros::Rate r_;
 
     BasicMoveController basic_move_;
     ros::Subscriber                                               sub_tablelist_;
