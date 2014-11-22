@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(yocs_waypoint_manager)
+project(yocs_waypoint_provider)
 
 # Load catkin and all dependencies required for this package
 find_package(catkin REQUIRED COMPONENTS visualization_msgs yocs_msgs roscpp )
@@ -22,23 +22,23 @@ catkin_package(
 include_directories(include ${catkin_INCLUDE_DIRS} ${yaml-cpp_INCLUDE_DIRS})
 
 # building c++ executables and libraries
-add_library(waypoint_manager_lib src/waypoint_manager.cpp)
-add_dependencies(waypoint_manager_lib yocs_msgs_gencpp)
-target_link_libraries(waypoint_manager_lib ${catkin_LIBRARIES})
+add_library(waypoint_provider_lib src/waypoint_provider.cpp)
+add_dependencies(waypoint_provider_lib yocs_msgs_gencpp)
+target_link_libraries(waypoint_provider_lib ${catkin_LIBRARIES})
 
-add_library(waypoint_manager_yaml_parser_lib src/yaml_parser.cpp)
-add_dependencies(waypoint_manager_yaml_parser_lib yocs_msgs_gencpp)
-target_link_libraries(waypoint_manager_yaml_parser_lib ${catkin_LIBRARIES} ${yaml-cpp_LIBRARIES})
+add_library(waypoint_provider_yaml_parser_lib src/yaml_parser.cpp)
+add_dependencies(waypoint_provider_yaml_parser_lib yocs_msgs_gencpp)
+target_link_libraries(waypoint_provider_yaml_parser_lib ${catkin_LIBRARIES} ${yaml-cpp_LIBRARIES})
 
-add_executable(waypoint_manager src/main.cpp)
-add_dependencies(waypoint_manager waypoint_manager_lib waypoint_manager_yaml_parser_lib)
-target_link_libraries(waypoint_manager waypoint_manager_lib waypoint_manager_yaml_parser_lib)
+add_executable(waypoint_provider src/main.cpp)
+add_dependencies(waypoint_provider waypoint_provider_lib waypoint_provider_yaml_parser_lib)
+target_link_libraries(waypoint_provider waypoint_provider_lib waypoint_provider_yaml_parser_lib)
 
 #############
 ## Install ##
 #############
 
-install(TARGETS waypoint_manager 
+install(TARGETS waypoint_provider 
         DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
