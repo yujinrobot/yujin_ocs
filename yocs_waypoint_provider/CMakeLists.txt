@@ -6,11 +6,11 @@ find_package(catkin REQUIRED COMPONENTS visualization_msgs yocs_msgs roscpp )
 
 # pkg-config support
 find_package(PkgConfig)
+pkg_check_modules(NEW_YAMLCPP yaml-cpp>=0.5)
+if(NEW_YAMLCPP_FOUND)
+add_definitions(-DHAVE_NEW_YAMLCPP)
+endif(NEW_YAMLCPP_FOUND)
 
-pkg_search_module(yaml-cpp REQUIRED yaml-cpp)
-if(NOT ${yaml-cpp_VERSION} VERSION_LESS "0.5")
-  add_definitions(-DHAVE_NEW_YAMLCPP)
-endif()
 
 catkin_package(
     INCLUDE_DIRS
