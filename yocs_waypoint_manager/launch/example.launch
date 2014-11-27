@@ -1,8 +1,0 @@
-<!--
-  Loads example waypoint file
-  -->
-<launch>
-  <node pkg="yocs_waypoint_manager" name="waypoint_manager" type="waypoint_manager" output="screen">
-    <param name="filename" value="$(find yocs_waypoint_manager)/resources/example.yaml"/>
-  </node>
-</launch>

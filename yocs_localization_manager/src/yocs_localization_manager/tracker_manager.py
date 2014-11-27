@@ -10,6 +10,12 @@ import yocs_msgs.msg as yocs_msgs
 import copy
 import math
 
+def remove_leading_slash(frame_id):
+    if frame_id.startswith('/'):
+        return frame_id[1:]
+    else:
+        return frame_id
+
 class TrackerManager(object):
     """
         Receives AR Pair Annotations from annotation server.
@@ -74,6 +80,8 @@ class TrackerManager(object):
         for marker in self._global_pairs:
             parent_frame_id = global_prefix + '_' + str(marker.id)
             child_frame_id = parent_frame_id + '_' + target_postfix
+            parent_frame_id = remove_leading_slash(parent_frame_id)
+            child_frame_id = remove_leading_slash(child_frame_id)
             p = (0,0, target_offset)
             q = tf.transformations.quaternion_from_euler(math.pi, 0, 0)
             self._tf_broadcaster.sendTransform(p, q, rospy.Time.now(), child_frame_id , parent_frame_id)
@@ -83,9 +91,12 @@ class TrackerManager(object):
         for marker in self._global_pairs:
             parent_frame_id = marker.pose.header.frame_id
             child_frame_id = global_prefix + '_' + str(marker.id)
+            parent_frame_id = remove_leading_slash(parent_frame_id)
+            child_frame_id = remove_leading_slash(child_frame_id)
             p = (marker.pose.pose.position.x,marker.pose.pose.position.y, marker.pose.pose.position.z)
             q = (marker.pose.pose.orientation.x, marker.pose.pose.orientation.y, marker.pose.pose.orientation.z,marker.pose.pose.orientation.w)
             self._tf_broadcaster.sendTransform(p, q, rospy.Time.now(), child_frame_id ,parent_frame_id)
+
 
     def loginfo(self, msg):
         rospy.loginfo('TrackerManager : ' + str(msg))
@@ -98,5 +109,8 @@ class TrackerManager(object):
             r = rospy.Rate(hertz)
             while not rospy.is_shutdown():
                 self._publish_marker_tfs()
+                r.sleep()
                 self._publish_target_tfs()
                 r.sleep()
+
+

@@ -1,0 +1,62 @@
+<launch>
+  <arg name="cmd_vel_mux_input"         default="/cmd_vel_mux/inputs/navigation"/>
+  <arg name="move_base_topic"           default="move_base"/>
+  <arg name="odom_topic"                default="/odom"/>
+  <arg name="map_topic"                 default="map"/>
+  <arg name="robot_cmd_feed"            default="/mobile_base/commands/velocity"/>
+  <arg name="global_frame"              default="map"/>
+  <arg name="base_frame"                default="base_footprint"/>
+  <arg name="odom_frame"                default="odom"/>
+  <arg name="move_base_param_path"      default="$(find turtlebot_navigation)/param"/>
+  <arg name="custom_param_file"         default="$(find turtlebot_navigation)/param/dummy.yaml"/>
+  <arg name="vel_smoother_param"        default="$(find yocs_velocity_smoother)/param/standalone.yaml"/>
+  <arg name="simulation"                default="false"/>
+
+  <!-- Velocity smoother nodelet; we must provide the absolute name of nodelet manager, as we can be in an application namespace -->
+
+  <group if="$(arg simulation)">
+    <node pkg="nodelet" type="nodelet" name="mobile_base_nodelet_manager" args="manager"/>
+    <node pkg="nodelet" type="nodelet" name="navigation_velocity_smoother" args="load yocs_velocity_smoother/VelocitySmootherNodelet mobile_base_nodelet_manager">
+      <rosparam file="$(arg vel_smoother_param)" command="load"/>
+      <remap from="navigation_velocity_smoother/smooth_cmd_vel" to="$(arg cmd_vel_mux_input)"/>
+      <remap from="navigation_velocity_smoother/robot_cmd_vel" to="$(arg robot_cmd_feed)"/>
+      <remap from="navigation_velocity_smoother/odometry" to="$(arg odom_topic)"/>
+    </node>
+  </group>
+
+  <group unless="$(arg simulation)">
+    <node pkg="nodelet" type="nodelet" name="navigation_velocity_smoother" args="load yocs_velocity_smoother/VelocitySmootherNodelet /mobile_base_nodelet_manager">
+      <rosparam file="$(arg vel_smoother_param)" command="load"/>
+      <remap from="navigation_velocity_smoother/smooth_cmd_vel" to="$(arg cmd_vel_mux_input)"/>
+      <remap from="navigation_velocity_smoother/robot_cmd_vel" to="$(arg robot_cmd_feed)"/>
+      <remap from="navigation_velocity_smoother/odometry" to="$(arg odom_topic)"/>
+    </node>
+  </group>
+
+  <!-- Move base -->
+  <node pkg="move_base" type="move_base" respawn="true" name="move_base" output="screen">
+    <rosparam file="$(arg move_base_param_path)/costmap_common_params.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(arg move_base_param_path)/costmap_common_params.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(arg move_base_param_path)/local_costmap_params.yaml"  command="load" />
+    <rosparam file="$(arg move_base_param_path)/global_costmap_params.yaml" command="load" />
+    <rosparam file="$(arg move_base_param_path)/move_base_params.yaml" command="load" />
+    <rosparam file="$(arg move_base_param_path)/global_planner_params.yaml" command="load" />
+    <rosparam file="$(arg move_base_param_path)/navfn_global_planner_params.yaml" command="load" />
+
+    <rosparam file="$(arg move_base_param_path)/dwa_local_planner_params.yaml" command="load" />
+    <rosparam file="$(arg custom_param_file)" command="load" />
+
+ <!-- reset frame_id parameters using user input data -->
+    <param name="global_costmap/global_frame" value="$(arg global_frame)"/>
+    <param name="global_costmap/robot_base_frame" value="$(arg base_frame)"/>
+    <param name="local_costmap/global_frame" value="$(arg odom_frame)"/>
+    <param name="local_costmap/robot_base_frame" value="$(arg base_frame)"/>
+    <param name="DWAPlannerROS/global_frame_id" value="$(arg odom_frame)"/>
+
+
+    <remap from="cmd_vel"   to="navigation_velocity_smoother/raw_cmd_vel"/>
+    <remap from="odom"      to="$(arg odom_topic)"/>
+    <remap from="move_base" to="$(arg move_base_topic)"/>
+    <remap from="map"       to="$(arg map_topic)"/>
+  </node>
+</launch>

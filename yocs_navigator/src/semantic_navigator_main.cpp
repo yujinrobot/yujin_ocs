@@ -11,9 +11,9 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "semantic_navigator");
   ros::NodeHandle n("");
 
-  yocs::SemanticNavigator* navigator;
+  yocs_navigator::SemanticNavigator* navigator;
 
-  navigator = new yocs::SemanticNavigator(n);
+  navigator = new yocs_navigator::SemanticNavigator(n);
   navigator->spin();
   navigator->loginfo("Bye Bye");
 

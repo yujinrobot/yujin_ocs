@@ -1,0 +1,19 @@
+display:          Robot Video Teleop
+description:      Teleoperate your robot
+compatibility:    rocon:/kobuki|gopher|robosem|turtlebot2|waiterbot/
+launch:           robot_video_teleop.launch.xml
+parent_name:      rocon_apps/video_teleop
+required_capabilities:
+  - name: std_capabilities/DifferentialMobileBase
+    interface:
+      topics:
+        requires:
+          '/cmd_vel': '/cmd_vel'
+        provides:
+          '/odom': '/odom'
+  - name: std_capabilities/RGBDSensor
+    interface:
+      topics:
+        requires: []
+        provides:
+          '/rgbd_sensor/rgb/image_color/compressed': '/rgbd_sensor/rgb/image_color/compressed'

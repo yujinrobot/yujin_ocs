@@ -1,0 +1,25 @@
+<!--
+  YOCS safety controller launcher
+  -->
+
+<launch>
+  <arg name="nodelet_manager_name"  default="nodelet_manager"/>
+  <arg name="reverse"               default="false"/>
+  <arg name="reversing_distance"    default="0.02"/>
+  <arg name="reversing_velocity"    default="0.02"/>
+  <arg name="enable_topic_name"     default="enable"/>
+  <arg name="disable_topic_name"    default="disable"/>
+  <arg name="ranger_topic_name"     default="ranger"/>
+  <arg name="cmd_vel_topic_name"    default="cmd_vel"/>
+
+  <node pkg="nodelet" type="nodelet" name="yocs_safety_controller"
+        args="load yocs_safety_controller/SafetyControllerNodelet $(arg nodelet_manager_name)">
+    <param name="reverse"             type="bool"   value="$(arg reverse)"/>
+    <param name="reversing_distance"  type="double" value="$(arg reversing_distance)"/>
+    <param name="reversing_velocity"  type="double" value="$(arg reversing_velocity)"/>
+    <remap from="yocs_safety_controller/enable"  to="$(arg enable_topic_name)"/>
+    <remap from="yocs_safety_controller/disable" to="$(arg disable_topic_name)"/>
+    <remap from="yocs_safety_controller/rangers" to="$(arg ranger_topic_name)"/>
+    <remap from="yocs_safety_controller/cmd_vel" to="$(arg cmd_vel_topic_name)"/>
+  </node>
+</launch>

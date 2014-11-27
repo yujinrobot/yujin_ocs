@@ -17,7 +17,7 @@
 #ifndef _YOCS_BASIC_MOVE_CONTROLLER_HPP_
 #define _YOCS_BASIC_MOVE_CONTROLLER_HPP_
 
-namespace yocs {
+namespace yocs_navigator {
 class BasicMoveController {
   public:
     BasicMoveController(ros::NodeHandle& n);

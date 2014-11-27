@@ -19,7 +19,7 @@
 #ifndef _YOCS_SEMANTIC_NAVIGATOR_HPP_
 #define _YOCS_SEMANTIC_NAVIGATOR_HPP_
 
-namespace yocs {
+namespace yocs_navigator {
 
 class SemanticNavigator {
   public:

@@ -1,0 +1,8 @@
+<library path="lib/libyocs_safety_controller_nodelet">
+  <class name="yocs_safety_controller/SafetyControllerNodelet" type="yocs_safety_controller::SafetyControllerNodelet" base_class_type="nodelet::Nodelet">
+    <description>
+      Nodelet for the YOCS safety controller
+    </description>
+  </class>
+</library>
+

@@ -1,0 +1,11 @@
+<!--
+  Starts the provider and loads the provided way pint & trajectory list
+  -->
+  
+<launch>
+  <arg name="filename" default="$(find yocs_waypoint_provider)/resources/example.yaml"/>
+  
+  <node pkg="yocs_waypoint_provider" name="waypoint_provider" type="waypoint_provider">
+    <param name="filename" value="$(arg filename)"/>
+  </node>
+</launch>

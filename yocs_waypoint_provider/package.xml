@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package>
+  <name>yocs_waypoint_provider</name>
+  <version>0.6.1</version>
+  <description>
+    Parse a multiple poses from yaml and provide as topic and service. This package is highly inspired by yocs_waypoints_navi
+  </description>
+
+  <maintainer email="jihoonl@yujinrobot.com">Jihoon Lee</maintainer>
+  <author>Jihoon Lee</author> 
+
+  <license>BSD</license>
+
+  <url type="website">http://ros.org/wiki/yocs_waypoint_provider</url>
+  <url type="repository">https://github.com/yujinrobot/yujin_ocs</url>
+  <url type="bugtracker">https://github.com/yujinrobot/yujin_ocs/issues</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>visualization_msgs</build_depend>
+  <build_depend>yocs_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>yocs_msgs</run_depend>
+  <run_depend>visualization_msgs</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+</package>

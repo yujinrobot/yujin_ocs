@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<package>
+  <name>yocs_rapps</name>
+  <version>0.0.0</version>
+  <description>
+    Yujin open control system rapps for use with the app manager and rocon concert
+  </description>
+
+  <maintainer email="jihoonl@yujinrobot.com">Jihoon Lee</maintainer>
+  <author>Jihoon Lee</author>
+
+  <license>BSD</license>
+
+  <url type="website">http://wiki.ros.org/yocs_rapps</url> 
+  <url type="repository">https://github.com/yujinrobot/yujin_ocs</url> 
+  <url type="bugtracker">https://github.com/yujinrobot/yujin_ocs/issues</url> 
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <run_depend>yocs_velocity_smoother</run_depend>
+
+  <export>
+    <!-- hold until resolve turtlebot capabilities -->
+    <!-- <rocon_app>rapps/robot_teleop/robot_teleop.rapp</rocon_app> -->
+    <!-- <rocon_app>rapps/robot_video_teleop/robot_video_teleop.rapp</rocon_app> -->
+  </export>
+</package>

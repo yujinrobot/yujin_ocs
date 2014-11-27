@@ -1,0 +1,24 @@
+<!--
+  Launcher for TurtleBot's teleop rapp
+     
+  Most features of this rapp are implemented by the required capabilities.
+  We use topic relays to enable flipping for pairing/concert usage and throttle the message stream.
+  -->
+<launch>
+  <arg name="capability_server_nodelet_manager_name" default="/capability_server_nodelet_manager" />
+  
+  <node pkg="nodelet" type="nodelet" name="teleop_velocity_smoother"
+        args="load yocs_velocity_smoother/VelocitySmootherNodelet $(arg capability_server_nodelet_manager_name)">
+    <rosparam file="$(find rocon_apps)/apps/robot_teleop/vel_smoother.yaml" command="load"/>
+<!--     raw_cmd_vel is configured in velocity relay node -->
+<!--     <remap from="teleop_velocity_smoother/raw_cmd_vel" to=""/> -->
+    <remap from="teleop_velocity_smoother/smooth_cmd_vel" to="/cmd_vel"/>
+    <remap from="teleop_velocity_smoother/odometry" to="/odom"/>
+    <remap from="teleop_velocity_smoother/robot_cmd_vel" to="/cmd_vel"/>
+  </node>
+
+  <!-- Relay for velocity commands -->
+  <node pkg="topic_tools" type="throttle" name="relay_cmd_vel" args="messages /teleop/cmd_vel 5 teleop_velocity_smoother/raw_cmd_vel" required="true">
+    <param name="lazy" value="false"/>
+  </node>
+</launch>

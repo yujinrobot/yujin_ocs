@@ -105,6 +105,8 @@ OutputStream& operator<<(OutputStream &ostream , const TrackedMarker& marker) {
     ostream << "  Distance2d : " << marker.distance2d << "\n";
     ostream << "  Heading    : " << marker.heading << "\n";
     ostream << "  Confidence : " << marker.confidence << "\n";
+    ostream << "  Conf Dist  : " << marker.conf_distance<< "\n";
+    ostream << "  Conf Head  : " << marker.conf_heading<< "\n";
     ostream << "  Persistence: " << marker.persistence << "\n";
     ostream << "  Stability  : " << marker.stability << "\n";
     ostream.flush();
@@ -148,6 +150,9 @@ class ARMarkerTracking
     bool closest(double younger_than, double min_confidence, ar_track_alvar_msgs::AlvarMarker& closest_marker);
     bool spotted(double younger_than, const ar_track_alvar_msgs::AlvarMarkers& including, const ar_track_alvar_msgs::AlvarMarkers& excluding, ar_track_alvar_msgs::AlvarMarkers& spotted_markers);
     bool closest(const ar_track_alvar_msgs::AlvarMarkers& including, const ar_track_alvar_msgs::AlvarMarkers& excluding, ar_track_alvar_msgs::AlvarMarker& closest_marker);
+
+    bool spotted(double younger_than, double min_confidence, ar_track_alvar_msgs::AlvarMarkers& excluding, ar_track_alvar_msgs::AlvarMarkers& spotted);
+    bool closest(double younger_than, double min_confidence, ar_track_alvar_msgs::AlvarMarkers& excluding, ar_track_alvar_msgs::AlvarMarker& closest_marker);
 
     // check if the given id ar_marker is in the list. If yes, return the full ar marker data
     bool included(const uint32_t id, const ar_track_alvar_msgs::AlvarMarkers& v, ar_track_alvar_msgs::AlvarMarker* e = NULL);

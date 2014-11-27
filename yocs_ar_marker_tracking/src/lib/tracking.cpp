@@ -103,12 +103,12 @@ void ARMarkerTracking::maintainTrackedMarker(TrackedMarker& marker,const ar_trac
   for (ObsList::iterator it = marker.obs_list_.begin(); it != marker.obs_list_.end(); ++it)
   {
     double age = (now - it->header.stamp).toSec();
-    if (age > ((position + 1)/ar_tracker_freq_) + 1.0)
+    if (age > ((position + 1)/ar_tracker_freq_) + 1.5)
     {
       int s0 = marker.obs_list_.size();
       marker.obs_list_.erase(it, marker.obs_list_.end());
       int s1 = marker.obs_list_.size();
-      ROS_INFO("%d observations discarded (first one with position %d in the list) for being %f seconds old ( > %f)", s0 - s1, position, age, ((position + 1)/ar_tracker_freq_) + 1.0);
+      ROS_DEBUG("%d observations discarded (first one with position %d in the list) for being %f seconds old ( > %f)", s0 - s1, position, age, ((position + 1)/ar_tracker_freq_) + 1.5);
       break;
     }
 
@@ -131,7 +131,7 @@ void ARMarkerTracking::maintainTrackedMarker(TrackedMarker& marker,const ar_trac
                        : 1.0 - std::pow((std::abs(marker.heading) - min_penalized_head_) / (max_reliable_head_ - min_penalized_head_), 2);
   marker.stability     = marker.obs_list_.size() == 0 ? 0.0 : std::sqrt((double)position/(double)marker.obs_list_.size());
   marker.persistence   = std::sqrt((double)marker.obs_list_.size() / (double)obs_list_max_size);
-  marker.confidence    = marker.conf_distance * marker.conf_heading * marker.stability * marker.persistence;
+  marker.confidence    = marker.conf_distance * marker.stability * marker.persistence; // * marker.conf_heading I don't understand how conf_heading works. it always <=-1.4 or 1.4 >= disable it until becomes necessary
   marker.obs_list_.insert(marker.obs_list_.begin(), msgMarker.pose);
   marker.obs_list_.begin()->header = msgMarker.header;  // bloody alvar tracker doesn't fill pose's header
   if (marker.obs_list_.size() > obs_list_max_size)

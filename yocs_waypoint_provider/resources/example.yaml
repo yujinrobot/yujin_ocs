@@ -1,0 +1,85 @@
+waypoints:
+  - name: start1
+    frame_id: map
+    pose:
+      position:
+        x: 1
+        y: 0
+        z: 0
+      orientation:
+        x: 0
+        y: 0
+        z: 0
+        w: 1
+  - name: start2
+    frame_id: map
+    pose:
+      position:
+        x: 0
+        y: 1
+        z: 0
+      orientation:
+        x: 0
+        y: 0
+        z: 0
+        w: 1
+  - name: room1
+    frame_id: map
+    pose:
+      position:
+        x: 2
+        y: 2
+        z: 0
+      orientation:
+        x: 0
+        y: 0
+        z: -0.617
+        w: 0.7865
+  - name: room2
+    frame_id: map
+    pose:
+      position:
+        x: -2
+        y: 2
+        z: 0
+      orientation:
+        x: 0
+        y: 0
+        z: -0.617
+        w: 0.7865
+  - name: corner1
+    frame_id: map
+    pose:
+      position:
+        x: 1.5
+        y: 0.5
+        z: 0
+      orientation:
+        x: 0
+        y: 0
+        z: -0.999
+        w: 0.0344
+  - name: corner2
+    frame_id: map
+    pose:
+      position:
+        x: -1.5
+        y: 0
+        z: 0
+      orientation:
+        x: 0
+        y: 0
+        z: -0.999
+        w: 0.0344
+
+trajectories:
+  - name: go_to_room1
+    waypoints:
+    - start1
+    - corner1
+    - room1
+  - name: go_to_room2
+    waypoints:
+    - start2
+    - corner2
+    - room2
