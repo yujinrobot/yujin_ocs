@@ -142,7 +142,7 @@ void VelocitySmoother::spin()
       // be proportional to max v and w...
       // The one for angular velocity is very big because is it's less necessary (for example the
       // reactive controller will never make the robot spin) and because the gyro has a 15 ms delay
-      ROS_WARN("Using robot velocity feedback (%s) instead of last command: %f, %f, %f",
+      ROS_WARN("Velocity Smoother : using robot velocity feedback (%s) instead of last command: %f, %f, %f",
                 robot_feedback == ODOMETRY ? "odometry" : "end commands",
                (ros::Time::now()      - last_cb_time).toSec(),
                 current_vel.linear.x  - last_cmd_vel.linear.x,
