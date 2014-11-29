@@ -140,7 +140,7 @@ void CmdVelMuxNodelet::reloadConfiguration(yocs_cmd_vel_mux::reloadConfig &confi
     *node >> output_name;
   }
 #endif
-  mux_cmd_vel_pub = nh.advertise <geometry_msgs::Twist> (output_name, 10);
+  mux_cmd_vel_pub = nh_priv.advertise <geometry_msgs::Twist> (output_name, 10);
 
   /*********************
   ** Input Subscribers
