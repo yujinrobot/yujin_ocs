@@ -6,56 +6,71 @@
 
 #include "yocs_navigator/semantic_navigator.hpp"
 
-namespace yocs_navigator {
+namespace yocs_navigator
+{
+
 void SemanticNavigator::processNavigation(yocs_msgs::NavigateToGoal::ConstPtr goal)
 {
-  std::string location = goal->location;
+  std::string target_name = goal->location;
   int approach_type = goal->approach_type;
   unsigned int num_retry = goal->num_retry;
   double distance = goal->distance;
   double timeout = goal->timeout;
 
-  yocs_msgs::Table table;
-  bool result;
+  bool target_found = findTarget(target_name,
+                                 wps_,
+                                 trajs_,
+                                 target_wps_,
+                                 target_wps_it_);
 
-  result = getGoalLocationTable(location, table);
-  if(!result) // if it fails to find the requested table
+  if(!target_found) // if it fails to find the requested table
   {
     std::stringstream ss;
-    ss << "failed to find the requested destination : " << location;
+    ss << "Failed to find the requested destination : " << target_found;
     terminateNavigation(false, ss.str());
     return;
   }
 
-  if(mtk::sameFrame(table.pose.header.frame_id, global_frame_) == false)
-  {
-    terminateNavigation(false, "Target is not in global frame");
-    return;
-  }
-  clearCostmaps();
+  // TODO: Is this requirement really needed? Marcus
+//  if(mtk::sameFrame(table.pose.header.frame_id, global_frame_) == false)
+//  {
+//    terminateNavigation(false, "Target is not in global frame");
+//    return;
+//  }
+  clearCostmaps(); // TODO: probably remove this, since this should be handle by move_base
 
-  switch(approach_type) {
-    case yocs_msgs::NavigateToGoal::APPROACH_NEAR:
-      loginfo("Approach Type : NEAR");
-      goNear(table, distance, num_retry, timeout);
-      break;
-    case yocs_msgs::NavigateToGoal::APPROACH_ON:
-      loginfo("Approach Type : ON");
-      goOn(table, distance, num_retry, timeout);
-      break;
-    default:
-      terminateNavigation(false, "Invalid Approach Type");
-      break;
+  while (true)
+  {
+    if (target_wps_it_ < target_wps_.end())
+    {
+      switch(approach_type)
+      {
+        case yocs_msgs::NavigateToGoal::APPROACH_NEAR:
+          loginfo("Approach Type : NEAR");
+          goNear(*target_wps_it_, distance, num_retry, timeout);
+          break;
+        case yocs_msgs::NavigateToGoal::APPROACH_ON:
+          loginfo("Approach Type : ON");
+          goOn(*target_wps_it_, distance, num_retry, timeout);
+          break;
+        default:
+          terminateNavigation(false, "Invalid Approach Type");
+          break;
+      }
+      target_wps_it_++;
+    }
+    else
+    {
+      loginfo("Reached final destination.");
+    }
   }
 }
 
-void SemanticNavigator::goOn(const yocs_msgs::Table table, const double in_distance, const int num_retry, const double timeout)
+void SemanticNavigator::goOn(const geometry_msgs::PoseStamped& target,
+                             const double& in_distance,
+                             const int& num_retry,
+                             const double& timeout)
 {
-  // Note that in_distance variable is not used yet.. for On 
-  geometry_msgs::PoseStamped target;
-  target.pose = table.pose.pose.pose;
-  target.header = table.pose.header;
-
   int attempt = 0;
   int move_base_result;
   int navi_result;
@@ -70,12 +85,13 @@ void SemanticNavigator::goOn(const yocs_msgs::Table table, const double in_dista
   {
     move_base_result = NAVI_UNKNOWN;
     mb_goal.target_pose = target;
-    ac_move_base_.sendGoal(mb_goal, actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>::SimpleDoneCallback(), 
-                                    actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>::SimpleActiveCallback(), 
-                                    boost::bind(&SemanticNavigator::processMoveBaseFeedback, this, _1, target));
+    ac_move_base_->sendGoal(mb_goal,
+                            actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>::SimpleDoneCallback(),
+                            actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>::SimpleActiveCallback(),
+                            boost::bind(&SemanticNavigator::processMoveBaseFeedback, this, _1, target));
     
     waitForMoveBase(move_base_result, started_time, timeout);
-    determineNavigationState(navi_result, move_base_result, ac_move_base_.getState());
+    determineNavigationState(navi_result, move_base_result, ac_move_base_->getState());
     nextState(retry, final_result, message, navi_result, started_time);
 
     if(retry == false) break;
@@ -88,7 +104,7 @@ void SemanticNavigator::goOn(const yocs_msgs::Table table, const double in_dista
 
     attempt++;
     std::stringstream ss;
-    ss << "Reattempt to naviate.. " << attempt;
+    ss << "Reattempt to navigate.. " << attempt;
 
     ros::Time current_time = ros::Time::now();
     double diff = (current_time - started_time).toSec();
@@ -101,12 +117,11 @@ void SemanticNavigator::goOn(const yocs_msgs::Table table, const double in_dista
   terminateNavigation(final_result, message);
 }
 
-void SemanticNavigator::goNear(const yocs_msgs::Table table, const double distance, const int num_retry, const double timeout)
+void SemanticNavigator::goNear(const geometry_msgs::PoseStamped& target,
+                               const double& distance,
+                               const int& num_retry,
+                               const double& timeout)
 {
-  geometry_msgs::PoseStamped target;
-  target.pose = table.pose.pose.pose;
-  target.header = table.pose.header;
-
   int attempt = 0;
   int move_base_result;
   int navi_result;
@@ -121,11 +136,12 @@ void SemanticNavigator::goNear(const yocs_msgs::Table table, const double distan
   {
     move_base_result = NAVI_UNKNOWN;
     mb_goal.target_pose = target;
-    ac_move_base_.sendGoal(mb_goal, actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>::SimpleDoneCallback(), 
-                                    actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>::SimpleActiveCallback(), 
-                                    boost::bind(&SemanticNavigator::processMoveBaseFeedback, this, _1, target));
+    ac_move_base_->sendGoal(mb_goal,
+                            actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>::SimpleDoneCallback(),
+                            actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>::SimpleActiveCallback(),
+                            boost::bind(&SemanticNavigator::processMoveBaseFeedback, this, _1, target));
     waitForMoveBase(move_base_result, started_time, timeout);
-    determineNavigationState(navi_result, move_base_result, ac_move_base_.getState());
+    determineNavigationState(navi_result, move_base_result, ac_move_base_->getState());
     nextState(retry, final_result, message, navi_result, started_time);
 
     if(retry == false) break;
@@ -144,12 +160,17 @@ void SemanticNavigator::goNear(const yocs_msgs::Table table, const double distan
 }
 
 
-void SemanticNavigator::processMoveBaseFeedback(const move_base_msgs::MoveBaseFeedback::ConstPtr& feedback, const geometry_msgs::PoseStamped& target_pose)
+void SemanticNavigator::processMoveBaseFeedback(const move_base_msgs::MoveBaseFeedback::ConstPtr& feedback,
+                                                const geometry_msgs::PoseStamped& target_pose)
 {
   geometry_msgs::PoseStamped robot_pose = feedback->base_position;
 
   // compute distance
-  double distance = mtk::distance2D(robot_pose.pose.position.x, robot_pose.pose.position.y, target_pose.pose.position.x, target_pose.pose.position.y);
+  double distance = mtk::distance2D(robot_pose.pose.position.x,
+                                    robot_pose.pose.position.y,
+                                    target_pose.pose.position.x,
+                                    target_pose.pose.position.y);
   distance_to_goal_ = distance;
 }
-}
+
+} // namespace

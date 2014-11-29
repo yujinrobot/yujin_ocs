@@ -5,7 +5,8 @@
  */
 #include "yocs_navigator/basic_move_controller.hpp" 
 
-namespace yocs_navigator {
+namespace yocs_navigator
+{
 
 BasicMoveController::BasicMoveController(ros::NodeHandle& n) 
 : nh_(n), cmd_vel_topic_(BasicMoveControllerDefaultParam::PUB_CMD_VEL), odometry_topic_(BasicMoveControllerDefaultParam::SUB_ODOM)
