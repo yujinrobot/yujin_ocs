@@ -2,6 +2,9 @@
 Changelog for package yocs_math_toolkit
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.6.0 (2014-07-08)
 ------------------
 * updating package informations. remove email for authors. updating maintainer

@@ -2,6 +2,13 @@
 Changelog for package yocs_cmd_vel_mux
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* yocs_cmd_vel_mux: fixes node handle for output pub
+  to keep backwards compatibility
+* adds a little launcher restructing for muxer and smoother
+* Contributors: Marcus Liebhardt
+
 0.6.0 (2014-07-08)
 ------------------
 * updating package informations. remove email for authors. updating maintainer

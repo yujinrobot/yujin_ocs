@@ -2,6 +2,25 @@
 Changelog for package yocs_waypoints_navi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge branch 'waypoints_update' of https://github.com/yujinrobot/yujin_ocs into waypoints_update
+* yocs_waypoints_navi: minimal improvement
+* [yocs_waypoints_navi] public interfaces need to be public for the
+  concert.
+* yocs_waypoints_navi: removes timeout when waiting for action server
+* yocs_waypoints_navi: adds special build message dependency for yocs_msgs
+* yocs_waypoints_navi: adds feedback when cancel goal fails
+* yocs_waypoints_navi: adds minor fixes and improvements
+* yocs_waypoints_navi: moves class declaration into a separate header file
+* yocs_waypoints_navi: removes commented out, old features
+* yocs_waypoints_navi: changes ROS API and interal logic
+  * drop of config through yaml
+  * drop of RViz inputs
+  * adds way point and trajectory input
+  * state logic updated to handle new inputs
+* Contributors: Daniel Stonier, Marcus Liebhardt
+
 0.6.0 (2014-07-08)
 ------------------
 * updating package informations. remove email for authors. updating maintainer

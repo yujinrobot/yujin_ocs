@@ -2,6 +2,20 @@
 Changelog for package yocs_ar_marker_tracking
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* update yaml cpp dependency `#63 <https://github.com/yujinrobot/yujin_ocs/issues/63>`_
+* tracked marker prints conf dist and conf head as well
+* disable conf_heading. it does not work..
+* updates
+* add extra spotted and closest function
+* Merge branch 'indigo' into indigo-devel
+* switch maintainer to jihoonl and add yaml-cpp dependency. Fix `#56 <https://github.com/yujinrobot/yujin_ocs/issues/56>`_
+* Add depend on yaml-cpp for yocs_ar_marker_tracking
+* fix the yaml parser fix
+* fix the yaml parser redfine bug
+* Contributors: DongWook Lee, Jihoon Lee, Marcus Liebhardt, Scott K Logan
+
 0.6.1 (2014-07-08)
 ------------------
 * apply install rules for new packages

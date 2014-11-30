@@ -1,22 +1,14 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Changelog for package yocs_keyop
+Changelog for package yocs_rapps
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Forthcoming
 -----------
-* adds a little launcher restructing for muxer and smoother
-* yocs_keyop: renames executable (fixes `#51 <https://github.com/yujinrobot/yujin_ocs/issues/51>`_)
-* yocs_keyop: typo fix
-* yocs_keyop: adds small updates
-* adds yocs_keyop package
-* Contributors: Marcus Liebhardt
+* migrate teleop implementations from rocon_apps `#62 <https://github.com/yujinrobot/yujin_ocs/issues/62>`_
+* Contributors: Jihoon Lee
 
-* adds a little launcher restructing for muxer and smoother
-* yocs_keyop: renames executable (fixes `#51 <https://github.com/yujinrobot/yujin_ocs/issues/51>`_)
-* yocs_keyop: typo fix
-* yocs_keyop: adds small updates
-* adds yocs_keyop package
-* Contributors: Marcus Liebhardt
+* migrate teleop implementations from rocon_apps `#62 <https://github.com/yujinrobot/yujin_ocs/issues/62>`_
+* Contributors: Jihoon Lee
 
 0.6.1 (2014-07-08 11:21)
 ------------------------

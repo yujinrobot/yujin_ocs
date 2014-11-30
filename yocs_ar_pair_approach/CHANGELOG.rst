@@ -2,6 +2,9 @@
 Changelog for package yocs_ar_pair_approach
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.6.1 (2014-07-08)
 ------------------
 * queue_size updates
