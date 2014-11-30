@@ -2,8 +2,8 @@
 Changelog for package yocs_velocity_smoother
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.6.2 (2014-11-30)
+------------------
 * yocs_velocity_smoother: adds node name param to launcher
 * adds a little launcher restructing for muxer and smoother
 * Contributors: Marcus Liebhardt

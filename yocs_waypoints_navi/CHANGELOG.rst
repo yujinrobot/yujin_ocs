@@ -2,8 +2,8 @@
 Changelog for package yocs_waypoints_navi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.6.2 (2014-11-30)
+------------------
 * Merge branch 'waypoints_update' of https://github.com/yujinrobot/yujin_ocs into waypoints_update
 * yocs_waypoints_navi: minimal improvement
 * [yocs_waypoints_navi] public interfaces need to be public for the

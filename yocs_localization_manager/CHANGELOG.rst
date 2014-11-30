@@ -2,8 +2,8 @@
 Changelog for package yocs_localization_manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.6.2 (2014-11-30)
+------------------
 * support simulation
 * Merge branch 'indigo-devel' of https://github.com/yujinrobot/yujin_ocs into indigo-devel
 * resetting initialise value fale when it failed to localize

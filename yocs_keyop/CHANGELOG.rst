@@ -2,8 +2,8 @@
 Changelog for package yocs_keyop
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.6.2 (2014-11-30)
+------------------
 * adds a little launcher restructing for muxer and smoother
 * yocs_keyop: renames executable (fixes `#51 <https://github.com/yujinrobot/yujin_ocs/issues/51>`_)
 * yocs_keyop: typo fix

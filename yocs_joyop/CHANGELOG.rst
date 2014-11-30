@@ -2,8 +2,8 @@
 Changelog for package yocs_joyop
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.6.2 (2014-11-30)
+------------------
 * Merge branch 'waypoints_update' into indigo-devel
   Conflicts:
   yocs_joyop/CMakeLists.txt

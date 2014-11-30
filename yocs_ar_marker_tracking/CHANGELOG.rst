@@ -2,8 +2,8 @@
 Changelog for package yocs_ar_marker_tracking
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.6.2 (2014-11-30)
+------------------
 * update yaml cpp dependency `#63 <https://github.com/yujinrobot/yujin_ocs/issues/63>`_
 * tracked marker prints conf dist and conf head as well
 * disable conf_heading. it does not work..

@@ -2,8 +2,8 @@
 Changelog for package yocs_ar_pair_tracking
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.6.2 (2014-11-30)
+------------------
 * update navigation configurations
 * switch maintainer to jihoonl and add yaml-cpp dependency. Fix `#56 <https://github.com/yujinrobot/yujin_ocs/issues/56>`_
 * reduce covariance size to fix `#53 <https://github.com/yujinrobot/yujin_ocs/issues/53>`_

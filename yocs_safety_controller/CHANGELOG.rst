@@ -2,8 +2,8 @@
 Changelog for package yocs_safety_controller
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.6.2 (2014-11-30)
+------------------
 * Merge branch 'safety_controller' into waypoints_update
   Conflicts:
   yocs_safety_controller/include/yocs_safety_controller/safety_controller.hpp
