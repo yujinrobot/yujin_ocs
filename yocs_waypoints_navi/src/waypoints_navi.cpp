@@ -210,7 +210,7 @@ void WaypointsGoalNode::spin()
       if (waypoints_it_ < waypoints_.end())
       {
         mb_goal.target_pose.header.stamp = ros::Time::now();
-        mb_goal.target_pose.header.frame_id = world_frame_;
+        mb_goal.target_pose.header.frame_id = waypoints_it_->header.frame_id;
         mb_goal.target_pose.pose = waypoints_it_->pose;
 //        mb_goal.target_pose.pose.orientation = tf::createQuaternionMsgFromYaw(0.0);  // TODO use the heading from robot loc to next (front)
 
