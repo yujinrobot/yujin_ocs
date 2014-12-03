@@ -8,6 +8,8 @@ import tf
 import nav_msgs.msg as nav_msgs
 import geometry_msgs.msg as geometry_msgs
 
+from .utils import *
+
 class BasicMoveController(object):
     def __init__(self, odom_topic='odom', cmd_vel_topic='cmd_vel'):
         self._sub_odom = rospy.Subscriber(odom_topic, nav_msgs.Odometry, self.process_odometry)
@@ -33,11 +35,17 @@ class BasicMoveController(object):
         self.move_at(0.0, 0.5, 0.1)
 
     def turn(self, angle):
-        raise NotImplementedError()
+        yaw0 = self._get_odom_yaw()
+        yaw1 = wrap_angle(yaw0 + angle)
+
+        while(abs(wrap_angle(yaw1 - self._get_odom_yaw())) > 0.05):
+            self.move_at(0.0, sign(angle) * 0.5, 0.05)
 
     def spin_clockwise(self):
         yaw = self._get_odom_yaw()
 
+        self.turn(-(math.pi * 2))
+        """
         i = 0
         while (self._get_odom_yaw() <= yaw) or i < 5:
             self.turn_clockwise()
@@ -47,8 +55,11 @@ class BasicMoveController(object):
         while (self._get_odom_yaw() > yaw) or i < 5:
             self.turn_clockwise()
             i = i +1
+        """
+        
 
     def _get_odom_yaw(self):
         quaternion = (self._odom.pose.pose.orientation.x, self._odom.pose.pose.orientation.y, self._odom.pose.pose.orientation.z, self._odom.pose.pose.orientation.w)
         roll, pitch, yaw = tf.transformations.euler_from_quaternion(quaternion)
         return yaw
+
