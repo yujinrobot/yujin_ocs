@@ -2,6 +2,9 @@
 Changelog for package yocs_cmd_vel_mux
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.6.2 (2014-11-30)
 ------------------
 * yocs_cmd_vel_mux: fixes node handle for output pub

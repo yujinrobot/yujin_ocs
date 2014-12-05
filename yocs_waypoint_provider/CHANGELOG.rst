@@ -2,6 +2,9 @@
 Changelog for package yocs_waypoint_provider
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.6.2 (2014-11-30)
 ------------------
 * update yaml cpp dependency `#63 <https://github.com/yujinrobot/yujin_ocs/issues/63>`_

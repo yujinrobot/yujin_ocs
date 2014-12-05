@@ -2,6 +2,9 @@
 Changelog for package yocs_keyop
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.6.2 (2014-11-30)
 ------------------
 * adds a little launcher restructing for muxer and smoother

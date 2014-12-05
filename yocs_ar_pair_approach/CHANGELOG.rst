@@ -2,6 +2,9 @@
 Changelog for package yocs_ar_pair_approach
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.6.2 (2014-11-30)
 ------------------
 

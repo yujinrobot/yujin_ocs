@@ -2,6 +2,9 @@
 Changelog for package yocs_rapps
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.6.2 (2014-11-30)
 ------------------
 * migrate teleop implementations from rocon_apps `#62 <https://github.com/yujinrobot/yujin_ocs/issues/62>`_

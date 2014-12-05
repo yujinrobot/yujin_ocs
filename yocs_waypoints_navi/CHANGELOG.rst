@@ -2,6 +2,11 @@
 Changelog for package yocs_waypoints_navi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Use header frame instead of world_frame for goal
+* Contributors: AlexReimann
+
 0.6.2 (2014-11-30)
 ------------------
 * Merge branch 'waypoints_update' of https://github.com/yujinrobot/yujin_ocs into waypoints_update
