@@ -2,8 +2,8 @@
 Changelog for package yocs_waypoints_navi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.6.3 (2014-12-05)
+------------------
 * Use header frame instead of world_frame for goal
 * Contributors: AlexReimann
 

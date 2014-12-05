@@ -2,8 +2,8 @@
 Changelog for package yocs_ar_marker_tracking
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.6.3 (2014-12-05)
+------------------
 * Merge branch 'indigo-devel' into indigo
 * Delete the duplicate package
 * Contributors: DaikiMaekawa, Jihoon Lee
