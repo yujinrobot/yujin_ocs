@@ -23,12 +23,14 @@ class Node(object):
       for human interactive agent (aka remocon) connections.
     '''
     __slots__ = [
-#            'role_and_app_table',  # Dictionary of string : concert_msgs.RemoconApp[]
             '_publishers',
             '_subscribers',
             '_parameters',
             '_spotted_markers',
+            '_target_frame',
             '_thread',
+            '_tf_thread',
+            '_tf_broadcaster',
             '_rotate',
             '_rate',
             '_listener',
@@ -47,14 +49,16 @@ class Node(object):
     ##########################################################################
 
     def __init__(self):
+        self._rotate = Rotate('~cmd_vel')
         self._publishers, self._subscribers = self._setup_ros_api()
         self._parameters = self._setup_parameters()
         self._spotted_markers = Node.SPOTTED_NONE
-        self._rotate = Rotate('~cmd_vel')
         self._thread = None
+        self._tf_thread = None
         self._running = False
         self._rate = 0.36  # this could be parameterised
         self._listener = tf.TransformListener()
+        self._tf_broadcaster = tf.TransformBroadcaster()
         self._controller_finished = False
         self._stop_requested = False
         self._dynamic_reconfigure_client = dynamic_reconfigure.client.Client(rospy.get_param('~ar_tracker', 'ar_track_alvar'))
@@ -62,6 +66,7 @@ class Node(object):
     def _setup_parameters(self):
         parameters = {}
         parameters['search_only'] = rospy.get_param('~search_only', False)
+        parameters['base_postfix'] = rospy.get_param('~base_postfix', 'base')
         return parameters
 
     def _setup_ros_api(self):
@@ -75,7 +80,7 @@ class Node(object):
         publishers['enable_approach_controller'] = rospy.Publisher('~enable_approach_controller', std_msgs.Empty, queue_size=5)
         publishers['disable_approach_controller'] = rospy.Publisher('~disable_approach_controller', std_msgs.Empty, queue_size=5)
         subscribers = {}
-        subscribers['enable'] = rospy.Subscriber('~enable', std_msgs.Bool, self._ros_enable_subscriber)
+        subscribers['enable'] = rospy.Subscriber('~enable', std_msgs.String, self._ros_enable_subscriber)
         subscribers['spotted_markers'] = rospy.Subscriber('~spotted_markers', std_msgs.String, self._ros_spotted_subscriber)
         subscribers['approach_controller_result'] = rospy.Subscriber('~approach_pose_reached', std_msgs.Bool, self._ros_controller_result_callback)
         return (publishers, subscribers)
@@ -88,9 +93,13 @@ class Node(object):
     ##########################################################################
 
     def _ros_enable_subscriber(self, msg):
+        rospy.loginfo('enable ar pair approach')
         if msg.data:
             if not self._is_running():
                 self._running = True
+                self._target_frame = msg.data
+                self._tf_thread =threading.Thread(target=self._broadcast_tfs)               
+                self._tf_thread.start()
                 self._thread = threading.Thread(target=self.execute)
                 self._thread.start()
         else:
@@ -131,6 +140,7 @@ class Node(object):
             self._dynamic_reconfigure_client.update_configuration({'enabled': 'False'})
             self._publishers['result'].publish(std_msgs.Bool(result))
         self._running = False
+        self._tf_thread.join()
 
     def execute(self):
         self._dynamic_reconfigure_client.update_configuration({'enabled': 'True'})
@@ -160,6 +170,23 @@ class Node(object):
         else:
             self._post_execute(True)
 
+    def _broadcast_tfs(self):
+        r = rospy.Rate(5)
+
+        while self._running and not rospy.is_shutdown():
+            self._publish_tf() 
+            r.sleep()   
+
+
+    def _publish_tf(self):
+        base_postfix = self._parameters['base_postfix']
+        parent_frame_id = self._target_frame
+        child_frame_id = self._target_frame + '_' + base_postfix
+
+        p = (0.0, 0.36, 0.00)
+        q = tf.transformations.quaternion_from_euler(1.57, -1.57, 0.0)
+        self._tf_broadcaster.sendTransform(p, q, rospy.Time.now(), child_frame_id, parent_frame_id)
+
     ##########################################################################
     # Runtime
     ##########################################################################
@@ -181,6 +208,7 @@ class Node(object):
             direction = Rotate.COUNTER_CLOCKWISE
         else:  # self._spotted_markers == Node.SPOTTED_NONE
             try:
+                rospy.logerr("AR Pair Approach : this should not happen")
                 # this is from global to base footprint
                 (unused_t, orientation) = self._listener.lookupTransform('ar_global', 'base_footprint', rospy.Time(0))
                 unused_roll, unused_pitch, yaw = tf.transformations.euler_from_quaternion(orientation)
@@ -196,6 +224,8 @@ class Node(object):
         '''
           Parse the set of /remocons/<name>_<uuid> connections.
         '''
+
+
         rospy.spin()
         if self._thread is not None:
             self._thread.join()

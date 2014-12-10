@@ -4,6 +4,7 @@
   <arg name="predicted_robot_pose_topic"/> <!-- topic to notify localization manager to localize robot -->
   <arg name="global_frame"         default="map"/>
   <arg name="base_frame"           default="base_footprint"/>
+  <arg name="spotted_marker_topic"  default="spotted_markers"/>
 
   <!-- AR Track Alvar configuration -->
   <arg name="marker_size"          default="6.9" />
@@ -29,6 +30,7 @@
     <param name="marker_frame" value="$(arg output_frame)"/>
     <remap from="ar_pair_tracking/update_ar_pairs"        to="update_ar_pairs"/>
     <remap from="ar_pair_tracking/initial_pose"           to="$(arg predicted_robot_pose_topic)"/>  <!-- output to outside -->
+    <remap from="ar_pair_tracking/spotted_markers"        to="$(arg spotted_marker_topic)"/>
   </node>
 
 
