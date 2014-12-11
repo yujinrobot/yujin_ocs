@@ -9,7 +9,9 @@ find_package(catkin REQUIRED COMPONENTS ecl_threads
                                         sensor_msgs
                                         std_msgs
                                         tf
-                                        yocs_controllers)
+                                        yocs_controllers
+                                        yocs_math_toolkit
+            )
 
 catkin_package(INCLUDE_DIRS include
                LIBRARIES yocs_diff_drive_pose_controller_nodelet
@@ -21,7 +23,9 @@ catkin_package(INCLUDE_DIRS include
                               sensor_msgs
                               std_msgs
                               tf
-                              yocs_controllers)
+                              yocs_controllers
+                              yocs_math_toolkit
+              )
 
 include_directories(include
                     ${catkin_INCLUDE_DIRS})

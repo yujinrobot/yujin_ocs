@@ -186,7 +186,7 @@ class Node(object):
         parent_frame_id = self._target_frame
         child_frame_id = self._target_frame + '_' + base_postfix
 
-        p = (0.0, 0.36, 0.14)
+        p = (0.0, 0.36, 0.0)
         q = tf.transformations.quaternion_from_euler(1.57, -1.57, 0.0)
         self._tf_broadcaster.sendTransform(p, q, rospy.Time.now(), child_frame_id, parent_frame_id)
 

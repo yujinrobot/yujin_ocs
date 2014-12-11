@@ -33,7 +33,7 @@ class TrackerManager(object):
         param = {}
         param['tf_broadcast_freq'] = rospy.get_param('tf_broadcast_freq', 0.5)
         param['ar_pair_baseline'] = rospy.get_param('ar_pair/baseline', 0.28)
-        param['ar_pair_target_offset'] = rospy.get_param('ar_pair/target_offset', 0.5)
+        param['ar_pair_target_offset'] = rospy.get_param('ar_pair/target_offset', 0.4)
         param['ar_pair_global_prefix'] = rospy.get_param('ar_pair/global_prefix', 'global_marker')
         param['ar_pair_target_postfix'] = rospy.get_param('ar_pair/global_postfix', 'target')
 
