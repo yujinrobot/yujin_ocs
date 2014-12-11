@@ -44,6 +44,7 @@
 #include <std_msgs/Bool.h>
 #include <std_msgs/Empty.h>
 #include <std_msgs/Float32.h>
+#include <std_msgs/String.h>
 #include <tf/transform_listener.h>
 #include <yocs_controllers/default_controller.hpp>
 
@@ -116,9 +117,9 @@ private:
 
   /**
    * @brief Callback for enabling the controler
-   * @param msg empty message
+   * @param msg goal frame name
    */
-  void enableCB(const std_msgs::EmptyConstPtr msg);
+  void enableCB(const std_msgs::StringConstPtr msg);
 
   /**
    * @brief Callback for disabling the controler
@@ -436,15 +437,16 @@ void DiffDrivePoseController::controlMaxVelCB(const std_msgs::Float32ConstPtr ms
   ROS_INFO_STREAM("Maximum linear control velocity has been set to " << v_max_ << ". [" << name_ << "]");
 };
 
-void DiffDrivePoseController::enableCB(const std_msgs::EmptyConstPtr msg)
+void DiffDrivePoseController::enableCB(const std_msgs::StringConstPtr msg)
 {
   if (this->enable())
   {
-    ROS_INFO_STREAM("Controller has been enabled. [" << name_ << "]");
+    goal_frame_name_ = msg->data;
+    ROS_INFO_STREAM("Controller has been enabled. [" << name_ << "] with goal frame [" << goal_frame_name_ << "]");
   }
   else
   {
-    ROS_INFO_STREAM("Controller was already enabled. [" << name_ <<"]");
+    ROS_INFO_STREAM("Controller was already enabled. [" << name_ <<"] with Goal frame [" << goal_frame_name_ << "]");
   }
 };
 

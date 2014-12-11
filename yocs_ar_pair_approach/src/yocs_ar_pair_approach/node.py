@@ -67,6 +67,7 @@ class Node(object):
         parameters = {}
         parameters['search_only'] = rospy.get_param('~search_only', False)
         parameters['base_postfix'] = rospy.get_param('~base_postfix', 'base')
+        parameters['base_frame']  = rospy.get_param('~base_frame', 'base_footprint')
         return parameters
 
     def _setup_ros_api(self):
@@ -77,7 +78,7 @@ class Node(object):
         publishers = {}
         publishers['result'] = rospy.Publisher('~result', std_msgs.Bool, queue_size=5)
         publishers['initial_pose_trigger'] = rospy.Publisher('~initialise', std_msgs.Empty, queue_size=5)
-        publishers['enable_approach_controller'] = rospy.Publisher('~enable_approach_controller', std_msgs.Empty, queue_size=5)
+        publishers['enable_approach_controller'] = rospy.Publisher('~enable_approach_controller', std_msgs.String, queue_size=5)
         publishers['disable_approach_controller'] = rospy.Publisher('~disable_approach_controller', std_msgs.Empty, queue_size=5)
         subscribers = {}
         subscribers['enable'] = rospy.Subscriber('~enable', std_msgs.String, self._ros_enable_subscriber)
@@ -157,7 +158,9 @@ class Node(object):
         rospy.loginfo("AR Pair Approach : setting an initial pose from the global ar pair reference.")
         self._publishers['initial_pose_trigger'].publish(std_msgs.Empty())
         rospy.loginfo("AR Pair Approach : enabling the approach controller")
-        self._publishers['enable_approach_controller'].publish(std_msgs.Empty())
+
+        base_target_frame = self._target_frame + '_' + self._parameters['base_postfix']
+        self._publishers['enable_approach_controller'].publish(base_target_frame)
         while not rospy.is_shutdown() and not self._stop_requested:
             if self._controller_finished:
                 self._controller_finished = False
@@ -183,7 +186,7 @@ class Node(object):
         parent_frame_id = self._target_frame
         child_frame_id = self._target_frame + '_' + base_postfix
 
-        p = (0.0, 0.36, 0.00)
+        p = (0.0, 0.36, 0.14)
         q = tf.transformations.quaternion_from_euler(1.57, -1.57, 0.0)
         self._tf_broadcaster.sendTransform(p, q, rospy.Time.now(), child_frame_id, parent_frame_id)
 
@@ -198,6 +201,7 @@ class Node(object):
           @return : True or false depending on if we can skip this step or not.
         '''
         direction = Rotate.CLOCKWISE
+        rospy.loginfo("Markers : %s"%self._spotted_markers)
         if self._spotted_markers == Node.SPOTTED_BOTH:
             rospy.loginfo("AR Pair Approach : received an enable command, both spotted markers already in view!")
             return True
@@ -210,7 +214,7 @@ class Node(object):
             try:
                 rospy.logerr("AR Pair Approach : this should not happen")
                 # this is from global to base footprint
-                (unused_t, orientation) = self._listener.lookupTransform('ar_global', 'base_footprint', rospy.Time(0))
+                (unused_t, orientation) = self._listener.lookupTransform(self._target_frame, self._parameters['base_frame'], rospy.Time(0))
                 unused_roll, unused_pitch, yaw = tf.transformations.euler_from_quaternion(orientation)
                 rospy.loginfo("AR Pair Search : current yaw = %s" % str(yaw))
                 direction = Rotate.COUNTER_CLOCKWISE if yaw > 0 else Rotate.CLOCKWISE
