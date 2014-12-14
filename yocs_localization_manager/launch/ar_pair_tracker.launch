@@ -5,6 +5,7 @@
   <arg name="global_frame"         default="map"/>
   <arg name="base_frame"           default="base_footprint"/>
   <arg name="spotted_marker_topic"  default="spotted_markers"/>
+  <arg name="relative_target_pose_topic" default="relative_target_pose"/>
 
   <!-- AR Track Alvar configuration -->
   <arg name="marker_size"          default="6.9" />
@@ -31,6 +32,7 @@
     <remap from="ar_pair_tracking/update_ar_pairs"        to="update_ar_pairs"/>
     <remap from="ar_pair_tracking/initial_pose"           to="$(arg predicted_robot_pose_topic)"/>  <!-- output to outside -->
     <remap from="ar_pair_tracking/spotted_markers"        to="$(arg spotted_marker_topic)"/>
+    <remap from="ar_pair_tracking/relative_target_pose"        to="$(arg relative_target_pose_topic)"/>
   </node>
 
 

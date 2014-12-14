@@ -8,6 +8,7 @@
 
 import rospy
 import std_msgs.msg as std_msgs
+import geometry_msgs.msg as geometry_msgs
 import threading
 import tf
 import dynamic_reconfigure.client
@@ -28,6 +29,7 @@ class Node(object):
             '_parameters',
             '_spotted_markers',
             '_target_frame',
+            '_relative_target_pose',
             '_thread',
             '_tf_thread',
             '_tf_broadcaster',
@@ -83,6 +85,8 @@ class Node(object):
         subscribers = {}
         subscribers['enable'] = rospy.Subscriber('~enable', std_msgs.String, self._ros_enable_subscriber)
         subscribers['spotted_markers'] = rospy.Subscriber('~spotted_markers', std_msgs.String, self._ros_spotted_subscriber)
+        subscribers['relative_target_pose'] = rospy.Subscriber('~relative_target_pose', geometry_msgs.PoseStamped, self._ros_relative_target_pose_subscriber)
+
         subscribers['approach_controller_result'] = rospy.Subscriber('~approach_pose_reached', std_msgs.Bool, self._ros_controller_result_callback)
         return (publishers, subscribers)
 
@@ -111,6 +115,9 @@ class Node(object):
                 self._thread.join()
                 self._thread = None
             self._stop_requested = False
+
+    def _ros_relative_target_pose_subscriber(self, msg):
+        self._relative_target_pose = msg
 
     def _ros_spotted_subscriber(self, msg):
         self._spotted_markers = msg.data
@@ -159,7 +166,7 @@ class Node(object):
         self._publishers['initial_pose_trigger'].publish(std_msgs.Empty())
         rospy.loginfo("AR Pair Approach : enabling the approach controller")
 
-        base_target_frame = self._target_frame + '_' + self._parameters['base_postfix']
+        base_target_frame = self._target_frame + '_relative_' + self._parameters['base_postfix']
         self._publishers['enable_approach_controller'].publish(base_target_frame)
         while not rospy.is_shutdown() and not self._stop_requested:
             if self._controller_finished:
@@ -182,13 +189,27 @@ class Node(object):
 
 
     def _publish_tf(self):
-        base_postfix = self._parameters['base_postfix']
-        parent_frame_id = self._target_frame
-        child_frame_id = self._target_frame + '_' + base_postfix
 
-        p = (0.0, 0.36, 0.0)
-        q = tf.transformations.quaternion_from_euler(1.57, -1.57, 0.0)
-        self._tf_broadcaster.sendTransform(p, q, rospy.Time.now(), child_frame_id, parent_frame_id)
+        # Publish relative target frame
+        if self._relative_target_pose:
+            parent_frame_id = self._relative_target_pose.header.frame_id
+            relative_frame_id = self._target_frame + '_relative'
+            
+            pos = self._relative_target_pose.pose.position
+            ori = self._relative_target_pose.pose.orientation
+            p = (pos.x, pos.y, pos.z)
+            q = (ori.x, ori.y, ori.z, ori.w)
+            self._tf_broadcaster.sendTransform(p, q, rospy.Time.now(), relative_frame_id, parent_frame_id)
+
+            rospy.sleep(0.1)
+            
+            base_postfix = self._parameters['base_postfix']
+            parent_frame_id = relative_frame_id
+            child_frame_id = parent_frame_id + '_' + base_postfix
+
+            p = (0.0, 0.36, 0.0)
+            q = tf.transformations.quaternion_from_euler(1.57, -1.57, 0.0)
+            self._tf_broadcaster.sendTransform(p, q, rospy.Time.now(), child_frame_id, parent_frame_id)
 
     ##########################################################################
     # Runtime
