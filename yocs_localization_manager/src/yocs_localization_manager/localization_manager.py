@@ -59,12 +59,17 @@ class LocalizationManager(object):
         if self._initialise:
             # send pose to pose initialisation node
             msg.header.stamp -= rospy.Duration(0.2) # TODO: get latest common time
+            cov = list(msg.pose.covariance)
+            cov[6 * 0 + 0] = self._distortion * self._distortion
+            cov[6 * 1 + 1] = self._distortion * self._distortion
+            msg.pose.covariance = tuple(cov)
             self._pub_init_pose.publish(msg)
             self.loginfo("localization done.")
             self._initialise = False
 
     def _process_localize_goal(self):
         goal = self._as_localize.accept_new_goal()
+        self._distortion = goal.distortion
         self.loginfo("Received Localize goal %s"%str(goal))
 
         if self._initialise:

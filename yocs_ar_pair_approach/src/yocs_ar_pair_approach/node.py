@@ -166,7 +166,8 @@ class Node(object):
         self._publishers['initial_pose_trigger'].publish(std_msgs.Empty())
         rospy.loginfo("AR Pair Approach : enabling the approach controller")
 
-        base_target_frame = self._target_frame + '_relative_' + self._parameters['base_postfix']
+        #base_target_frame = self._target_frame + '_relative_' + self._parameters['base_postfix']
+        base_target_frame = self._target_frame + '_' + self._parameters['base_postfix']
         self._publishers['enable_approach_controller'].publish(base_target_frame)
         while not rospy.is_shutdown() and not self._stop_requested:
             if self._controller_finished:
@@ -192,6 +193,7 @@ class Node(object):
 
         # Publish relative target frame
         if self._relative_target_pose:
+            """
             parent_frame_id = self._relative_target_pose.header.frame_id
             relative_frame_id = self._target_frame + '_relative'
             
@@ -206,6 +208,10 @@ class Node(object):
             base_postfix = self._parameters['base_postfix']
             parent_frame_id = relative_frame_id
             child_frame_id = parent_frame_id + '_' + base_postfix
+            """
+            base_postfix = self._parameters['base_postfix']
+            parent_frame_id = self._target_frame
+            child_frame_id = self._target_frame + '_' + base_postfix
 
             p = (0.0, 0.36, 0.0)
             q = tf.transformations.quaternion_from_euler(1.57, -1.57, 0.0)

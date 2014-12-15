@@ -355,22 +355,23 @@ bool DiffDrivePoseController::getPoseDiff()
   
   // determine orientation of r relative to the goal frame
   // helper: theta = tf's orientation + delta
+/*
   double yaw = tf::getYaw(tf_goal_pose_rel_.getRotation());
   ROS_INFO("Yaw = %.4f",yaw);
   double new_yaw = mtk::wrapAngle(yaw);
   theta_ = new_yaw + delta_;
   ROS_INFO("New Yaw = %.4f",new_yaw);
   ROS_INFO("Delta - Theta = %.4f",delta_ - theta_); 
+*/
+  theta_ = tf::getYaw(tf_goal_pose_rel_.getRotation()) + delta_;
 
   return true;
 };
 
 void DiffDrivePoseController::getControlOutput()
 {
-  double atan_k_theta = std::atan(-k_1_ * theta_);
-  double sin_delta = sin(delta_);
-  cur_ = (-1 / r_) * (k_2_ * (delta_ - atan_k_theta)
-         + (1 + (k_1_ / (1 + std::pow((k_1_ * theta_), 2)))) * sin_delta);
+  cur_ = (-1 / r_) * (k_2_ * (delta_ - std::atan(-k_1_ * theta_))
+         + (1 + (k_1_ / (1 + std::pow((k_1_ * theta_), 2)))) * sin(delta_));
   v_ = v_max_ / (1 + beta_ * std::pow(std::abs(cur_), lambda_));
 
   // bounds for v
