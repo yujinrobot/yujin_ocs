@@ -128,6 +128,15 @@ private:
    */
   void disableCB(const std_msgs::EmptyConstPtr msg);
 
+  /**
+   * @brief Bounding range of velocity
+   * @param v velocity
+   * @param min minimum speed
+   * @param max maximum speed
+   * @return bounded velocity
+   */
+  double boundRange(double v, double min, double max);
+
   // basics
   ros::NodeHandle nh_;
   std::string name_;
@@ -363,43 +372,29 @@ bool DiffDrivePoseController::getPoseDiff()
   ROS_INFO("New Yaw = %.4f",new_yaw);
   ROS_INFO("Delta - Theta = %.4f",delta_ - theta_); 
 */
-  theta_ = tf::getYaw(tf_goal_pose_rel_.getRotation()) + delta_;
+  double heading =  mtk::wrapAngle(tf::getYaw(tf_goal_pose_rel_.getRotation()));
+  ROS_INFO("Heading : %.3f", heading);
+  theta_ = heading + delta_;
 
   return true;
 };
 
 void DiffDrivePoseController::getControlOutput()
 {
-  cur_ = (-1 / r_) * (k_2_ * (delta_ - std::atan(-k_1_ * theta_))
+  double atan2_k1_tehta = std::atan2(-theta_, k_1_);
+
+  cur_ = (-1 / r_) * (k_2_ * (delta_ - atan2_k1_tehta)
          + (1 + (k_1_ / (1 + std::pow((k_1_ * theta_), 2)))) * sin(delta_));
   v_ = v_max_ / (1 + beta_ * std::pow(std::abs(cur_), lambda_));
 
-  // bounds for v
-  if (v_ < 0.0)
-  {
-    if (v_ > -v_min_)
-    {
-      v_ = -v_min_;
-    }
-    else if (v_ < -v_max_)
-    {
-      v_ = -v_max_;
-    }
-  }
-  else
-  {
-    if (v_ < v_min_)
-    {
-      v_ = v_min_;
-    }
-    else if (v_ > v_max_)
-    {
-      v_ = v_max_;
-    }
-  }
+  v_ = boundRange(v_, v_min_, v_max_);
 
+  ROS_INFO("atan2 : %.3f", atan2_k1_tehta);
   w_ = cur_ * v_; // unbounded for now
+  w_ = boundRange(w_, w_min_, w_max_);
 
+  ROS_INFO("Cur : %.3f", cur_);
+  ROS_INFO("W   : %.3f", w_);
   // pose reached thresholds
   if (r_ <= dist_thres_)
   {
@@ -431,6 +426,35 @@ void DiffDrivePoseController::getControlOutput()
     }
   }
 };
+
+double DiffDrivePoseController::boundRange(double v, double min, double max)
+{
+  // bounds for v
+  if (v < 0.0)
+  {
+    if (v > -min)
+    {
+      v = -min;
+    }
+    else if (v < -max)
+    {
+      v = -max;
+    }
+  }
+  else
+  {
+    if (v < min)
+    {
+      v = min;
+    }
+    else if (v > max)
+    {
+      v = max;
+    }
+  }
+
+  return v;
+}
 
 void DiffDrivePoseController::setControlOutput()
 {
