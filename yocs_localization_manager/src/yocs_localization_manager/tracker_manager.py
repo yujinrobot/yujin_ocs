@@ -37,6 +37,8 @@ class TrackerManager(object):
         param['ar_pair_global_prefix'] = rospy.get_param('ar_pair/global_prefix', 'global_marker')
         param['ar_pair_target_postfix'] = rospy.get_param('ar_pair/global_postfix', 'target')
 
+        self.loginfo("Target offset : %s"%param['ar_pair_target_offset'])
+
         self.param = param
 
     def _init_variables(self):
@@ -114,5 +116,3 @@ class TrackerManager(object):
                 r.sleep()
                 self._publish_target_tfs()
                 r.sleep()
-
-
