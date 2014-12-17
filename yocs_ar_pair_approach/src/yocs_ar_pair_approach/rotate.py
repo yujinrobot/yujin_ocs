@@ -91,7 +91,7 @@ class Rotate(object):
         if self._running:
             rospy.logerr("AR Pair Search: already executing a motion, ignoring the request")
             return
-        self._cmd_vel_publisher = rospy.Publisher(self._cmd_vel_topic, geometry_msgs.Twist)
+        self._cmd_vel_publisher = rospy.Publisher(self._cmd_vel_topic, geometry_msgs.Twist, queue_size=10)
         self._stop = False
         self._running = True
         start = rospy.get_rostime()
