@@ -70,6 +70,7 @@ class Node(object):
         parameters['search_only'] = rospy.get_param('~search_only', False)
         parameters['base_postfix'] = rospy.get_param('~base_postfix', 'base')
         parameters['base_frame']  = rospy.get_param('~base_frame', 'base_footprint')
+        parameters['odom_frame']  = rospy.get_param('~odom_frame', 'odom'
         return parameters
 
     def _setup_ros_api(self):
@@ -103,7 +104,8 @@ class Node(object):
             if not self._is_running():
                 self._running = True
                 self._target_frame = msg.data
-                self._tf_thread =threading.Thread(target=self._broadcast_tfs)               
+                self._set_odom_to_target_transform(msg.data)
+                self._tf_thread =threading.Thread(target=self._broadcast_tfs)
                 self._tf_thread.start()
                 self._thread = threading.Thread(target=self.execute)
                 self._thread.start()
@@ -181,6 +183,22 @@ class Node(object):
         else:
             self._post_execute(True)
 
+    def _set_odom_to_target_transform(self, target_frame):
+        try:
+            # this is from odom to target frame
+            (t, o) = self._listener.lookupTransform(self._target_frame, self._parameters['odom_frame'], rospy.Time(0))
+        except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException) as unused_e:
+            continue
+
+        # Transform from target_frame to base target frame
+        p = (0.0, 0.36, 0.0)                                                 
+        q = tf.transformations.quaternion_from_euler(1.57, -1.57, 0.0)
+
+        target_base_t = (p[0] + t[0], p[1] + t[1], p[2] + t[2])
+        target_base_o = tf.transformations.quaternion_multiply(o, q) 
+
+
+
     def _broadcast_tfs(self):
         r = rospy.Rate(5)
 
@@ -190,32 +208,26 @@ class Node(object):
 
 
     def _publish_tf(self):
+        try:
+            # this is from odom to target frame
+            (t, o) = self._listener.lookupTransform(self._target_frame, self._parameters['odom_frame'], rospy.Time(0))
+        except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException) as unused_e:
+            self.logwarn("couldn't get transfrom between %s and %s"%(self._target_frame, self._parameters['odom_frame']))
+            continue
+
+        # Transform from target_frame to base target frame
+        p = (0.0, 0.36, 0.0)                                                 
+        q = tf.transformations.quaternion_from_euler(1.57, -1.57, 0.0)
+
+        target_base_t = (p[0] + t[0], p[1] + t[1], p[2] + t[2])
+        target_base_o = tf.transformations.quaternion_multiply(o, q) 
 
         # Publish relative target frame
-        if self._relative_target_pose:
-            """
-            parent_frame_id = self._relative_target_pose.header.frame_id
-            relative_frame_id = self._target_frame + '_relative'
-            
-            pos = self._relative_target_pose.pose.position
-            ori = self._relative_target_pose.pose.orientation
-            p = (pos.x, pos.y, pos.z)
-            q = (ori.x, ori.y, ori.z, ori.w)
-            self._tf_broadcaster.sendTransform(p, q, rospy.Time.now(), relative_frame_id, parent_frame_id)
+        base_postfix = self._parameters['base_postfix']
+        parent_frame_id = self._parameters['odom_frame']
+        child_frame_id = self._target_frame + '_' + base_postfix
 
-            rospy.sleep(0.1)
-            
-            base_postfix = self._parameters['base_postfix']
-            parent_frame_id = relative_frame_id
-            child_frame_id = parent_frame_id + '_' + base_postfix
-            """
-            base_postfix = self._parameters['base_postfix']
-            parent_frame_id = self._target_frame
-            child_frame_id = self._target_frame + '_' + base_postfix
-
-            p = (0.0, 0.36, 0.0)
-            q = tf.transformations.quaternion_from_euler(1.57, -1.57, 0.0)
-            self._tf_broadcaster.sendTransform(p, q, rospy.Time.now(), child_frame_id, parent_frame_id)
+        self._tf_broadcaster.sendTransform(target_base_t, target_base_o, rospy.Time.now(), child_frame_id, parent_frame_id)
 
     ##########################################################################
     # Runtime
@@ -250,6 +262,9 @@ class Node(object):
             rospy.loginfo("AR Pair Search: received an enable command, none in view.")
         self._rotate.init(yaw_absolute_rate=self._rate, yaw_direction=direction)
         return False
+
+    def logwarn(self, msg):
+        rospy.logwarn('AR Pair Approach : %s'%msg)
 
     def spin(self):
         '''
