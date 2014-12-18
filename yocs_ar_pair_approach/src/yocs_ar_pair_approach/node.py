@@ -29,7 +29,10 @@ class Node(object):
             '_parameters',
             '_spotted_markers',
             '_target_frame',
-            '_relative_target_pose',
+            '_target_base_t',
+            '_target_base_o',
+            '_child_frame_id',
+            '_parent_frame_id',
             '_thread',
             '_tf_thread',
             '_tf_broadcaster',
@@ -70,7 +73,7 @@ class Node(object):
         parameters['search_only'] = rospy.get_param('~search_only', False)
         parameters['base_postfix'] = rospy.get_param('~base_postfix', 'base')
         parameters['base_frame']  = rospy.get_param('~base_frame', 'base_footprint')
-        parameters['odom_frame']  = rospy.get_param('~odom_frame', 'odom'
+        parameters['odom_frame']  = rospy.get_param('~odom_frame', 'odom')
         return parameters
 
     def _setup_ros_api(self):
@@ -99,17 +102,17 @@ class Node(object):
     ##########################################################################
 
     def _ros_enable_subscriber(self, msg):
-        rospy.loginfo('enable ar pair approach')
         if msg.data:
+            rospy.loginfo('enable ar pair approach')
             if not self._is_running():
                 self._running = True
-                self._target_frame = msg.data
-                self._set_odom_to_target_transform(msg.data)
+                self._set_target_base_transform(msg.data)
                 self._tf_thread =threading.Thread(target=self._broadcast_tfs)
                 self._tf_thread.start()
                 self._thread = threading.Thread(target=self.execute)
                 self._thread.start()
         else:
+            rospy.loginfo('disable ar pair approach')
             if self._is_running():
                 self._publishers['result'].publish(std_msgs.Bool(False))
             self._stop()
@@ -183,21 +186,27 @@ class Node(object):
         else:
             self._post_execute(True)
 
-    def _set_odom_to_target_transform(self, target_frame):
+    def _set_target_base_transform(self, target_frame):
+        self._target_frame = target_frame
+        rospy.sleep(2.0)
         try:
             # this is from odom to target frame
-            (t, o) = self._listener.lookupTransform(self._target_frame, self._parameters['odom_frame'], rospy.Time(0))
+            (t, o) = self._listener.lookupTransform(self._parameters['odom_frame'], target_frame, rospy.Time(0))
         except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException) as unused_e:
-            continue
+            self.logwarn("couldn't get transfrom between %s and %s"%(self._parameters['odom_frame'], target_frame))
+            return 
 
         # Transform from target_frame to base target frame
-        p = (0.0, 0.36, 0.0)                                                 
+        p = (0.0, 0.36, 0.0)
         q = tf.transformations.quaternion_from_euler(1.57, -1.57, 0.0)
 
-        target_base_t = (p[0] + t[0], p[1] + t[1], p[2] + t[2])
-        target_base_o = tf.transformations.quaternion_multiply(o, q) 
+        self._target_base_t = (t[0], t[1], 0.0)
+        self._target_base_o = tf.transformations.quaternion_multiply(o, q)
 
-
+        # Publish relative target frame
+        base_postfix = self._parameters['base_postfix']
+        self._parent_frame_id = self._parameters['odom_frame']
+        self._child_frame_id = target_frame + '_' + base_postfix
 
     def _broadcast_tfs(self):
         r = rospy.Rate(5)
@@ -208,26 +217,7 @@ class Node(object):
 
 
     def _publish_tf(self):
-        try:
-            # this is from odom to target frame
-            (t, o) = self._listener.lookupTransform(self._target_frame, self._parameters['odom_frame'], rospy.Time(0))
-        except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException) as unused_e:
-            self.logwarn("couldn't get transfrom between %s and %s"%(self._target_frame, self._parameters['odom_frame']))
-            continue
-
-        # Transform from target_frame to base target frame
-        p = (0.0, 0.36, 0.0)                                                 
-        q = tf.transformations.quaternion_from_euler(1.57, -1.57, 0.0)
-
-        target_base_t = (p[0] + t[0], p[1] + t[1], p[2] + t[2])
-        target_base_o = tf.transformations.quaternion_multiply(o, q) 
-
-        # Publish relative target frame
-        base_postfix = self._parameters['base_postfix']
-        parent_frame_id = self._parameters['odom_frame']
-        child_frame_id = self._target_frame + '_' + base_postfix
-
-        self._tf_broadcaster.sendTransform(target_base_t, target_base_o, rospy.Time.now(), child_frame_id, parent_frame_id)
+        self._tf_broadcaster.sendTransform(self._target_base_t, self._target_base_o, rospy.Time.now(), self._child_frame_id, self._parent_frame_id)
 
     ##########################################################################
     # Runtime
