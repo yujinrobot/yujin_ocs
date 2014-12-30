@@ -2,6 +2,14 @@
 Changelog for package yujin_ocs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.6.3 (2014-12-05)
+------------------
+
+0.6.2 (2014-11-30)
+------------------
+* update meta package
+* Contributors: Jihoon Lee
+
 0.6.0 (2014-07-08)
 ------------------
 * updating package informations. remove email for authors. updating maintainer

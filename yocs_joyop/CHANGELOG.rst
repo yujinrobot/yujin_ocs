@@ -1,5 +1,5 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Changelog for package yocs_keyop
+Changelog for package yocs_joyop
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 0.6.3 (2014-12-05)
@@ -7,19 +7,21 @@ Changelog for package yocs_keyop
 
 0.6.2 (2014-11-30)
 ------------------
-* adds a little launcher restructing for muxer and smoother
-* yocs_keyop: renames executable (fixes `#51 <https://github.com/yujinrobot/yujin_ocs/issues/51>`_)
-* yocs_keyop: typo fix
-* yocs_keyop: adds small updates
-* adds yocs_keyop package
-* Contributors: Marcus Liebhardt
+* Merge branch 'waypoints_update' into indigo-devel
+  Conflicts:
+  yocs_joyop/CMakeLists.txt
+* Ensure header directories are included, fixes `#59 <https://github.com/yujinrobot/yujin_ocs/issues/59>`_.
+* yocs_joyop: fixes includes in CMakeLists
+* adds package yocs_joyop
+* Contributors: Daniel Stonier, Marcus Liebhardt
 
-* adds a little launcher restructing for muxer and smoother
-* yocs_keyop: renames executable (fixes `#51 <https://github.com/yujinrobot/yujin_ocs/issues/51>`_)
-* yocs_keyop: typo fix
-* yocs_keyop: adds small updates
-* adds yocs_keyop package
-* Contributors: Marcus Liebhardt
+* Merge branch 'waypoints_update' into indigo-devel
+  Conflicts:
+  yocs_joyop/CMakeLists.txt
+* Ensure header directories are included, fixes `#59 <https://github.com/yujinrobot/yujin_ocs/issues/59>`_.
+* yocs_joyop: fixes includes in CMakeLists
+* adds package yocs_joyop
+* Contributors: Daniel Stonier, Marcus Liebhardt
 
 0.6.1 (2014-07-08 11:21)
 ------------------------

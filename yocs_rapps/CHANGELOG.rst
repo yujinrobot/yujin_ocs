@@ -1,38 +1,41 @@
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Changelog for package yocs_math_toolkit
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Changelog for package yocs_rapps
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 0.6.3 (2014-12-05)
 ------------------
 
 0.6.2 (2014-11-30)
 ------------------
+* migrate teleop implementations from rocon_apps `#62 <https://github.com/yujinrobot/yujin_ocs/issues/62>`_
+* Contributors: Jihoon Lee
 
-0.6.0 (2014-07-08)
-------------------
-* updating package informations. remove email for authors. updating maintainer
-* Handle special case on sameFrame function
-* Add functions to compare frame ids ignoring the leading /, as it is
-  frequently omitted.
-  Geometry doxygen documented.
-* Contributors: Jihoon Lee, Jorge Santos
+* migrate teleop implementations from rocon_apps `#62 <https://github.com/yujinrobot/yujin_ocs/issues/62>`_
+* Contributors: Jihoon Lee
+
+0.6.1 (2014-07-08 11:21)
+------------------------
+
+0.6.0 (2014-07-08 11:07)
+------------------------
 
 0.5.3 (2014-03-24)
 ------------------
 
-0.5.2 (2013-11-05)
+0.5.2 (2013-11-06)
 ------------------
-* Some more functions added.
 
 0.5.1 (2013-10-14)
 ------------------
 
-0.5.0 (2013-10-11)
-------------------
+0.5.0 (2013-10-11 16:44)
+------------------------
+
+0.4.2 (2013-10-11 16:17)
+------------------------
 
 0.4.1 (2013-10-08)
 ------------------
-* Initial version: migrated here from https://github.com/yujinrobot/kobuki-x
 
 0.4.0 (2013-09-23 11:17)
 ------------------------
