@@ -359,21 +359,10 @@ bool DiffDrivePoseController::getPoseDiff()
                  + std::pow(tf_goal_pose_rel_.getOrigin().getY(), 2));
   // determine orientation of r relative to the base frame
   delta_ = std::atan2(-tf_goal_pose_rel_.getOrigin().getY(), tf_goal_pose_rel_.getOrigin().getX());
-  //ROS_INFO("Translation diff = %.3f", r_);
-  //ROS_INFO("Orientation diff = %.3f", delta_);
   
   // determine orientation of r relative to the goal frame
   // helper: theta = tf's orientation + delta
-/*
-  double yaw = tf::getYaw(tf_goal_pose_rel_.getRotation());
-  ROS_INFO("Yaw = %.4f",yaw);
-  double new_yaw = mtk::wrapAngle(yaw);
-  theta_ = new_yaw + delta_;
-  ROS_INFO("New Yaw = %.4f",new_yaw);
-  ROS_INFO("Delta - Theta = %.4f",delta_ - theta_); 
-*/
   double heading =  mtk::wrapAngle(tf::getYaw(tf_goal_pose_rel_.getRotation()));
-//  ROS_INFO("Heading : %.3f", heading);
   theta_ = heading + delta_;
 
   return true;
@@ -389,12 +378,9 @@ void DiffDrivePoseController::getControlOutput()
 
   v_ = boundRange(v_, v_min_, v_max_);
 
-//  ROS_INFO("atan2 : %.3f", atan2_k1_tehta);
   w_ = cur_ * v_; // unbounded for now
   w_ = boundRange(w_, w_min_, w_max_);
 
-//  ROS_INFO("Cur : %.3f", cur_);
-//  ROS_INFO("W   : %.3f", w_);
   // pose reached thresholds
   if (r_ <= dist_thres_)
   {
