@@ -28,7 +28,7 @@ target_link_libraries(waypoint_provider_lib ${catkin_LIBRARIES})
 
 add_library(waypoint_provider_yaml_parser_lib src/yaml_parser.cpp)
 add_dependencies(waypoint_provider_yaml_parser_lib yocs_msgs_gencpp)
-target_link_libraries(waypoint_provider_yaml_parser_lib ${catkin_LIBRARIES} ${yaml-cpp_LIBRARIES})
+target_link_libraries(waypoint_provider_yaml_parser_lib yaml-cpp ${catkin_LIBRARIES})
 
 add_executable(waypoint_provider src/main.cpp)
 add_dependencies(waypoint_provider waypoint_provider_lib waypoint_provider_yaml_parser_lib)
