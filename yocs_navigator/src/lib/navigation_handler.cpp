@@ -15,11 +15,11 @@ void SemanticNavigator::processNavigation(yocs_msgs::NavigateToGoal::ConstPtr go
   double distance = goal->distance;
   double timeout = goal->timeout;
 
-  yocs_msgs::Table table;
+  yocs_msgs::Waypoint waypoint;
   bool result;
 
-  result = getGoalLocationTable(location, table);
-  if(!result) // if it fails to find the requested table
+  result = getGoalLocation(location, waypoint);
+  if(!result) // if it fails to find the requested waypoint 
   {
     std::stringstream ss;
     ss << "failed to find the requested destination : " << location;
@@ -27,7 +27,7 @@ void SemanticNavigator::processNavigation(yocs_msgs::NavigateToGoal::ConstPtr go
     return;
   }
 
-  if(mtk::sameFrame(table.pose.header.frame_id, global_frame_) == false)
+  if(mtk::sameFrame(waypoint.header.frame_id, global_frame_) == false)
   {
     terminateNavigation(false, "Target is not in global frame");
     return;
@@ -37,11 +37,11 @@ void SemanticNavigator::processNavigation(yocs_msgs::NavigateToGoal::ConstPtr go
   switch(approach_type) {
     case yocs_msgs::NavigateToGoal::APPROACH_NEAR:
       loginfo("Approach Type : NEAR");
-      goNear(table, distance, num_retry, timeout);
+      goNear(waypoint, distance, num_retry, timeout);
       break;
     case yocs_msgs::NavigateToGoal::APPROACH_ON:
       loginfo("Approach Type : ON");
-      goOn(table, distance, num_retry, timeout);
+      goOn(waypoint, distance, num_retry, timeout);
       break;
     default:
       terminateNavigation(false, "Invalid Approach Type");
@@ -49,12 +49,12 @@ void SemanticNavigator::processNavigation(yocs_msgs::NavigateToGoal::ConstPtr go
   }
 }
 
-void SemanticNavigator::goOn(const yocs_msgs::Table table, const double in_distance, const int num_retry, const double timeout)
+void SemanticNavigator::goOn(const yocs_msgs::Waypoint waypoint, const double in_distance, const int num_retry, const double timeout)
 {
   // Note that in_distance variable is not used yet.. for On 
   geometry_msgs::PoseStamped target;
-  target.pose = table.pose.pose.pose;
-  target.header = table.pose.header;
+  target.pose = waypoint.pose;
+  target.header = waypoint.header;
 
   int attempt = 0;
   int move_base_result;
@@ -101,11 +101,11 @@ void SemanticNavigator::goOn(const yocs_msgs::Table table, const double in_dista
   terminateNavigation(final_result, message);
 }
 
-void SemanticNavigator::goNear(const yocs_msgs::Table table, const double distance, const int num_retry, const double timeout)
+void SemanticNavigator::goNear(const yocs_msgs::Waypoint waypoint, const double distance, const int num_retry, const double timeout)
 {
   geometry_msgs::PoseStamped target;
-  target.pose = table.pose.pose.pose;
-  target.header = table.pose.header;
+  target.pose = waypoint.pose;
+  target.header = waypoint.header;
 
   int attempt = 0;
   int move_base_result;

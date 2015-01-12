@@ -12,15 +12,15 @@ SemanticNavigator::SemanticNavigator(ros::NodeHandle& n)
   as_navi_(nh_, SemanticNavigatorDefaultParam::AS_NAVI, false),
   ac_move_base_(nh_, SemanticNavigatorDefaultParam::AC_MOVE_BASE, true)
 {
-  sub_tablelist_topic_= SemanticNavigatorDefaultParam::SUB_TABLELIST;
+  sub_waypointlist_topic_= SemanticNavigatorDefaultParam::SUB_WAYPOINTLIST;
 }
 
-SemanticNavigator::SemanticNavigator(ros::NodeHandle& n, const std::string& as_navigator_topic, const std::string& sub_tablelist_topic) 
+SemanticNavigator::SemanticNavigator(ros::NodeHandle& n, const std::string& as_navigator_topic, const std::string& sub_waypointlist_topic)
 : nh_(n), basic_move_(n),
   as_navi_(as_navigator_topic, false),
   ac_move_base_(SemanticNavigatorDefaultParam::AC_MOVE_BASE, true)
 {
-  sub_tablelist_topic_= sub_tablelist_topic; 
+  sub_waypointlist_topic_= sub_waypointlist_topic; 
 }
 
 SemanticNavigator::~SemanticNavigator()
@@ -34,15 +34,15 @@ bool SemanticNavigator::init()
   pnh.param("global_frame", global_frame_, std::string("map"));
 
   distance_to_goal_ = 0.0f;
-  table_received_ = false;
+  waypoint_received_ = false;
   navigation_in_progress_ = false;
 
   loginfo("Wait for move_base");
   ac_move_base_.waitForServer();
 
-  loginfo("Wait for table lists"); 
-  sub_tablelist_ = nh_.subscribe(sub_tablelist_topic_, 1, &SemanticNavigator::processTableList, this); 
-  while(ros::ok() && !table_received_) {
+  loginfo("Wait for waypoint lists"); 
+  sub_waypointlist_ = nh_.subscribe(sub_waypointlist_topic_, 1, &SemanticNavigator::processWaypointList, this); 
+  while(ros::ok() && !waypoint_received_) {
     ros::spinOnce();
     ros::Duration(0.5).sleep();
   }
@@ -55,10 +55,10 @@ bool SemanticNavigator::init()
   return true;
 }
 
-void SemanticNavigator::processTableList(const yocs_msgs::TableList::ConstPtr& msg)
+void SemanticNavigator::processWaypointList(const yocs_msgs::WaypointList::ConstPtr& msg)
 {
-  tablelist_ = *msg;
-  table_received_ = true;
+  waypointlist_ = *msg;
+  waypoint_received_ = true;
 }
 
 void SemanticNavigator::processNavigateToGoal()
