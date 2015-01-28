@@ -6,15 +6,15 @@
 #include "yocs_navigator/semantic_navigator.hpp"
 
 namespace yocs_navigator {
-bool SemanticNavigator::getGoalLocationTable(const std::string location,yocs_msgs::Table& table)
+bool SemanticNavigator::getGoalLocation(const std::string location,yocs_msgs::Waypoint& waypoint)
 {
   unsigned int i;
-  for(i = 0; i < tablelist_.tables.size(); i ++)
+  for(i = 0; i < waypointlist_.waypoints.size(); i ++)
   {
-    yocs_msgs::Table t = tablelist_.tables[i];
-    if(!location.compare(t.name)) // if matches
+    yocs_msgs::Waypoint w = waypointlist_.waypoints[i];
+    if(!location.compare(w.name)) // if matches
     {
-      table = t;
+      waypoint = w;
       return true;
     }
   }

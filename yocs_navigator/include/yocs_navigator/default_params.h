@@ -16,7 +16,7 @@ namespace yocs_navigator {
   namespace SemanticNavigatorDefaultParam {
     const std::string AS_NAVI       = "navigator";
     const std::string AC_MOVE_BASE  = "move_base";
-    const std::string SUB_TABLELIST = "tablelist";
+    const std::string SUB_WAYPOINTLIST = "waypointlist";
     const std::string CLEAR_COSTMAP = "move_base/clear_costmaps";
   }
 }

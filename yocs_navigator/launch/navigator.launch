@@ -19,7 +19,7 @@
   <!-- Semantic Navigator -->
   <node pkg="yocs_navigator" name="semantic_navigator" type="yocs_semantic_navigator_node">
     <remap from="odom"        to="$(arg odom_topic)"/>
-    <remap from="tablelist"   to="$(arg location_list_topic)"/>
+    <remap from="waypointlist"   to="$(arg location_list_topic)"/>
     <remap from="navigator" to="$(arg navigator_action)"/>
     <remap from="cmd_vel"     to="$(arg cmd_vel_mux_input)"/>
   </node>

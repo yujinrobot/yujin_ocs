@@ -9,7 +9,7 @@
 
 #include <move_base_msgs/MoveBaseAction.h>
 #include <yocs_msgs/NavigateToAction.h>
-#include <yocs_msgs/TableList.h>
+#include <yocs_msgs/WaypointList.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <std_srvs/Empty.h>
 
@@ -24,14 +24,14 @@ namespace yocs_navigator {
 class SemanticNavigator {
   public:
     SemanticNavigator(ros::NodeHandle& n);
-    SemanticNavigator(ros::NodeHandle& n, const std::string& as_navigator_topic, const std::string& sub_tablelist_topic);
+    SemanticNavigator(ros::NodeHandle& n, const std::string& as_navigator_topic, const std::string& sub_waypointlist_topic);
     virtual ~SemanticNavigator();
     bool init();
     void spin();
     void loginfo(const std::string& msg);
     void logwarn(const std::string& msg);
   protected:
-    void processTableList(const yocs_msgs::TableList::ConstPtr& msg);
+    void processWaypointList(const yocs_msgs::WaypointList::ConstPtr& msg);
     void processNavigateToGoal();
     void processPreemptNavigateTo();
 
@@ -39,13 +39,13 @@ class SemanticNavigator {
 
     void terminateNavigation(bool success, const std::string message);
     void feedbackNavigation(const int status, const double distance, const double remain_time, const std::string message);
-    bool getGoalLocationTable(const std::string location, yocs_msgs::Table& table);
+    bool getGoalLocation(const std::string location, yocs_msgs::Waypoint& waypoint);
 
-    void goOn(const yocs_msgs::Table table, const double in_distance, const int num_retry, const double timeout);
+    void goOn(const yocs_msgs::Waypoint waypoint, const double in_distance, const int num_retry, const double timeout);
       void waitForMoveBase(int& move_base_result, const ros::Time& start_time, const double timeout);
       void determineNavigationState(int& navi_result, const int move_base_result, const actionlib::SimpleClientGoalState  move_base_state);
       void nextState(bool& retry,bool& final_result,std::string& message, const int navi_result, const ros::Time started_time);
-    void goNear(const yocs_msgs::Table table, const double in_distance, const int num_retry, const double timeout);
+    void goNear(const yocs_msgs::Waypoint waypoint, const double in_distance, const int num_retry, const double timeout);
 
     void processMoveBaseFeedback(const move_base_msgs::MoveBaseFeedback::ConstPtr& feedback, const geometry_msgs::PoseStamped& target);
 
@@ -59,16 +59,16 @@ class SemanticNavigator {
     ros::NodeHandle nh_;
 
     BasicMoveController basic_move_;
-    ros::Subscriber                                               sub_tablelist_;
+    ros::Subscriber                                               sub_waypointlist_;
     actionlib::SimpleActionServer<yocs_msgs::NavigateToAction>    as_navi_;
     actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> ac_move_base_;
 
-    std::string sub_tablelist_topic_;
+    std::string sub_waypointlist_topic_;
     std::string global_frame_;
 
-    yocs_msgs::TableList tablelist_;
+    yocs_msgs::WaypointList waypointlist_;
     double distance_to_goal_;
-    bool table_received_;
+    bool waypoint_received_;
     bool navigation_in_progress_;
     boost::thread order_process_thread_;
 
