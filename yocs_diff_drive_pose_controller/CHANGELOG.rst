@@ -2,8 +2,8 @@
 Changelog for package yocs_diff_drive_pose_controller
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.6.4 (2015-02-09)
+------------------
 * clean up debug messages `#72 <https://github.com/yujinrobot/yujin_ocs/issues/72>`_
 * Merge remote-tracking branch 'origin/indigo' into update_ar_pair_approach
 * comment out debug messages

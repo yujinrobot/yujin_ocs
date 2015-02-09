@@ -1,6 +1,6 @@
 <package>
   <name>yocs_waypoints_navi</name>
-  <version>0.6.3</version>
+  <version>0.6.4</version>
   <description>
     Simple tool for waypoints navigation with two functions:
     <br/> * Command the robot to go to a goal by passing through a series of waypoints.

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>yocs_navigator</name>
-  <version>0.6.3</version>
+  <version>0.6.4</version>
   <description>
     Navigation module for robots
   </description>

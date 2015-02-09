@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>yocs_joyop</name>
-  <version>0.6.3</version>
+  <version>0.6.4</version>
   <description>Joystick teleoperation for your robot robot core</description>
   <author>Marcus Liebhardt</author>
   <maintainer email="marcus.liebhardt@yujinrobot.com">Marcus Liebhardt</maintainer>

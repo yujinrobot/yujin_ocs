@@ -2,8 +2,8 @@
 Changelog for package yocs_ar_pair_approach
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.6.4 (2015-02-09)
+------------------
 * Merge remote-tracking branch 'origin/indigo' into update_ar_pair_approach
 * ar pair update
 * now base target frame is on odom frame

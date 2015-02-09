@@ -1,6 +1,6 @@
 <package>
   <name>yujin_ocs</name>
-  <version>0.6.3</version>
+  <version>0.6.4</version>
   <description>Yujin Robot's open-source control software</description>
   <maintainer email="jihoonl@yujinrobot.com">Jihoon Lee</maintainer>
   <license>BSD</license>

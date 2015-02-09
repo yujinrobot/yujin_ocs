@@ -2,8 +2,8 @@
 Changelog for package yocs_localization_manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.6.4 (2015-02-09)
+------------------
 * comment out debug messages
 * add ar target offset param
 * updates

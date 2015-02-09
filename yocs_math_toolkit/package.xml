@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>yocs_math_toolkit</name>
-  <version>0.6.3</version>
+  <version>0.6.4</version>
   <description>
     Math toolkit for Yujin open control system. This package is intended to contain common use functions,
     mostly for simple mathematics but also for tf-related conversions.

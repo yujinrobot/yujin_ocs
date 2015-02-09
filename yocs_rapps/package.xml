@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>yocs_rapps</name>
-  <version>0.6.3</version>
+  <version>0.6.4</version>
   <description>
     Yujin open control system rapps for use with the app manager and rocon concert
   </description>

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>yocs_keyop</name>
-  <version>0.6.3</version>
+  <version>0.6.4</version>
   <description> Keyboard teleoperation for your robot </description>
   <author>Daniel Stonier</author>
   <author>Marcus Liebhardt</author>
