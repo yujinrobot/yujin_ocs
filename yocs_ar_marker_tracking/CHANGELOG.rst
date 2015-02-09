@@ -2,6 +2,11 @@
 Changelog for package yocs_ar_marker_tracking
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix yaml-cpp dependency closes `#63 <https://github.com/yujinrobot/yujin_ocs/issues/63>`_
+* Contributors: Jihoon Lee
+
 0.6.3 (2014-12-05)
 ------------------
 * Merge branch 'indigo-devel' into indigo

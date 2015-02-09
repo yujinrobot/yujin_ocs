@@ -2,6 +2,13 @@
 Changelog for package yocs_navigator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* convert yocs_navigator
+* add backward function
+* add slow_backward function
+* Contributors: Jihoon Lee
+
 0.6.3 (2014-12-05)
 ------------------
 

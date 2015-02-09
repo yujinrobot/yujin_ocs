@@ -2,6 +2,9 @@
 Changelog for package yocs_virtual_sensor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.6.3 (2014-12-05)
 ------------------
 

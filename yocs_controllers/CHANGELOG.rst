@@ -2,6 +2,9 @@
 Changelog for package yocs_controllers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.6.3 (2014-12-05)
 ------------------
 
