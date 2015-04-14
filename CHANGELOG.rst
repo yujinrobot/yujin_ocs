@@ -2,6 +2,11 @@
 Changelog for package ar_track_alvar
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Remove meta pkg; ar_track_alvar is 'unary stack' so no need for the meta pkg.
+* Contributors: Scott Niekum, Isaac IY Saito
+
 0.5.0 (2014-06-25)
 ------------------
 * move README to root directory
