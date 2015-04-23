@@ -4,7 +4,7 @@
 
   <arg name="simulation"              default="false"/>
   <arg name="start_move_base"         default="true"/>
-  <arg name="cmd_vel_mux_input"       default="/cmd_vel_mux/inputs/navigation"/>
+  <arg name="cmd_vel_mux_input"       default="/cmd_vel_mux/input/navi"/>
   <arg name="move_base_topic"         default="move_base"/>
   <arg name="odom_topic"              default="/odom"/>
   <arg name="map_topic"               default="map"/>
