@@ -54,8 +54,17 @@ class BasicMoveController(object):
         roll, pitch, yaw = tf.transformations.euler_from_quaternion(quaternion)
         return yaw
 
+    def slow_forward(self):
+        self.move_at(0.1, 0.0, 0.1)
+
     def slow_backward(self):
         self.move_at(-0.1, 0.0, 0.1)
+
+    def forward(self, distance):
+        pos0 = copy.deepcopy(self._odom.pose.pose.position)
+
+        while(self._distance2d(pos0, self._odom.pose.pose.position) < distance):
+            self.slow_forward()
 
     def backward(self, distance):
         pos0 = copy.deepcopy(self._odom.pose.pose.position)
