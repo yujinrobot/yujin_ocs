@@ -2,8 +2,9 @@
 Changelog for package yocs_joyop
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.6.3 (2014-12-05)
-------------------
+Forthcoming
+-----------
+* Magic buttons for yocs_joyop, these can be used to send boolean 'events' to a system.
 
 0.6.2 (2014-11-30)
 ------------------
