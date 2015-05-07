@@ -1,0 +1,16 @@
+<!-- 
+  Demo launcher for the magic button relay. Illustrates how to configure buttons
+  and launch it.
+ -->
+
+<launch>
+  <node pkg="yocs_joyop" type="magic_button_relay.py" name="magic_button_relay" output="screen">
+    <rosparam param="relays">
+      [
+        { id: 0, name: pin,    type: stamped_event },
+        { id: 1, name: honk,   type: event },
+        { id: 2, name: button, type: stamped_button }
+      ]
+    </rosparam>
+  </node>
+</launch>

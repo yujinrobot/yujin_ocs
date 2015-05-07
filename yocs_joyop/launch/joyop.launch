@@ -12,12 +12,8 @@
   <arg name="deadman_button"        default="4"/>
   <arg name="enable_button"         default="0"/>
   <arg name="disable_button"        default="1"/>
-  <arg name="magic_button"          default="2"/>
-  <arg name="more_magic_button"     default="3"/>
   <arg name="spin_frequency"        default="10"/>
   <arg name="joy_topic_name"        default="joy"/>
-  <arg name="magic_topic_name"      default="magic"/>
-  <arg name="more_magic_topic_name" default="more_magic"/>
   <arg name="cmd_vel_topic_name"    default="cmd_vel"/>
   <arg name="enable_topic_name"     default="enable"/>
   <arg name="disable_topic_name"    default="disable"/>
@@ -30,12 +26,8 @@
     <param name="deadman_button"        value="$(arg deadman_button)"/>
     <param name="enable_button"         value="$(arg enable_button)"/>
     <param name="disable_button"        value="$(arg disable_button)"/>
-    <param name="magic_button"          value="$(arg magic_button)"/>
-    <param name="more_magic_button"     value="$(arg more_magic_button"/>
     <param name="spin_frequency"        value="$(arg spin_frequency)"/>
     <remap from="joy"                   to="$(arg joy_topic_name)"/>
-    <remap from="yocs_joyop/magic"      to="$(arg magic_topic_name)"/>
-    <remap from="yocs_joyop/more_magic" to="$(arg more_magic_topic_name)"/>
   	<remap from="yocs_joyop/cmd_vel"    to="$(arg cmd_vel_topic_name)"/>
     <remap from="yocs_joyop/enable"     to="$(arg enable_topic_name)"/>
     <remap from="yocs_joyop/disable"    to="$(arg disable_topic_name)"/>
