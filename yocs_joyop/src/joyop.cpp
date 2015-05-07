@@ -8,7 +8,7 @@
 #include <geometry_msgs/Twist.h>
 #include <ros/ros.h>
 #include <sensor_msgs/Joy.h>
-#include <std_msgs/Bool.h>
+#include <yocs_msgs/MagicButton.h>
 #include <std_msgs/String.h>
 #include "boost/thread/mutex.hpp"
 #include "boost/thread/thread.hpp"
@@ -83,13 +83,15 @@ JoyOp::JoyOp():
 
   enable_pub_ = ph_.advertise<std_msgs::String>("enable", 1, true);
   disable_pub_ = ph_.advertise<std_msgs::String>("disable", 1, true);
-  magic_pub_ = ph_.advertise<std_msgs::Bool>("magic", 1, true);
-  more_magic_pub_ = ph_.advertise<std_msgs::Bool>("more_magic", 1, true);
+  magic_pub_ = ph_.advertise<yocs_msgs::MagicButton>("magic", 1, true);
+  more_magic_pub_ = ph_.advertise<yocs_msgs::MagicButton>("more_magic", 1, true);
   vel_pub_ = ph_.advertise<geometry_msgs::Twist>("cmd_vel", 1, true);
   joy_sub_ = nh_.subscribe<sensor_msgs::Joy>("joy", 10, &JoyOp::joyCallback, this);
 
   // initialise latched publishers
-  std_msgs::Bool msg_false; msg_false.data = false;
+  yocs_msgs::MagicButton msg_false;
+  msg_false.header.stamp = ros::Time::now();
+  msg_false.pressed = false;
   magic_pub_.publish(msg_false);
   more_magic_pub_.publish(msg_false);
 
@@ -166,16 +168,18 @@ void JoyOp::publish()
   boost::mutex::scoped_lock lock(publish_mutex_);
 
   if ( magic_ != magic_pressed_ ) {
-    std_msgs::Bool msg;
+    yocs_msgs::MagicButton msg;
+    msg.header.stamp = ros::Time::now();
     magic_ = magic_pressed_;
-    msg.data = magic_;
+    msg.pressed = magic_;
     magic_pub_.publish(msg);
     ROS_DEBUG_STREAM("JoyOp: magic event triggered.");
   }
   if ( more_magic_ != more_magic_pressed_ ) {
-    std_msgs::Bool msg;
+    yocs_msgs::MagicButton msg;
+    msg.header.stamp = ros::Time::now();
     more_magic_ = more_magic_pressed_;
-    msg.data = more_magic_;
+    msg.pressed = more_magic_;
     more_magic_pub_.publish(msg);
     ROS_DEBUG_STREAM("JoyOp: *more magic* event triggered.");
   }
