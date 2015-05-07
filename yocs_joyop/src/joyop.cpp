@@ -8,6 +8,7 @@
 #include <geometry_msgs/Twist.h>
 #include <ros/ros.h>
 #include <sensor_msgs/Joy.h>
+#include <yocs_msgs/MagicButton.h>
 #include <std_msgs/String.h>
 #include "boost/thread/mutex.hpp"
 #include "boost/thread/thread.hpp"
@@ -27,14 +28,21 @@ private:
 
   ros::NodeHandle ph_, nh_;
 
-  int linear_, angular_, deadman_button_, enable_button_, disable_button_, enabled_;
+  // states
+  int linear_, angular_, enabled_;
+  bool magic_, more_magic_;
+  // button ids
+  int magic_button_, more_magic_button_, deadman_button_, enable_button_, disable_button_;
   double l_scale_, a_scale_, spin_freq_;
   ros::Publisher enable_pub_, disable_pub_, vel_pub_;
+  ros::Publisher magic_pub_, more_magic_pub_;
   ros::Subscriber joy_sub_;
 
   geometry_msgs::Twist last_published_;
   boost::mutex publish_mutex_;
+  // callback notifications (kept separate from current state)
   bool enable_pressed_, disable_pressed_, deadman_pressed_, zero_twist_published_, wait_for_connection_;
+  bool magic_pressed_, more_magic_pressed_;
   ros::Timer timer_;
 
 };
@@ -43,34 +51,50 @@ JoyOp::JoyOp():
   ph_("~"),
   linear_(1),
   angular_(0),
+  magic_(false),
+  more_magic_(false),
   deadman_button_(4),
   enable_button_(0),
+  magic_button_(2),
+  more_magic_button_(3),
   disable_button_(1),
   l_scale_(0.3),
   a_scale_(0.9),
   spin_freq_(10),
-  wait_for_connection_(true)
+  wait_for_connection_(true),
+  enabled_(false),
+  enable_pressed_(false),
+  disable_pressed_(false),
+  deadman_pressed_(false),
+  zero_twist_published_(false),
+  magic_pressed_(false),
+  more_magic_pressed_(false)
 {
   ph_.param("linear_axis", linear_, linear_);
   ph_.param("angular_axis", angular_, angular_);
   ph_.param("deadman_button", deadman_button_, deadman_button_);
   ph_.param("enable_button", enable_button_, enable_button_);
   ph_.param("disable_button", disable_button_, disable_button_);
+  ph_.param("magic_button", magic_button_, magic_button_);
+  ph_.param("more_magic_button", more_magic_button_, more_magic_button_);
   ph_.param("angular_scale", a_scale_, a_scale_);
   ph_.param("linear_scale", l_scale_, l_scale_);
   ph_.param("spin_frequency", spin_freq_, spin_freq_);
   ph_.param("wait_for_connection", wait_for_connection_, wait_for_connection_);
 
-  enabled_ = false;
-  enable_pressed_ = false;
-  disable_pressed_ = false;
-  deadman_pressed_ = false;
-  zero_twist_published_ = false;
-
   enable_pub_ = ph_.advertise<std_msgs::String>("enable", 1, true);
   disable_pub_ = ph_.advertise<std_msgs::String>("disable", 1, true);
+  magic_pub_ = ph_.advertise<yocs_msgs::MagicButton>("magic", 1, true);
+  more_magic_pub_ = ph_.advertise<yocs_msgs::MagicButton>("more_magic", 1, true);
   vel_pub_ = ph_.advertise<geometry_msgs::Twist>("cmd_vel", 1, true);
   joy_sub_ = nh_.subscribe<sensor_msgs::Joy>("joy", 10, &JoyOp::joyCallback, this);
+
+  // initialise latched publishers
+  yocs_msgs::MagicButton msg_false;
+  msg_false.header.stamp = ros::Time::now();
+  msg_false.pressed = false;
+  magic_pub_.publish(msg_false);
+  more_magic_pub_.publish(msg_false);
 
   timer_ = nh_.createTimer(ros::Duration(1/spin_freq_), boost::bind(&JoyOp::publish, this));
 
@@ -136,12 +160,30 @@ void JoyOp::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
   deadman_pressed_ = joy->buttons[deadman_button_];
   enable_pressed_ = joy->buttons[enable_button_];
   disable_pressed_ = joy->buttons[disable_button_];
+  magic_pressed_ =  joy->buttons[magic_button_];
+  more_magic_pressed_ =  joy->buttons[more_magic_button_];
 }
 
 void JoyOp::publish()
 {
   boost::mutex::scoped_lock lock(publish_mutex_);
 
+  if ( magic_ != magic_pressed_ ) {
+    yocs_msgs::MagicButton msg;
+    msg.header.stamp = ros::Time::now();
+    magic_ = magic_pressed_;
+    msg.pressed = magic_;
+    magic_pub_.publish(msg);
+    ROS_DEBUG_STREAM("JoyOp: magic event triggered.");
+  }
+  if ( more_magic_ != more_magic_pressed_ ) {
+    yocs_msgs::MagicButton msg;
+    msg.header.stamp = ros::Time::now();
+    more_magic_ = more_magic_pressed_;
+    msg.pressed = more_magic_;
+    more_magic_pub_.publish(msg);
+    ROS_DEBUG_STREAM("JoyOp: *more magic* event triggered.");
+  }
   if (enable_pressed_ && (!disable_pressed_))
   {
     if(!enabled_)
