@@ -39,10 +39,11 @@ target_link_libraries(joyop ${catkin_LIBRARIES})
 
 install(PROGRAMS
             scripts/magic_button_relay.py
-        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
        )
 
-install(TARGETS joyop 
+install(TARGETS
+            joyop 
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 install(DIRECTORY launch
