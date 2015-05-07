@@ -61,7 +61,14 @@ JoyOp::JoyOp():
   l_scale_(0.3),
   a_scale_(0.9),
   spin_freq_(10),
-  wait_for_connection_(true)
+  wait_for_connection_(true),
+  enabled_(false),
+  enable_pressed_(false),
+  disable_pressed_(false),
+  deadman_pressed_(false),
+  zero_twist_published_(false),
+  magic_pressed_(false),
+  more_magic_pressed_(false)
 {
   ph_.param("linear_axis", linear_, linear_);
   ph_.param("angular_axis", angular_, angular_);
@@ -74,12 +81,6 @@ JoyOp::JoyOp():
   ph_.param("linear_scale", l_scale_, l_scale_);
   ph_.param("spin_frequency", spin_freq_, spin_freq_);
   ph_.param("wait_for_connection", wait_for_connection_, wait_for_connection_);
-
-  enabled_ = false;
-  enable_pressed_ = false;
-  disable_pressed_ = false;
-  deadman_pressed_ = false;
-  zero_twist_published_ = false;
 
   enable_pub_ = ph_.advertise<std_msgs::String>("enable", 1, true);
   disable_pub_ = ph_.advertise<std_msgs::String>("disable", 1, true);
