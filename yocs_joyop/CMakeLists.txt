@@ -6,6 +6,7 @@ find_package(catkin REQUIRED COMPONENTS ecl_exceptions
                                         geometry_msgs
                                         sensor_msgs
                                         std_msgs
+                                        yocs_msgs
                                         roscpp)
 
 find_package(Boost REQUIRED COMPONENTS thread)
