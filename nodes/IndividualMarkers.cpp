@@ -450,6 +450,7 @@ void getPointCloudCallback (const sensor_msgs::PointCloud2ConstPtr &msg)
 	  ar_pose_marker.id = id;
 	  arPoseMarkers_.markers.push_back (ar_pose_marker);	
 	}
+      arPoseMarkers_.header.stamp = image_msg->header.stamp;
       arMarkerPub_.publish (arPoseMarkers_);
     }
     catch (cv_bridge::Exception& e){
