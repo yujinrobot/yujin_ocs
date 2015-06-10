@@ -5,7 +5,7 @@
 This package is a ROS wrapper for Alvar, an open source AR tag tracking library.
 </description>
 <maintainer email="sniekum@cs.umass.edu">Scott Niekum</maintainer>
-<license>BSD</license>
+<license>LGPL-2.1</license>
 <url type="website">http://ros.org/wiki/ar_track_alvar</url>
 
  <buildtool_depend>catkin</buildtool_depend>
