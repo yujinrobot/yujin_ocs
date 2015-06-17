@@ -30,7 +30,9 @@ catkin_package(INCLUDE_DIRS include
 include_directories(include
                     ${catkin_INCLUDE_DIRS})
 
-add_library(yocs_diff_drive_pose_controller_nodelet src/nodelet.cpp)
+add_library(yocs_diff_drive_pose_controller_nodelet
+    src/controller.cpp
+    src/nodelet.cpp)
 add_dependencies(yocs_diff_drive_pose_controller_nodelet geometry_msgs_gencpp
                                                          sensor_msgs_gencpp
                                                          std_msgs_gencpp)
