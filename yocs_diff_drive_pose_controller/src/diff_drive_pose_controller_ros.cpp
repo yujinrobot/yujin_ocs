@@ -27,19 +27,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*****************************************************************************
-** Includes
-*****************************************************************************/
 #include <cmath>
-#include <string>
-#include <geometry_msgs/Twist.h>
-#include <ros/ros.h>
 #include <std_msgs/Bool.h>
-#include <std_msgs/Empty.h>
-#include <std_msgs/Float32.h>
-#include <std_msgs/String.h>
-#include <tf/transform_listener.h>
-#include <yocs_controllers/default_controller.hpp>
+#include <geometry_msgs/Twist.h>
 #include <yocs_math_toolkit/geometry.hpp>
 
 #include "yocs_diff_drive_pose_controller/diff_drive_pose_controller_ros.hpp"
@@ -51,103 +41,95 @@ bool DiffDrivePoseControllerROS::init()
 {
   enable_controller_subscriber_ = nh_.subscribe("enable", 10, &DiffDrivePoseControllerROS::enableCB, this);
   disable_controller_subscriber_ = nh_.subscribe("disable", 10, &DiffDrivePoseControllerROS::disableCB, this);
-  control_velocity_subscriber_ = nh_.subscribe("control_max_vel", 10, &DiffDrivePoseControllerROS::controlMaxVelCB, this);
+  control_velocity_subscriber_ = nh_.subscribe("control_max_vel", 10, &DiffDrivePoseControllerROS::controlMaxVelCB,
+                                               this);
   command_velocity_publisher_ = nh_.advertise<geometry_msgs::Twist>("command_velocity", 10);
   pose_reached_publisher_ = nh_.advertise<std_msgs::Bool>("pose_reached", 10);
 
   // retrieve configuration parameters
   base_frame_name_ = "base_footprint";
-  if(!nh_.getParam("base_frame_name", base_frame_name_))
+  if (!nh_.getParam("base_frame_name", base_frame_name_))
   {
-    ROS_WARN_STREAM("Couldn't retrieve parameter 'base_frame_name' from parameter server! Using default '"
-                    << base_frame_name_ << "'. [" << name_ <<"]");
+    ROS_WARN_STREAM(
+        "Couldn't retrieve parameter 'base_frame_name' from parameter server! Using default '" << base_frame_name_ << "'. [" << name_ <<"]");
   }
   goal_frame_name_ = "base_goal_pose";
-  if(!nh_.getParam("goal_frame_name", goal_frame_name_))
+  if (!nh_.getParam("goal_frame_name", goal_frame_name_))
   {
-    ROS_WARN_STREAM("Couldn't retrieve parameter 'goal_frame_name' from parameter server! Using default '"
-                    << goal_frame_name_ << "'. [" << name_ <<"]");
+    ROS_WARN_STREAM(
+        "Couldn't retrieve parameter 'goal_frame_name' from parameter server! Using default '" << goal_frame_name_ << "'. [" << name_ <<"]");
   }
-  v_ = 0.0;
-  v_min_ = 0.01;
-  if(!nh_.getParam("v_min", v_min_))
+
+  if (!nh_.getParam("v_min", v_min_))
   {
-    ROS_WARN_STREAM("Couldn't retrieve parameter 'v_min' from parameter server! Using default '"
-                    << v_min_ << "'. [" << name_ <<"]");
+    ROS_WARN_STREAM(
+        "Couldn't retrieve parameter 'v_min' from parameter server! Using default '" << v_min_ << "'. [" << name_ <<"]");
   }
-  v_max_ = 0.5;
-  if(!nh_.getParam("v_max", v_max_))
+  if (!nh_.getParam("v_max", v_max_))
   {
-    ROS_WARN_STREAM("Couldn't retrieve parameter 'v_max' from parameter server! Using default '"
-                    << v_max_ << "'. [" << name_ <<"]");
+    ROS_WARN_STREAM(
+        "Couldn't retrieve parameter 'v_max' from parameter server! Using default '" << v_max_ << "'. [" << name_ <<"]");
   }
-  w_min_ = 0.01;
-  if(!nh_.getParam("w_min", w_min_))
+  if (!nh_.getParam("w_min", w_min_))
   {
-    ROS_WARN_STREAM("Couldn't retrieve parameter 'w_min' from parameter server! Using default '"
-                    << w_min_ << "'. [" << name_ <<"]");
+    ROS_WARN_STREAM(
+        "Couldn't retrieve parameter 'w_min' from parameter server! Using default '" << w_min_ << "'. [" << name_ <<"]");
   }
   w_max_ = M_PI / 4 * v_max_;
-  if(!nh_.getParam("w_max", w_max_))
+  if (!nh_.getParam("w_max", w_max_))
   {
-    ROS_WARN_STREAM("Couldn't retrieve parameter 'w_max' from parameter server! Using default '"
-                    << w_max_ << "'. [" << name_ <<"]");
+    ROS_WARN_STREAM(
+        "Couldn't retrieve parameter 'w_max' from parameter server! Using default '" << w_max_ << "'. [" << name_ <<"]");
   }
-  k_1_ = 1.0;
-  if(!nh_.getParam("k_1", k_1_))
+
+  if (!nh_.getParam("k_1", k_1_))
   {
-    ROS_WARN_STREAM("Couldn't retrieve parameter 'k_1' from parameter server! Using default '"
-                    << k_1_ << "'. [" << name_ <<"]");
+    ROS_WARN_STREAM(
+        "Couldn't retrieve parameter 'k_1' from parameter server! Using default '" << k_1_ << "'. [" << name_ <<"]");
   }
-  k_2_ = 3.0;
-  if(!nh_.getParam("k_2", k_2_))
+  if (!nh_.getParam("k_2", k_2_))
   {
-    ROS_WARN_STREAM("Couldn't retrieve parameter 'k_2' from parameter server! Using default '"
-                    << k_2_ << "'. [" << name_ <<"]");
+    ROS_WARN_STREAM(
+        "Couldn't retrieve parameter 'k_2' from parameter server! Using default '" << k_2_ << "'. [" << name_ <<"]");
   }
-  beta_ = 0.4;
-  if(!nh_.getParam("beta", beta_))
+  if (!nh_.getParam("beta", beta_))
   {
-    ROS_WARN_STREAM("Couldn't retrieve parameter 'beta' from parameter server! Using default '"
-                    << beta_ << "'. [" << name_ <<"]");
+    ROS_WARN_STREAM(
+        "Couldn't retrieve parameter 'beta' from parameter server! Using default '" << beta_ << "'. [" << name_ <<"]");
   }
-  lambda_ = 2.0;
-  if(!nh_.getParam("lambda", lambda_))
+  if (!nh_.getParam("lambda", lambda_))
   {
-    ROS_WARN_STREAM("Couldn't retrieve parameter 'lambda' from parameter server! Using default '"
-                    << lambda_ << "'. [" << name_ <<"]");
+    ROS_WARN_STREAM(
+        "Couldn't retrieve parameter 'lambda' from parameter server! Using default '" << lambda_ << "'. [" << name_ <<"]");
   }
-  dist_thres_ = 0.01;
-  if(!nh_.getParam("dist_thres", dist_thres_))
+  if (!nh_.getParam("dist_thres", dist_thres_))
   {
-    ROS_WARN_STREAM("Couldn't retrieve parameter 'dist_thres' from parameter server! Using default '"
-                    << dist_thres_ << "'. [" << name_ <<"]");
+    ROS_WARN_STREAM(
+        "Couldn't retrieve parameter 'dist_thres' from parameter server! Using default '" << dist_thres_ << "'. [" << name_ <<"]");
   }
-  orient_thres_ = 0.02;
-  if(!nh_.getParam("orient_thres", orient_thres_))
+  if (!nh_.getParam("orient_thres", orient_thres_))
   {
-    ROS_WARN_STREAM("Couldn't retrieve parameter 'orient_thres' from parameter server! Using default '"
-                    << orient_thres_ << "'. [" << name_ <<"]");
+    ROS_WARN_STREAM(
+        "Couldn't retrieve parameter 'orient_thres' from parameter server! Using default '" << orient_thres_ << "'. [" << name_ <<"]");
   }
   dist_eps_ = dist_eps_ * 0.2;
-  if(!nh_.getParam("dist_eps", dist_eps_))
+  if (!nh_.getParam("dist_eps", dist_eps_))
   {
-    ROS_WARN_STREAM("Couldn't retrieve parameter 'dist_eps' from parameter server! Using default '"
-                    << dist_eps_ << "'. [" << name_ <<"]");
+    ROS_WARN_STREAM(
+        "Couldn't retrieve parameter 'dist_eps' from parameter server! Using default '" << dist_eps_ << "'. [" << name_ <<"]");
   }
   orient_eps_ = orient_thres_ * 0.2;
-  if(!nh_.getParam("orient_eps", orient_eps_))
+  if (!nh_.getParam("orient_eps", orient_eps_))
   {
-    ROS_WARN_STREAM("Couldn't retrieve parameter 'orient_eps' from parameter server! Using default '"
-                    << orient_eps_ << "'. [" << name_ <<"]");
+    ROS_WARN_STREAM(
+        "Couldn't retrieve parameter 'orient_eps' from parameter server! Using default '" << orient_eps_ << "'. [" << name_ <<"]");
   }
-  pose_reached_ = false;
+
   ROS_DEBUG_STREAM("Controller initialised with the following parameters: [" << name_ <<"]");
-  ROS_DEBUG_STREAM("base_frame_name = " << base_frame_name_ <<", goal_frame_name = "
-                   << goal_frame_name_ << " [" << name_ <<"]");
-  ROS_DEBUG_STREAM("v_max = " << v_max_ <<", k_1 = " << k_1_ << ", k_2 = " << k_2_ << ", beta = " << beta_
-                   << ", lambda = " << lambda_ << ", dist_thres = " << dist_thres_
-                   << ", orient_thres = " << orient_thres_ <<" [" << name_ <<"]");
+  ROS_DEBUG_STREAM(
+      "base_frame_name = " << base_frame_name_ <<", goal_frame_name = " << goal_frame_name_ << " [" << name_ <<"]");
+  ROS_DEBUG_STREAM(
+      "v_max = " << v_max_ <<", k_1 = " << k_1_ << ", k_2 = " << k_2_ << ", beta = " << beta_ << ", lambda = " << lambda_ << ", dist_thres = " << dist_thres_ << ", orient_thres = " << orient_thres_ <<" [" << name_ <<"]");
   return true;
 }
 
@@ -162,14 +144,15 @@ void DiffDrivePoseControllerROS::spinOnce()
       ROS_WARN_STREAM_THROTTLE(1.0, "Getting pose difference failed. Skipping control loop. [" << name_ <<"]");
       return;
     }
-    // determine controller output (v, w)
-    getControlOutput();
+    // determine controller output (v, w) and check if goal is reached
+    step();
+
     // set control output (v, w)
     setControlOutput();
     // Logging
     ROS_DEBUG_STREAM_THROTTLE(1.0, "Current state: [" << name_ <<"]");
-    ROS_DEBUG_STREAM_THROTTLE(1.0, "r = " << r_ << ", theta = " << theta_ << ", delta = " << delta_
-                                   << " [" << name_ <<"]");
+    ROS_DEBUG_STREAM_THROTTLE(1.0,
+                              "r = " << r_ << ", theta = " << theta_ << ", delta = " << delta_ << " [" << name_ <<"]");
     ROS_DEBUG_STREAM_THROTTLE(1.0, "cur = " << cur_ << ", v = " << v_ << ", w = " << w_ << " [" << name_ <<"]");
   }
   else
@@ -193,91 +176,26 @@ bool DiffDrivePoseControllerROS::getPoseDiff()
   }
 
   // determine distance to goal
-  r_ = std::sqrt(std::pow(tf_goal_pose_rel_.getOrigin().getX(), 2)
-                 + std::pow(tf_goal_pose_rel_.getOrigin().getY(), 2));
+  double r = std::sqrt(
+      std::pow(tf_goal_pose_rel_.getOrigin().getX(), 2) + std::pow(tf_goal_pose_rel_.getOrigin().getY(), 2));
   // determine orientation of r relative to the base frame
-  delta_ = std::atan2(-tf_goal_pose_rel_.getOrigin().getY(), tf_goal_pose_rel_.getOrigin().getX());
+  double delta = std::atan2(-tf_goal_pose_rel_.getOrigin().getY(), tf_goal_pose_rel_.getOrigin().getX());
 
   // determine orientation of r relative to the goal frame
   // helper: theta = tf's orientation + delta
-  double heading =  mtk::wrapAngle(tf::getYaw(tf_goal_pose_rel_.getRotation()));
-  theta_ = heading + delta_;
+  double heading = mtk::wrapAngle(tf::getYaw(tf_goal_pose_rel_.getRotation()));
+  double theta = heading + delta;
+
+  setInput(r, delta, theta);
 
   return true;
 }
 
-void DiffDrivePoseControllerROS::getControlOutput()
+void DiffDrivePoseControllerROS::onGoalReached()
 {
-  double atan2_k1_tehta = std::atan2(-theta_, k_1_);
-
-  cur_ = (-1 / r_) * (k_2_ * (delta_ - atan2_k1_tehta)
-         + (1 + (k_1_ / (1 + std::pow((k_1_ * theta_), 2)))) * sin(delta_));
-  v_ = v_max_ / (1 + beta_ * std::pow(std::abs(cur_), lambda_));
-
-  v_ = boundRange(v_, v_min_, v_max_);
-
-  w_ = cur_ * v_; // unbounded for now
-  w_ = boundRange(w_, w_min_, w_max_);
-
-  // pose reached thresholds
-  if (r_ <= dist_thres_)
-  {
-    v_ = 0;
-    if (std::abs(delta_ - theta_) <= orient_thres_)
-    {
-      w_ = 0;
-    }
-  }
-
-  // check, if pose has been reached
-  if ((r_ <= dist_thres_) && (std::abs(delta_ - theta_) <= orient_thres_))
-  {
-    if (!pose_reached_)
-    {
-      pose_reached_ = true;
-      ROS_INFO_STREAM("Pose reached. [" << name_ <<"]");
-      std_msgs::Bool bool_msg;
-      bool_msg.data = true;
-      pose_reached_publisher_.publish(bool_msg);
-    }
-  }
-  else if ((r_ > (dist_thres_ + dist_eps_)) || (std::abs(delta_ - theta_) > (orient_thres_ + orient_eps_)))
-  {
-    if (pose_reached_)
-    {
-      pose_reached_ = false;
-      ROS_INFO_STREAM("Tracking new goal pose. [" << name_ <<"]");
-    }
-  }
-}
-
-double DiffDrivePoseControllerROS::boundRange(double v, double min, double max)
-{
-  // bounds for v
-  if (v < 0.0)
-  {
-    if (v > -min)
-    {
-      v = -min;
-    }
-    else if (v < -max)
-    {
-      v = -max;
-    }
-  }
-  else
-  {
-    if (v < min)
-    {
-      v = min;
-    }
-    else if (v > max)
-    {
-      v = max;
-    }
-  }
-
-  return v;
+  std_msgs::Bool bool_msg;
+  bool_msg.data = true;
+  pose_reached_publisher_.publish(bool_msg);
 }
 
 void DiffDrivePoseControllerROS::setControlOutput()

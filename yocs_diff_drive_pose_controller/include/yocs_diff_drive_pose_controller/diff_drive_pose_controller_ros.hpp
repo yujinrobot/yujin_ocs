@@ -28,26 +28,22 @@
  */
 
 /*****************************************************************************
-** Ifdefs
-*****************************************************************************/
+ ** Ifdefs
+ *****************************************************************************/
 
 #ifndef YOCS_DIFF_DRIVE_POSE_CONTROLLER_ROS_HPP_
 #define YOCS_DIFF_DRIVE_POSE_CONTROLLER_ROS_HPP_
 
 /*****************************************************************************
-** Includes
-*****************************************************************************/
-#include <cmath>
-#include <string>
-#include <geometry_msgs/Twist.h>
+ ** Includes
+ *****************************************************************************/
 #include <ros/ros.h>
-#include <std_msgs/Bool.h>
 #include <std_msgs/Empty.h>
 #include <std_msgs/Float32.h>
 #include <std_msgs/String.h>
 #include <tf/transform_listener.h>
-#include <yocs_controllers/default_controller.hpp>
-#include <yocs_math_toolkit/geometry.hpp>
+
+#include "yocs_diff_drive_pose_controller/diff_drive_pose_controller.hpp"
 
 namespace yocs
 {
@@ -77,13 +73,18 @@ namespace yocs
  *
  * This controller can be enabled/disabled.
  */
-class DiffDrivePoseControllerROS : public Controller
+class DiffDrivePoseControllerROS : public DiffDrivePoseController
 {
 public:
-  DiffDrivePoseControllerROS(ros::NodeHandle& nh, std::string& name) : Controller(),
-                                                                       nh_(nh),
-                                                                       name_(name){};
-  virtual ~DiffDrivePoseControllerROS(){};
+  DiffDrivePoseControllerROS(ros::NodeHandle& nh, std::string& name) :
+      DiffDrivePoseController(name, 0.5, M_PI / 4 * 0.5), nh_(nh)
+  {
+  }
+  ;
+  virtual ~DiffDrivePoseControllerROS()
+  {
+  }
+  ;
 
   /**
    * @brief Set-up necessary publishers/subscribers and variables
@@ -101,13 +102,16 @@ private:
    * @brief Determines the pose difference in polar coordinates
    */
   bool getPoseDiff();
+
+  /**
+   * @brief Publishes goal is reached message
+   */
+  virtual void onGoalReached();
+
   /**
    * @brief Calculates the controller output based on the current pose difference
    */
-  void getControlOutput();
-  /**
-   * @brief Sends out the new velocity commands for the left and right wheel based on the current controller output
-   */
+
   void setControlOutput();
 
   /**
@@ -128,15 +132,6 @@ private:
    */
   void disableCB(const std_msgs::EmptyConstPtr msg);
 
-  /**
-   * @brief Bounding range of velocity
-   * @param v velocity
-   * @param min minimum speed
-   * @param max maximum speed
-   * @return bounded velocity
-   */
-  double boundRange(double v, double min, double max);
-
   // basics
   ros::NodeHandle nh_;
   std::string name_;
@@ -152,52 +147,6 @@ private:
   ros::Publisher command_velocity_publisher_;
   /// publishes the status of the goal pose tracking
   ros::Publisher pose_reached_publisher_;
-
-  // variables and constants for the control law
-  /// distance to pose goal [m]
-  double r_;
-  /// direction of the pose goal [rad]
-  double theta_;
-  /// current heading of the base [rad]
-  double delta_;
-  /// linear base velocity [m/s]
-  double v_;
-  /// minimum linear base velocity [m/s]
-  double v_min_;
-  /// maximum linear base velocity [m/s]
-  double v_max_;
-  /// angular base velocity [rad/s]
-  double w_;
-  /// minimum angular base velocity [rad/s]
-  double w_min_;
-  /// maximum angular base velocity [rad/s]
-  double w_max_;
-  /// path to goal curvature
-  double cur_;
-  /// constant factor determining the ratio of the rate of change in theta to the rate of change in r
-  double k_1_;
-  /// constant factor applied to the heading error feedback
-  double k_2_;
-  /**
-   * constant factor for the curvature-based velocity rule
-   * determines how fast the velocity drops when the curvature increases
-   */
-  double beta_;
-  /**
-   * constant factor for the curvature-based velocity rule
-   * determines the sharpness of the curve: higher lambda -> bigger drop in short term, smaller in the long term
-   */
-  double lambda_;
-  /// lower bound for the distance (v = 0)
-  double dist_thres_;
-  /// lower bound for the orientation (w = 0)
-  double orient_thres_;
-  /// True, if pose has been reached (v == 0, w == 0)
-  bool pose_reached_;
-  /// Error in distance above which pose is considered different
-  double dist_eps_;
-  /// Error in orientation above which pose is considered different
-  double orient_eps_;
 
   /// tf used to get goal pose relative to the base pose
   tf::TransformListener tf_listener_;
