@@ -31,7 +31,7 @@ include_directories(include
                     ${catkin_INCLUDE_DIRS})
 
 add_library(yocs_diff_drive_pose_controller_nodelet
-    src/controller.cpp
+    src/diff_drive_pose_controller_ros.cpp
     src/nodelet.cpp)
 add_dependencies(yocs_diff_drive_pose_controller_nodelet geometry_msgs_gencpp
                                                          sensor_msgs_gencpp

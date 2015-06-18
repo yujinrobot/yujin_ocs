@@ -31,8 +31,8 @@
 ** Ifdefs
 *****************************************************************************/
 
-#ifndef YOCS_CONTROLLER_HPP_
-#define YOCS_CONTROLLER_HPP_
+#ifndef YOCS_DIFF_DRIVE_POSE_CONTROLLER_ROS_HPP_
+#define YOCS_DIFF_DRIVE_POSE_CONTROLLER_ROS_HPP_
 
 /*****************************************************************************
 ** Includes
@@ -77,13 +77,13 @@ namespace yocs
  *
  * This controller can be enabled/disabled.
  */
-class DiffDrivePoseController : public Controller
+class DiffDrivePoseControllerROS : public Controller
 {
 public:
-  DiffDrivePoseController(ros::NodeHandle& nh, std::string& name) : Controller(),
+  DiffDrivePoseControllerROS(ros::NodeHandle& nh, std::string& name) : Controller(),
                                                                        nh_(nh),
                                                                        name_(name){};
-  virtual ~DiffDrivePoseController(){};
+  virtual ~DiffDrivePoseControllerROS(){};
 
   /**
    * @brief Set-up necessary publishers/subscribers and variables
@@ -194,9 +194,9 @@ private:
   double orient_thres_;
   /// True, if pose has been reached (v == 0, w == 0)
   bool pose_reached_;
-  /// Error in distance above which pose is considered differen
+  /// Error in distance above which pose is considered different
   double dist_eps_;
-  /// Error in orientation above which pose is considered differen
+  /// Error in orientation above which pose is considered different
   double orient_eps_;
 
   /// tf used to get goal pose relative to the base pose
@@ -211,4 +211,4 @@ private:
 
 } // namespace yocs
 
-#endif /* YOCS_CONTROLLER_HPP_ */
+#endif /* YOCS_DIFF_DRIVE_POSE_CONTROLLER_ROS_HPP_ */

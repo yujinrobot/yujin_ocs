@@ -42,16 +42,16 @@
 #include <yocs_controllers/default_controller.hpp>
 #include <yocs_math_toolkit/geometry.hpp>
 
-#include "yocs_diff_drive_pose_controller/controller.hpp"
+#include "yocs_diff_drive_pose_controller/diff_drive_pose_controller_ros.hpp"
 
 namespace yocs
 {
 
-bool DiffDrivePoseController::init()
+bool DiffDrivePoseControllerROS::init()
 {
-  enable_controller_subscriber_ = nh_.subscribe("enable", 10, &DiffDrivePoseController::enableCB, this);
-  disable_controller_subscriber_ = nh_.subscribe("disable", 10, &DiffDrivePoseController::disableCB, this);
-  control_velocity_subscriber_ = nh_.subscribe("control_max_vel", 10, &DiffDrivePoseController::controlMaxVelCB, this);
+  enable_controller_subscriber_ = nh_.subscribe("enable", 10, &DiffDrivePoseControllerROS::enableCB, this);
+  disable_controller_subscriber_ = nh_.subscribe("disable", 10, &DiffDrivePoseControllerROS::disableCB, this);
+  control_velocity_subscriber_ = nh_.subscribe("control_max_vel", 10, &DiffDrivePoseControllerROS::controlMaxVelCB, this);
   command_velocity_publisher_ = nh_.advertise<geometry_msgs::Twist>("command_velocity", 10);
   pose_reached_publisher_ = nh_.advertise<std_msgs::Bool>("pose_reached", 10);
 
@@ -151,7 +151,7 @@ bool DiffDrivePoseController::init()
   return true;
 }
 
-void DiffDrivePoseController::spinOnce()
+void DiffDrivePoseControllerROS::spinOnce()
 {
   if (this->getState())
   {
@@ -178,7 +178,7 @@ void DiffDrivePoseController::spinOnce()
   }
 }
 
-bool DiffDrivePoseController::getPoseDiff()
+bool DiffDrivePoseControllerROS::getPoseDiff()
 {
   // use tf to get information about the goal pose relative to the base
   try
@@ -206,7 +206,7 @@ bool DiffDrivePoseController::getPoseDiff()
   return true;
 }
 
-void DiffDrivePoseController::getControlOutput()
+void DiffDrivePoseControllerROS::getControlOutput()
 {
   double atan2_k1_tehta = std::atan2(-theta_, k_1_);
 
@@ -251,7 +251,7 @@ void DiffDrivePoseController::getControlOutput()
   }
 }
 
-double DiffDrivePoseController::boundRange(double v, double min, double max)
+double DiffDrivePoseControllerROS::boundRange(double v, double min, double max)
 {
   // bounds for v
   if (v < 0.0)
@@ -280,7 +280,7 @@ double DiffDrivePoseController::boundRange(double v, double min, double max)
   return v;
 }
 
-void DiffDrivePoseController::setControlOutput()
+void DiffDrivePoseControllerROS::setControlOutput()
 {
   geometry_msgs::TwistPtr cmd_vel(new geometry_msgs::Twist());
   if (!pose_reached_)
@@ -291,13 +291,13 @@ void DiffDrivePoseController::setControlOutput()
   command_velocity_publisher_.publish(cmd_vel);
 }
 
-void DiffDrivePoseController::controlMaxVelCB(const std_msgs::Float32ConstPtr msg)
+void DiffDrivePoseControllerROS::controlMaxVelCB(const std_msgs::Float32ConstPtr msg)
 {
   v_max_ = msg->data;
   ROS_INFO_STREAM("Maximum linear control velocity has been set to " << v_max_ << ". [" << name_ << "]");
 }
 
-void DiffDrivePoseController::enableCB(const std_msgs::StringConstPtr msg)
+void DiffDrivePoseControllerROS::enableCB(const std_msgs::StringConstPtr msg)
 {
   if (this->enable())
   {
@@ -310,7 +310,7 @@ void DiffDrivePoseController::enableCB(const std_msgs::StringConstPtr msg)
   }
 }
 
-void DiffDrivePoseController::disableCB(const std_msgs::EmptyConstPtr msg)
+void DiffDrivePoseControllerROS::disableCB(const std_msgs::EmptyConstPtr msg)
 {
   if (this->disable())
   {
