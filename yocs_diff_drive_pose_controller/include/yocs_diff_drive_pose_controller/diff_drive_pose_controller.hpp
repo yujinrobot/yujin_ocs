@@ -37,9 +37,10 @@ class DiffDrivePoseController : public Controller
 public:
   DiffDrivePoseController(std::string name, double v_max, double w_max, double dist_thres = 0.01, double orient_thres =
                               0.02,
-                          double dist_eps = 0.01 * 0.2, double orient_eps = 0.02 * 0.2, double k_1 = 1.0, double k_2 =
-                              3.0,
-                          double beta = 0.4, double lambda = 2.0, double v_min = 0.01, double w_min = 0.01);
+                          double dist_eps = 0.01 * 0.2, double orient_eps = 0.02 * 0.2, double orientation_gain = 0.3,
+                          double k_1 = 1.0, double k_2 = 3.0, double beta = 0.4, double lambda = 2.0, double v_min =
+                              0.01,
+                          double v_min_movement = 0.01, double w_min_movement = 0.01);
   virtual ~DiffDrivePoseController()
   {
   }
@@ -52,6 +53,8 @@ public:
   {
     return true;
   }
+
+  void setCurrentLimits(double v_min, double w_min, double v_max, double w_max);
 
   /**
    * @brief Set input of controller. Should be called before each spinOnce
@@ -74,21 +77,32 @@ public:
    */
   virtual void getControlOutput(double& v, double& w);
 
-
 protected:
   /**
    * @brief Calculates the controls with the set variables (speed, goal etc.)
    */
   virtual void calculateControls();
 
+  virtual void controlPose();
+
   /**
-   * @brief Bounding range of velocity
-   * @param v velocity
+   * @brief Enforce value to be between min and max
+   * @param v value
    * @param min minimum speed
    * @param max maximum speed
    * @return bounded velocity
    */
-  virtual double boundRange(double value, double min, double max);
+  virtual double enforceMinMax(double& value, double min, double max);
+
+  /**
+   * @brief Enforce the minimum velocity
+   * @param v velocity
+   * @param min minimum velocity
+   * @return bounded velocity
+   */
+  virtual double enforceMinVelocity(double value, double min);
+
+  virtual void controlOrientation(double angle_difference);
 
   /**
    * @brief Gets executed when goal is reached, use in child class
@@ -100,7 +114,6 @@ protected:
 
 protected:
   std::string name_;
-
   /// distance to pose goal [m]
   double r_;
   /// current heading of the base [rad]
@@ -109,13 +122,17 @@ protected:
   double theta_;
   /// linear base velocity [m/s]
   double v_;
-  /// minimum linear base velocity [m/s]
+  /// minimum linear base velocity at which we still move [m/s]
+  double v_min_movement_;
+  /// (current) minimum linear base velocity [m/s]
   double v_min_;
   /// maximum linear base velocity [m/s]
   double v_max_;
   /// angular base velocity [rad/s]
   double w_;
-  /// minimum angular base velocity [rad/s]
+  /// minimum angular base velocity at which we still move [rad/s]
+  double w_min_movement_;
+  /// (current) minimum angular base velocity [rad/s]
   double w_min_;
   /// maximum angular base velocity [rad/s]
   double w_max_;
@@ -136,6 +153,9 @@ protected:
    * determines the sharpness of the curve: higher lambda -> bigger drop in short term, smaller in the long term
    */
   double lambda_;
+
+  /// p gain for angle controller
+  double orientation_gain_;
 
   /// lower bound for the distance (v = 0)
   double dist_thres_;

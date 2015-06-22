@@ -60,20 +60,22 @@ bool DiffDrivePoseControllerROS::init()
         "Couldn't retrieve parameter 'goal_frame_name' from parameter server! Using default '" << goal_frame_name_ << "'. [" << name_ <<"]");
   }
 
-  if (!nh_.getParam("v_min", v_min_))
+  if (!nh_.getParam("v_min", v_min_movement_))
   {
     ROS_WARN_STREAM(
-        "Couldn't retrieve parameter 'v_min' from parameter server! Using default '" << v_min_ << "'. [" << name_ <<"]");
+        "Couldn't retrieve parameter 'v_min' from parameter server! Using default '" << v_min_movement_ << "'. [" << name_ <<"]");
   }
+  v_min_ = v_min_movement_;
   if (!nh_.getParam("v_max", v_max_))
   {
     ROS_WARN_STREAM(
         "Couldn't retrieve parameter 'v_max' from parameter server! Using default '" << v_max_ << "'. [" << name_ <<"]");
   }
-  if (!nh_.getParam("w_min", w_min_))
+//  v_min_ = -v_max_; //if we also want to enable driving backwards
+  if (!nh_.getParam("w_min", w_min_movement_))
   {
     ROS_WARN_STREAM(
-        "Couldn't retrieve parameter 'w_min' from parameter server! Using default '" << w_min_ << "'. [" << name_ <<"]");
+        "Couldn't retrieve parameter 'w_min' from parameter server! Using default '" << w_min_movement_ << "'. [" << name_ <<"]");
   }
   w_max_ = M_PI / 4 * v_max_;
   if (!nh_.getParam("w_max", w_max_))
@@ -81,6 +83,7 @@ bool DiffDrivePoseControllerROS::init()
     ROS_WARN_STREAM(
         "Couldn't retrieve parameter 'w_max' from parameter server! Using default '" << w_max_ << "'. [" << name_ <<"]");
   }
+  w_min_ = -w_max_;
 
   if (!nh_.getParam("k_1", k_1_))
   {
@@ -212,6 +215,7 @@ void DiffDrivePoseControllerROS::setControlOutput()
 void DiffDrivePoseControllerROS::controlMaxVelCB(const std_msgs::Float32ConstPtr msg)
 {
   v_max_ = msg->data;
+  //v_min_ = -v_max_; //if we also want to enable driving backwards
   ROS_INFO_STREAM("Maximum linear control velocity has been set to " << v_max_ << ". [" << name_ << "]");
 }
 
