@@ -5,6 +5,10 @@
  -->
 
 <launch>
+  <arg name="device"                default="/dev/input/js0"/>
+  <arg name="deadzone"              default="0.05"/>
+  <arg name="autorepeat_rate"       default="0"/>
+  <arg name="coalesce_interval"     default="0.001"/>
   <arg name="linear_axis"           default="1"/>
   <arg name="angular_axis"          default="0"/>
   <arg name="linear_scale"          default="1.0"/>
@@ -34,5 +38,10 @@
   </node>
 
   <!--- ROS joystick driver -->
-  <node pkg="joy" type="joy_node" name="joystick" output="screen"/>
+  <node pkg="joy" type="joy_node" name="joystick" output="screen">
+    <param name="dev"               value="$(arg device)"/>
+    <param name="deadzone"          value="$(arg deadzone)"/>
+    <param name="autorepeat_rate"   value="$(arg autorepeat_rate)"/>
+    <param name="coalesce_interval" value="$(arg coalesce_interval)"/>
+  </node>
 </launch>
