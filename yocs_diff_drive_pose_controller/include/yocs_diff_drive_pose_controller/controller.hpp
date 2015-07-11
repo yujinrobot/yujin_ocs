@@ -476,6 +476,8 @@ void DiffDrivePoseController::disableCB(const std_msgs::EmptyConstPtr msg)
 {
   if (this->disable())
   {
+    geometry_msgs::TwistPtr cmd_vel(new geometry_msgs::Twist());
+    command_velocity_publisher_.publish(cmd_vel);
     ROS_INFO_STREAM("Controller has been disabled. [" << name_ <<"]");
   }
   else
