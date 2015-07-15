@@ -34,7 +34,7 @@
 #include <nodelet/nodelet.h>
 #include <pluginlib/class_list_macros.h>
 #include <ecl/threads/thread.hpp>
-#include "yocs_diff_drive_pose_controller/controller.hpp"
+#include "yocs_diff_drive_pose_controller/diff_drive_pose_controller_ros.hpp"
 
 namespace yocs
 {
@@ -71,7 +71,7 @@ public:
     spin_rate_ = ros::Rate(spin_rate_param);
     bool start_enabled = true;
     nh.getParam("start_enabled", start_enabled);
-    controller_.reset(new DiffDrivePoseController(nh, name_));
+    controller_.reset(new DiffDrivePoseControllerROS(nh, name_));
     if (controller_->init())
     {
       if (start_enabled)
@@ -103,7 +103,7 @@ private:
   }
   std::string name_;
   ros::Rate spin_rate_;
-  boost::shared_ptr<DiffDrivePoseController> controller_;
+  boost::shared_ptr<DiffDrivePoseControllerROS> controller_;
   ecl::Thread update_thread_;
   bool shutdown_requested_;
 };

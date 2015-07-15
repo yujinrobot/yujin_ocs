@@ -14,7 +14,7 @@ find_package(catkin REQUIRED COMPONENTS ecl_threads
             )
 
 catkin_package(INCLUDE_DIRS include
-               LIBRARIES yocs_diff_drive_pose_controller_nodelet
+               LIBRARIES yocs_diff_drive_pose_controller yocs_diff_drive_pose_controller_nodelet
                CATKIN_DEPENDS ecl_threads
                               geometry_msgs
                               nodelet
@@ -27,16 +27,21 @@ catkin_package(INCLUDE_DIRS include
                               yocs_math_toolkit
               )
 
-include_directories(include
-                    ${catkin_INCLUDE_DIRS})
+include_directories(include ${catkin_INCLUDE_DIRS})
 
-add_library(yocs_diff_drive_pose_controller_nodelet src/nodelet.cpp)
+add_library(yocs_diff_drive_pose_controller src/diff_drive_pose_controller.cpp)
+target_link_libraries(yocs_diff_drive_pose_controller ${catkin_LIBRARIES})
+
+add_library(yocs_diff_drive_pose_controller_nodelet
+    src/diff_drive_pose_controller.cpp
+    src/diff_drive_pose_controller_ros.cpp
+    src/nodelet.cpp)
 add_dependencies(yocs_diff_drive_pose_controller_nodelet geometry_msgs_gencpp
                                                          sensor_msgs_gencpp
                                                          std_msgs_gencpp)
-target_link_libraries(yocs_diff_drive_pose_controller_nodelet ${catkin_LIBRARIES})
+target_link_libraries(yocs_diff_drive_pose_controller_nodelet yocs_diff_drive_pose_controller ${catkin_LIBRARIES})
 
-install(TARGETS yocs_diff_drive_pose_controller_nodelet LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
+install(TARGETS yocs_diff_drive_pose_controller yocs_diff_drive_pose_controller_nodelet LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
 install(DIRECTORY include/${PROJECT_NAME}/
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
         FILES_MATCHING PATTERN "*.hpp")
