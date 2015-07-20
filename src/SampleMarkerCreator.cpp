@@ -17,6 +17,7 @@ struct State {
     double posx, posy;      // The position of marker center in the given units
     int    content_res;
     double margin_res;
+    bool   array;
 
     // MarkerData specific options
     MarkerData::MarkerContentType marker_data_content_type;
@@ -38,6 +39,7 @@ struct State {
         if (img) cvReleaseImage(&img);
     }
     void AddMarker(const char *id) {
+        std::cout<<"ADDING MARKER "<<id<<std::endl;
         if (marker_type == 0) {
             MarkerData md(marker_side_len, content_res, margin_res);
             int side_len = int(marker_side_len*units+0.5);
@@ -157,6 +159,9 @@ int main(int argc, char *argv[])
                 st.posx = atof(argv[++i]);
                 st.posy = atof(argv[++i]);
             }
+            else if (strcmp(argv[i],"-ar") == 0) {
+                st.array = true;
+            }
             else st.AddMarker(argv[i]);
         }
 
@@ -230,6 +235,56 @@ int main(int argc, char *argv[])
                     }
                 }
             }
+        }
+        else if(st.array) {
+            st.marker_type = 0;
+            st.marker_data_content_type = MarkerData::MARKER_CONTENT_TYPE_NUMBER;
+            int rows = 0;
+            int cols = 0;
+            double rows_distance = 0;
+            double cols_distance = 0;
+            bool column_major = 1;
+            int first_id = 0;
+            int marker_id = 0;
+            std::string s;
+            std::cout<<"\nPrompt marker placements interactively"<<std::endl;
+            std::cout<<"  units: "<<st.units/96.0*2.54<<" cm "<<st.units/96.0<<" inches"<<std::endl;
+            std::cout<<"  marker side: "<<st.marker_side_len<<" units"<<std::endl;
+            std::cout<<"Array rows : "; std::flush(std::cout);
+            std::getline(std::cin, s); if (s.length() > 0) rows=atoi(s.c_str());
+            std::cout<<"Array cols : "; std::flush(std::cout);
+            std::getline(std::cin, s); if (s.length() > 0) cols=atoi(s.c_str());
+            std::cout<<"Rows distance : "; std::flush(std::cout);
+            std::getline(std::cin, s); if (s.length() > 0) rows_distance=atof(s.c_str());
+            std::cout<<"Cols distance : "; std::flush(std::cout);
+            std::getline(std::cin, s); if (s.length() > 0) cols_distance=atof(s.c_str());
+            std::cout<<"Column major (1 or 0) : "; std::flush(std::cout);
+            std::getline(std::cin, s); if (s.length() > 0) column_major=atoi(s.c_str());
+            std::cout<<"First marker ID : "; std::flush(std::cout);
+            std::getline(std::cin, s); if (s.length() > 0) first_id=atoi(s.c_str());
+            if(!column_major) {
+                for(int row = 0; row<rows; row++)
+                    for(int col = 0; col<cols; col++)
+                    {
+                        st.posy=row*rows_distance; st.posx=col*cols_distance;
+                        marker_id = first_id + row*cols + col;
+                        std::stringstream ss;
+                        ss<<marker_id;
+                        st.AddMarker(ss.str().c_str());
+                    }
+            }
+            else {
+                for(int col = 0; col<cols; col++)
+                    for(int row = 0; row<rows; row++)
+                    {
+                        st.posy=row*rows_distance; st.posx=col*cols_distance;
+                        marker_id = first_id + col*rows + row;
+                        std::stringstream ss;
+                        ss<<marker_id;
+                        st.AddMarker(ss.str().c_str());
+                    }
+            }
+
         }
         st.Save();
         return 0;
