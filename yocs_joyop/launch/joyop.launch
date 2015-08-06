@@ -43,5 +43,6 @@
     <param name="deadzone"          value="$(arg deadzone)"/>
     <param name="autorepeat_rate"   value="$(arg autorepeat_rate)"/>
     <param name="coalesce_interval" value="$(arg coalesce_interval)"/>
+    <remap from="joy"               to="$(arg joy_topic_name)"/>
   </node>
 </launch>
