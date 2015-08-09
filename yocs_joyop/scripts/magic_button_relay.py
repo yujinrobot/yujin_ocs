@@ -62,7 +62,7 @@ class StampedButtonRelay(object):
 
     def update(self, pressed, timestamp):
         if pressed != self.last_state:  # whenever state changes
-            msg = MagicButton
+            msg = MagicButton()
             msg.header.stamp = timestamp
             msg.pressed = pressed
             rospy.logdebug("MagicButtonRelay : stamped button event for button '%s' published at '%s'" % (self.button_id, self.publisher.name))
