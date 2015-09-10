@@ -85,7 +85,7 @@ public :
 	Labeling();
 
 	/** Destructor*/
-	~Labeling();
+	virtual ~Labeling();
 
 	/**
 	 * \brief Sets the camera object that is used to correct lens distortions.
