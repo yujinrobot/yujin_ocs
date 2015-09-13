@@ -83,13 +83,13 @@ bool KeyOp::init()
   /*********************
    ** Wait for connection
    **********************/
+  bool connected = false;
   if (!wait_for_connection_)
   {
-    return true;
+    connected = true;
   }
   ecl::MilliSleep millisleep;
   int count = 0;
-  bool connected = false;
   while (!connected)
   {
     if ((enable_motors_publisher_.getNumSubscribers() > 0) &&
