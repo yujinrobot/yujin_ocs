@@ -11,11 +11,14 @@
 *****************************************************************************/
 
 #include <string>
+
+#include <gopher_std_msgs/Bumpers.h>
 #include <geometry_msgs/Twist.h>
 #include <ros/ros.h>
 #include <std_msgs/Empty.h>
 #include <sensor_msgs/Range.h>
 #include <yocs_controllers/default_controller.hpp>
+
 
 namespace yocs_safety_controller
 {
@@ -102,7 +105,7 @@ private:
    * @brief Keeps track of rangers
    * @param msg incoming topic message
    */
-  void rangerCB(const sensor_msgs::RangeConstPtr msg);
+  void rangerCB(const gopher_std_msgs::BumpersConstPtr msg);
 };
 
 } // namespace yocs_safety_controller
