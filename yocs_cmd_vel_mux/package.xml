@@ -1,6 +1,6 @@
 <package>
   <name>yocs_cmd_vel_mux</name>
-  <version>0.6.3</version>
+  <version>0.6.4</version>
   <description>
      A multiplexer for command velocity inputs. Arbitrates incoming cmd_vel messages from several topics,
      allowing one topic at a time to command the robot, based on priorities. It also deallocates current
