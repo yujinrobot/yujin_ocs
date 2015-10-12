@@ -44,6 +44,7 @@
 #include <ar_track_alvar_msgs/AlvarMarker.h>
 #include <ar_track_alvar_msgs/AlvarMarkers.h>
 #include <tf/transform_listener.h>
+#include <tf/transform_broadcaster.h>
 #include <sensor_msgs/image_encodings.h>
 
 using namespace alvar;
