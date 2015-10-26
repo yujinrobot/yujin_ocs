@@ -33,8 +33,7 @@ namespace yocs_velocity_smoother {
 class VelocitySmoother
 {
 public:
-  VelocitySmoother(const std::string &name)
-   : name(name), shutdown_req(false), input_active(false), pr_next(0), dynamic_reconfigure_server(NULL) { };
+  VelocitySmoother(const std::string &name);
 
   ~VelocitySmoother()
   {

@@ -39,6 +39,15 @@ namespace yocs_velocity_smoother {
 ** Implementation
 **********************/
 
+VelocitySmoother::VelocitySmoother(const std::string &name)
+: name(name)
+, shutdown_req(false)
+, input_active(false)
+, pr_next(0)
+, dynamic_reconfigure_server(NULL)
+{
+};
+
 void VelocitySmoother::reconfigCB(yocs_velocity_smoother::paramsConfig &config, uint32_t level)
 {
   ROS_INFO("Reconfigure request : %f %f %f %f %f",
