@@ -45,6 +45,8 @@ public:
   {
   }
 
+  void setVerbosity(const bool& verbose) { verbose_ = verbose; }
+
   /**
    * @brief unused, overwrite if inherited (and needed)
    * @return true
@@ -167,6 +169,8 @@ protected:
   double dist_eps_;
   /// Error in orientation above which pose is considered different
   double orient_eps_;
+  /// Enable or disable ros messages.
+  bool verbose_;
 };
 
 } /* end namespace */

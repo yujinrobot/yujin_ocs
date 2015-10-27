@@ -81,7 +81,9 @@ void DiffDrivePoseController::calculateControls()
     if (!pose_reached_)
     {
       pose_reached_ = true;
-      ROS_INFO_STREAM("Pose reached. [" << name_ <<"]");
+      if ( verbose_ ) {
+        ROS_INFO_STREAM("Pose reached. [" << name_ <<"]");
+      }
       onGoalReached();
     }
   }
@@ -90,7 +92,9 @@ void DiffDrivePoseController::calculateControls()
     if (pose_reached_)
     {
       pose_reached_ = false;
-      ROS_INFO_STREAM("Tracking new goal pose. [" << name_ <<"]");
+      if ( verbose_ ) {
+        ROS_INFO_STREAM("Tracking new goal pose. [" << name_ <<"]");
+      }
     }
   }
 }
