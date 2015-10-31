@@ -42,8 +42,8 @@ DiffDrivePoseController::DiffDrivePoseController(std::string name, double v_max,
 void DiffDrivePoseController::setInput(double distance_to_goal, double delta, double theta)
 {
   r_ = distance_to_goal;
-  delta_ = delta;
-  theta_ = theta;
+  delta_ = mtk::wrapAngle(delta);
+  theta_ = mtk::wrapAngle(theta);
 }
 
 void DiffDrivePoseController::setCurrentLimits(double v_min, double w_min, double v_max, double w_max)
@@ -101,9 +101,9 @@ void DiffDrivePoseController::calculateControls()
 
 void DiffDrivePoseController::controlPose()
 {
-  double atan2_k1_tehta = std::atan2(-theta_, k_1_);
+  double atan2_k1_theta = std::atan2(-k_1_*theta_, 1.0);
   cur_ = (-1 / r_)
-      * (k_2_ * (delta_ - atan2_k1_tehta) + (1 + (k_1_ / (1 + std::pow((k_1_ * theta_), 2)))) * sin(delta_));
+      * (k_2_ * (delta_ - atan2_k1_theta) + (1 + (k_1_ / (1 + std::pow((k_1_ * theta_), 2)))) * sin(delta_));
 
   v_ = v_max_ / (1 + beta_ * std::pow(std::abs(cur_), lambda_));
   v_ = enforceMinVelocity(v_, v_min_movement_);
