@@ -9,7 +9,7 @@
   <arg name="reversing_velocity"    default="0.02"/>
   <arg name="enable_topic_name"     default="enable"/>
   <arg name="disable_topic_name"    default="disable"/>
-  <arg name="ranger_topic_name"     default="ranger"/>
+  <arg name="ranger_topic_name"     default="bumper"/>
   <arg name="cmd_vel_topic_name"    default="cmd_vel"/>
 
   <node pkg="nodelet" type="nodelet" name="yocs_safety_controller"

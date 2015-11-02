@@ -49,7 +49,7 @@ bool SafetyController::init()
 
   enable_controller_subscriber_ = nh_priv_.subscribe("enable", 10, &SafetyController::enableCB, this);
   disable_controller_subscriber_ = nh_priv_.subscribe("disable", 10, &SafetyController::disableCB, this);
-  ranger_subscriber_ = nh_priv_.subscribe("rangers", 10, &SafetyController::rangerCB, this);
+  ranger_subscriber_ = nh_priv_.subscribe("/gopher/bumper", 10, &SafetyController::rangerCB, this);
   velocity_command_publisher_ = nh_priv_.advertise< geometry_msgs::Twist >("cmd_vel", 10);
   return true;
 };
@@ -78,16 +78,15 @@ void SafetyController::disableCB(const std_msgs::EmptyConstPtr msg)
   }
 }
 
-void SafetyController::rangerCB(const sensor_msgs::RangeConstPtr msg)
+void SafetyController::rangerCB(const gopher_std_msgs::BumpersConstPtr msg)
 {
-  if (this->getState())
-  {
-    // readings from a fixed-distance ranger
-    if (msg->range == -std::numeric_limits<double>::infinity()) // -Inf means obstacle detected
-    {
-      obstacle_detected_ = true;
-    }
-  }
+   //  readings from a fixed-distance ranger
+     if ((msg->bumpers[1].is_pressed) || (msg->bumpers[4].is_pressed)||(msg->bumpers[5].is_pressed))
+     {
+       ROS_ERROR_STREAM("YOCS ranger CB");
+       obstacle_detected_ = true;
+     }
+
   return;
 }
 
