@@ -81,10 +81,21 @@ void SafetyController::disableCB(const std_msgs::EmptyConstPtr msg)
 void SafetyController::rangerCB(const gopher_std_msgs::BumpersConstPtr msg)
 {
    //  readings from a fixed-distance ranger
-     if ((msg->bumpers[1].is_pressed) || (msg->bumpers[4].is_pressed)||(msg->bumpers[5].is_pressed))
+     if(msg->bumpers.size()>=6)
      {
-       ROS_ERROR_STREAM("YOCS ranger CB");
-       obstacle_detected_ = true;
+       if ((msg->bumpers[1].is_pressed) || (msg->bumpers[4].is_pressed)||(msg->bumpers[5].is_pressed))
+       {
+         ROS_ERROR_STREAM("YOCS Safety Controller: Front Bumper Triggered");
+         obstacle_detected_ = true;
+       }
+     }
+     else
+     {
+       if ((msg->bumpers[1].is_pressed))
+       {
+         ROS_ERROR_STREAM("YOCS Safety Controller: Front Bumper Triggered");
+         obstacle_detected_ = true;
+       }
      }
 
   return;
