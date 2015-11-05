@@ -35,7 +35,7 @@ namespace yocs_safety_controller
 class SafetyController : public yocs::Controller
 {
 public:
-  SafetyController(ros::NodeHandle& nh_priv, std::string& name);
+  SafetyController(ros::NodeHandle& nh_priv, const std::string& name);
   ~SafetyController(){};
 
   /**
@@ -49,7 +49,8 @@ public:
    */
   void spinOnce();
 
-private:
+
+protected:
   ros::NodeHandle nh_priv_;
   std::string name_;
   ros::Subscriber enable_controller_subscriber_, disable_controller_subscriber_, ranger_subscriber_;
@@ -103,6 +104,7 @@ private:
    * @param msg incoming topic message
    */
   void rangerCB(const sensor_msgs::RangeConstPtr msg);
+
 };
 
 } // namespace yocs_safety_controller

@@ -9,7 +9,7 @@
 namespace yocs_safety_controller
 {
 
-SafetyController::SafetyController(ros::NodeHandle& nh_priv, std::string& name) :
+SafetyController::SafetyController(ros::NodeHandle& nh_priv, const std::string& name) :
     Controller(),
     nh_priv_(nh_priv),
     name_(name),
@@ -110,6 +110,7 @@ void SafetyController::spinOnce()
       cmd_vel_msg_->angular.y = 0.0;
       cmd_vel_msg_->angular.z = 0.0;
       velocity_command_publisher_.publish(cmd_vel_msg_);
+
     }
   }
   else
