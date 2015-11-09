@@ -5,6 +5,7 @@
 ** Includes
 *****************************************************************************/
 
+#include <tf/transform_datatypes.h>
 #include "../../include/yocs_navi_toolkit/odometry_helper.hpp"
 
 /*****************************************************************************
@@ -38,13 +39,21 @@ nav_msgs::Odometry OdometryHelper::odometry()
   return msg;
 }
 
-std::pair<float, float> OdometryHelper::velocities()
+void OdometryHelper::position(Eigen::Vector3f& position) {
+  std::lock_guard<std::mutex> lock(data_mutex_);
+  position << odometry_.pose.pose.position.x, odometry_.pose.pose.position.y, odometry_.pose.pose.position.z;
+}
+
+void OdometryHelper::yaw(float& angle) {
+  std::lock_guard<std::mutex> lock(data_mutex_);
+  angle = tf::getYaw(odometry_.pose.pose.orientation);
+}
+
+void OdometryHelper::velocities(std::pair<float, float>& mobile_twist_velocities)
 {
-  std::pair<float, float> mobile_twist_velocities;  // linear translational velocity, v and angular rate, w
   std::lock_guard<std::mutex> lock(data_mutex_);
   mobile_twist_velocities.first = odometry_.twist.twist.linear.x;
   mobile_twist_velocities.second = odometry_.twist.twist.angular.z;
-  return mobile_twist_velocities;
 }
 
 /*****************************************************************************

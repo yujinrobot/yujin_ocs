@@ -16,6 +16,7 @@ find_package(
             costmap_2d
             nav_msgs
             ecl_build
+            ecl_linear_algebra
             roscpp
             tf
 )
@@ -41,6 +42,7 @@ catkin_package(
         costmap_2d
         nav_msgs
         ecl_build
+        ecl_linear_algebra
         roscpp
         tf
 )

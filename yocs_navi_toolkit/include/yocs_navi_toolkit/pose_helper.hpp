@@ -1,12 +1,12 @@
 /**
- * @file /yocs_navi_toolkit/include/yocs_navi_toolkit/odometry_helper.hpp
+ * @file /yocs_navi_toolkit/include/yocs_navi_toolkit/pose_helper.hpp
  */
 /*****************************************************************************
 ** Ifdefs
 *****************************************************************************/
 
-#ifndef yocs_navi_toolkit_ODOMETRY_HELPER_HPP_
-#define yocs_navi_toolkit_ODOMETRY_HELPER_HPP_
+#ifndef yocs_navi_toolkit_POSE_HELPER_HPP_
+#define yocs_navi_toolkit_POSE_HELPER_HPP_
 
 /*****************************************************************************
 ** Includes
@@ -15,9 +15,9 @@
 #include <ecl/linear_algebra.hpp>
 #include <memory>
 #include <mutex>
-#include <nav_msgs/Odometry.h>
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <ros/ros.h>
-#include <utility>
+
 
 /*****************************************************************************
 ** Namespaces
@@ -29,21 +29,21 @@ namespace yocs_navi_toolkit {
 ** Interfaces
 *****************************************************************************/
 
-class OdometryHelper
+class PoseHelper
 {
 public:
-  OdometryHelper(const std::string& odometry_topic_name);
-  virtual ~OdometryHelper();
+  PoseHelper(const std::string& pose_topic_name);
+  virtual ~PoseHelper();
 
   /********************
   ** Setters
   ********************/
-  void odometryCallback(const nav_msgs::Odometry::ConstPtr& msg);
+  void poseCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg);
 
   /********************
   ** Getters
   ********************/
-  // convenience getters in various formats.
+  // getters that return the data in various convenience formats
 
   /**
    * @brief 3d position of the robot in eigen format.
@@ -57,25 +57,19 @@ public:
    */
   void yaw(float& angle);
 
-  /**
-   * @brief Mobile robot velocities in a 2d use case.
-   *
-   * @param mobile_robot_velocities : linear translational velocity, v and angular rate, w
-   */
-  void velocities(std::pair<float, float>& mobile_robot_velocities);
-  nav_msgs::Odometry odometry();
+  geometry_msgs::PoseWithCovarianceStamped pose();
 
 protected:
-  ros::Subscriber odometry_subscriber_;
+  ros::Subscriber pose_subscriber_;
   std::mutex data_mutex_;
-  nav_msgs::Odometry odometry_;
+  geometry_msgs::PoseWithCovarianceStamped pose_;
 };
 
 /*****************************************************************************
 ** Typedefs
 *****************************************************************************/
 
-typedef std::shared_ptr<OdometryHelper> OdometryHelperPtr;
+typedef std::shared_ptr<PoseHelper> PoseHelperPtr;
 
 /*****************************************************************************
 ** Trailers
