@@ -1,48 +1,51 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(yocs_math_toolkit)
+
+##############################################################################
+# Find Packages
+##############################################################################
  
-## Find catkin macros and libraries
-find_package(catkin REQUIRED tf roscpp geometry_msgs)
+find_package(catkin
+    REQUIRED
+    COMPONENTS
+        ecl_build
+        ecl_exceptions
+        ecl_formatters
+        ecl_linear_algebra
+        geometry_msgs
+        roscpp
+        tf
+)
 
-###################################
-## catkin specific configuration ##
-###################################
+##############################################################################
+# Exports
+##############################################################################
+
 catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS tf roscpp geometry_msgs
+    INCLUDE_DIRS include
+    LIBRARIES ${PROJECT_NAME}
+    CATKIN_DEPENDS
+        ecl_build
+        ecl_exceptions
+        ecl_formatters
+        ecl_linear_algebra
+        geometry_msgs
+        roscpp
+        tf
 )
 
-###########
-## Build ##
-###########
+##############################################################################
+# Project Configuration
+##############################################################################
 
-## Specify additional locations of header files
-include_directories(include ${catkin_INCLUDE_DIRS})
+ecl_enable_cxx11_compiler()
+add_definitions(${catkin_DEFINITIONS})
+include_directories(include ${catkin_INCLUDE_DIRS})    
 
-## Declare a cpp library
-add_library(${PROJECT_NAME}
-   src/common.cpp src/geometry.cpp
-)
+##############################################################################
+# Sources
+##############################################################################
 
-## Specify libraries to link a library or executable target against
-target_link_libraries(${PROJECT_NAME}
-   ${catkin_LIBRARIES}
-)
+add_subdirectory(include)
+add_subdirectory(src)
 
-#############
-## Install ##
-#############
-
-install(TARGETS ${PROJECT_NAME}
-        DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-)
-install(DIRECTORY include/${PROJECT_NAME}/
-        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-)
-
-#############
-## Testing ##
-#############
-
-# TODO

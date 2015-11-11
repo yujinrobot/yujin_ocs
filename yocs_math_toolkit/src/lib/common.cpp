@@ -5,7 +5,7 @@
  *      Author: jorge
  */
 
-#include "yocs_math_toolkit/common.hpp"
+#include "../../include/yocs_math_toolkit/common.hpp"
 
 
 namespace mtk

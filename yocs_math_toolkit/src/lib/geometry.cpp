@@ -5,8 +5,8 @@
  *      Author: jorge
  */
 
-#include "yocs_math_toolkit/common.hpp"
-#include "yocs_math_toolkit/geometry.hpp"
+#include "../../include/yocs_math_toolkit/common.hpp"
+#include "../../include/yocs_math_toolkit/geometry.hpp"
 
 
 namespace mtk
