@@ -13,6 +13,7 @@ find_package(
     catkin
         REQUIRED
         COMPONENTS
+            base_local_planner
             costmap_2d
             nav_msgs
             ecl_build
@@ -39,6 +40,7 @@ catkin_package(
     LIBRARIES
         ${PROJECT_NAME}
     CATKIN_DEPENDS
+        base_local_planner
         costmap_2d
         nav_msgs
         ecl_build
