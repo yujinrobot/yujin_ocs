@@ -59,7 +59,8 @@ const char* pose2str(const geometry_msgs::Pose& pose)
 
 const char* pose2str(const geometry_msgs::PoseStamped& pose)
 {
-  return pose2str(pose.pose);
+  sprintf(___buffer___, "%.2f, %.2f, %.2f", pose.pose.position.x, pose.pose.position.y, yaw(pose));
+  return (const char*)___buffer___;
 }
 
 std::string point2str2D(const geometry_msgs::Point& point)
@@ -87,7 +88,7 @@ std::string point2str3D(const geometry_msgs::PointStamped& point)
 std::string pose2str2D(const geometry_msgs::Pose& pose)
 {
   sprintf(___buffer___, "%.2f, %.2f, %.2f", pose.position.x, pose.position.y, yaw(pose));
-  return std::string(pose2str(pose));
+  return std::string(___buffer___);
 }
 
 std::string pose2str2D(const geometry_msgs::PoseStamped& pose)
