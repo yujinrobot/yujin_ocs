@@ -6,6 +6,7 @@
  */
 
 #include "../../include/yocs_math_toolkit/common.hpp"
+#include "../../include/yocs_math_toolkit/geometry.hpp"
 
 
 namespace mtk
@@ -52,13 +53,58 @@ const char* point2str(const geometry_msgs::Point& point)
 
 const char* pose2str(const geometry_msgs::Pose& pose)
 {
-  sprintf(___buffer___, "%.2f, %.2f, %.2f", pose.position.x, pose.position.y, tf::getYaw(pose.orientation));
+  sprintf(___buffer___, "%.2f, %.2f, %.2f", pose.position.x, pose.position.y, yaw(pose));
   return (const char*)___buffer___;
 }
 
 const char* pose2str(const geometry_msgs::PoseStamped& pose)
 {
   return pose2str(pose.pose);
+}
+
+std::string point2str2D(const geometry_msgs::Point& point)
+{
+  sprintf(___buffer___, "%.2f, %.2f", point.x, point.y);
+  return std::string(___buffer___);
+}
+
+std::string point2str2D(const geometry_msgs::PointStamped& point)
+{
+  return point2str2D(point.point);
+}
+
+std::string point2str3D(const geometry_msgs::Point& point)
+{
+  sprintf(___buffer___, "%.2f, %.2f, %.2f", point.x, point.y, point.z);
+  return std::string(___buffer___);
+}
+
+std::string point2str3D(const geometry_msgs::PointStamped& point)
+{
+  return point2str3D(point.point);
+}
+
+std::string pose2str2D(const geometry_msgs::Pose& pose)
+{
+  sprintf(___buffer___, "%.2f, %.2f, %.2f", pose.position.x, pose.position.y, yaw(pose));
+  return std::string(pose2str(pose));
+}
+
+std::string pose2str2D(const geometry_msgs::PoseStamped& pose)
+{
+  return pose2str2D(pose.pose);
+}
+
+std::string pose2str3D(const geometry_msgs::Pose& pose)
+{
+  sprintf(___buffer___, "%.2f, %.2f, %.2f,  %.2f, %.2f, %.2f",
+          pose.position.x, pose.position.y, pose.position.z, roll(pose), pitch(pose), yaw(pose));
+  return std::string(___buffer___);
+}
+
+std::string pose2str3D(const geometry_msgs::PoseStamped& pose)
+{
+  return pose2str3D(pose.pose);
 }
 
 } /* namespace mtk */

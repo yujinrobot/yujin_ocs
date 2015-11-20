@@ -59,6 +59,21 @@ double pitch(geometry_msgs::PoseStamped pose)
   return pitch(pose.pose);
 }
 
+double yaw(const tf::Transform& tf)
+{
+  return tf::getYaw(tf.getRotation());
+}
+
+double yaw(geometry_msgs::Pose pose)
+{
+  return tf::getYaw(pose.orientation);
+}
+
+double yaw(geometry_msgs::PoseStamped pose)
+{
+  return yaw(pose.pose);
+}
+
 
 double distance2D(double x, double y)
 {

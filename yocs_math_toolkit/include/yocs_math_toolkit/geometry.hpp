@@ -44,6 +44,15 @@ double pitch(geometry_msgs::Pose pose);
 double pitch(geometry_msgs::PoseStamped pose);
 
 /**
+ * Shortcut to take the yaw of a transform/pose
+ * @param tf/pose
+ * @return Transform/pose's yaw
+ */
+double yaw(const tf::Transform& tf);
+double yaw(geometry_msgs::Pose pose);
+double yaw(geometry_msgs::PoseStamped pose);
+
+/**
  * Euclidean distance between 2D points; z coordinate is ignored
  * @param a point a
  * @param b point b

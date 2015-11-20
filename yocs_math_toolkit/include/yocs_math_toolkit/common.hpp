@@ -8,6 +8,17 @@
 #ifndef COMMON_HPP_
 #define COMMON_HPP_
 
+// deprecation macros
+#ifdef __GNUC__
+#define MTK_DEPRECATED __attribute__((deprecated))
+#elif defined(_MSC_VER)
+#define MTK_DEPRECATED __declspec(deprecated)
+#elif defined(__clang__)
+#define MTK_DEPRECATED  __attribute__((deprecated("MTK: Use of this method is deprecated")))
+#else
+#define MTK_DEPRECATED /* Nothing */
+#endif
+
 
 #include <tf/tf.h>
 
@@ -68,9 +79,19 @@ void tf2pose(const tf::StampedTransform& tf, geometry_msgs::PoseStamped& pose);
 void pose2tf(const geometry_msgs::Pose& pose, tf::Transform& tf);
 void pose2tf(const geometry_msgs::PoseStamped& pose, tf::StampedTransform& tf);
 
-const char* point2str(const geometry_msgs::Point& point);
-const char* pose2str(const geometry_msgs::Pose& pose);
-const char* pose2str(const geometry_msgs::PoseStamped& pose);
+std::string point2str2D(const geometry_msgs::Point& point);
+std::string point2str2D(const geometry_msgs::PointStamped& point);
+std::string point2str3D(const geometry_msgs::Point& point);
+std::string point2str3D(const geometry_msgs::PointStamped& point);
+std::string pose2str2D(const geometry_msgs::Pose& pose);
+std::string pose2str2D(const geometry_msgs::PoseStamped& pose);
+std::string pose2str3D(const geometry_msgs::Pose& pose);
+std::string pose2str3D(const geometry_msgs::PoseStamped& pose);
+
+// Deprecated, as you cannot call more than once in a single sentence; use the xxx2str2D/3D cousins instead
+MTK_DEPRECATED const char* point2str(const geometry_msgs::Point& point);
+MTK_DEPRECATED const char* pose2str(const geometry_msgs::Pose& pose);
+MTK_DEPRECATED const char* pose2str(const geometry_msgs::PoseStamped& pose);
 
 
 } /* namespace mtk */
