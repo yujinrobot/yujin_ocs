@@ -2,6 +2,16 @@
 Changelog for package ar_track_alvar
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [fix] Move tf include from header to cpp files, fixes `#66 <https://github.com/sniekum/ar_track_alvar/issues/66>`_
+  The header currently prevents us from re-using the library as a given library (because it pulls in tf2 which causes trouble). The include has been moved to the individual nodes which actually use a TransformBroadcaster.
+* [fix] proper virtual destruction `#63 <https://github.com/sniekum/ar_track_alvar/issues/63>`_.
+* improve license information in package.xml (`#58 <https://github.com/sniekum/ar_track_alvar/issues/58>`_)
+* Added time stamp to header (`#57 <https://github.com/sniekum/ar_track_alvar/issues/57>`_)
+  Previously, each pose had a timestamp, but the whole message did not. By including the timestamp for the whole message, it is now possible to use the results of the ar_pose_marker topic with other messages using message_filters::Synchronizer.
+* Contributors: Alex Henning, Bener Suay, Lukas Bulwahn, Scott Niekum, Tim Niemueller, Isaac I. Y. Saito
+
 0.5.1 (2015-04-14)
 ------------------
 * Remove meta pkg; ar_track_alvar is 'unary stack' so no need for the meta pkg.
