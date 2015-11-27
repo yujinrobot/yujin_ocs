@@ -2,8 +2,8 @@
 Changelog for package ar_track_alvar
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.2 (2015-11-27)
+------------------
 * [fix] Move tf include from header to cpp files, fixes `#66 <https://github.com/sniekum/ar_track_alvar/issues/66>`_
   The header currently prevents us from re-using the library as a given library (because it pulls in tf2 which causes trouble). The include has been moved to the individual nodes which actually use a TransformBroadcaster.
 * [fix] proper virtual destruction `#63 <https://github.com/sniekum/ar_track_alvar/issues/63>`_.
