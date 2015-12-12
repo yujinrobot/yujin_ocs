@@ -63,6 +63,17 @@ const char* pose2str(const geometry_msgs::PoseStamped& pose)
   return (const char*)___buffer___;
 }
 
+std::string vector2str3D(const geometry_msgs::Vector3& vector)
+{
+  sprintf(___buffer___, "%.2f, %.2f, %.2f", vector.x, vector.y, vector.z);
+  return std::string(___buffer___);
+}
+
+std::string vector2str3D(const geometry_msgs::Vector3Stamped& vector)
+{
+  return vector2str3D(vector.vector);
+}
+
 std::string point2str2D(const geometry_msgs::Point& point)
 {
   sprintf(___buffer___, "%.2f, %.2f", point.x, point.y);

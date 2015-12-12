@@ -79,6 +79,8 @@ void tf2pose(const tf::StampedTransform& tf, geometry_msgs::PoseStamped& pose);
 void pose2tf(const geometry_msgs::Pose& pose, tf::Transform& tf);
 void pose2tf(const geometry_msgs::PoseStamped& pose, tf::StampedTransform& tf);
 
+std::string vector2str3D(const geometry_msgs::Vector3& vector);
+std::string vector2str3D(const geometry_msgs::Vector3Stamped& vector);
 std::string point2str2D(const geometry_msgs::Point& point);
 std::string point2str2D(const geometry_msgs::PointStamped& point);
 std::string point2str3D(const geometry_msgs::Point& point);
