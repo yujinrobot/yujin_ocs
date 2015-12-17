@@ -225,40 +225,44 @@ bool Camera::LoadCalibOpenCV(const char *calibfile) {
 	return false;
 }
 
+void Camera::SetCameraInfo(const sensor_msgs::CameraInfo &camInfo)
+{
+    cam_info_ = camInfo;
+
+    calib_x_res = cam_info_.width;
+    calib_y_res = cam_info_.height;
+    x_res = calib_x_res;
+    y_res = calib_y_res;
+
+    cvmSet(&calib_K, 0, 0, cam_info_.K[0]);
+    cvmSet(&calib_K, 0, 1, cam_info_.K[1]);
+    cvmSet(&calib_K, 0, 2, cam_info_.K[2]);
+    cvmSet(&calib_K, 1, 0, cam_info_.K[3]);
+    cvmSet(&calib_K, 1, 1, cam_info_.K[4]);
+    cvmSet(&calib_K, 1, 2, cam_info_.K[5]);
+    cvmSet(&calib_K, 2, 0, cam_info_.K[6]);
+    cvmSet(&calib_K, 2, 1, cam_info_.K[7]);
+    cvmSet(&calib_K, 2, 2, cam_info_.K[8]);
+
+    if (cam_info_.D.size() >= 4) {
+        cvmSet(&calib_D, 0, 0, cam_info_.D[0]);
+        cvmSet(&calib_D, 1, 0, cam_info_.D[1]);
+        cvmSet(&calib_D, 2, 0, cam_info_.D[2]);
+        cvmSet(&calib_D, 3, 0, cam_info_.D[3]);
+    } else {
+        cvmSet(&calib_D, 0, 0, 0);
+        cvmSet(&calib_D, 1, 0, 0);
+        cvmSet(&calib_D, 2, 0, 0);
+        cvmSet(&calib_D, 3, 0, 0);
+    }
+}
+
 void Camera::camInfoCallback (const sensor_msgs::CameraInfoConstPtr & cam_info)
   {
     if (!getCamInfo_)
     {
-		cam_info_ = (*cam_info);
-
-		calib_x_res = cam_info_.width;
-		calib_y_res = cam_info_.height;
-		x_res = calib_x_res;
-		y_res = calib_y_res;
-
-		cvmSet(&calib_K, 0, 0, cam_info_.K[0]);
-		cvmSet(&calib_K, 0, 1, cam_info_.K[1]);
-		cvmSet(&calib_K, 0, 2, cam_info_.K[2]);
-		cvmSet(&calib_K, 1, 0, cam_info_.K[3]);
-		cvmSet(&calib_K, 1, 1, cam_info_.K[4]);
-		cvmSet(&calib_K, 1, 2, cam_info_.K[5]);
-		cvmSet(&calib_K, 2, 0, cam_info_.K[6]);
-		cvmSet(&calib_K, 2, 1, cam_info_.K[7]);
-		cvmSet(&calib_K, 2, 2, cam_info_.K[8]);
-
-        if (cam_info_.D.size() >= 4) {
-            cvmSet(&calib_D, 0, 0, cam_info_.D[0]);
-            cvmSet(&calib_D, 1, 0, cam_info_.D[1]);
-            cvmSet(&calib_D, 2, 0, cam_info_.D[2]);
-            cvmSet(&calib_D, 3, 0, cam_info_.D[3]);
-        } else {
-            cvmSet(&calib_D, 0, 0, 0);
-            cvmSet(&calib_D, 1, 0, 0);
-            cvmSet(&calib_D, 2, 0, 0);
-            cvmSet(&calib_D, 3, 0, 0);
-        }
-		  
-		getCamInfo_ = true;
+        SetCameraInfo(*cam_info);
+        getCamInfo_ = true;
     }
   }
 

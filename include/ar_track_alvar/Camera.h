@@ -145,6 +145,9 @@ public:
 	Camera();
 	Camera(ros::NodeHandle & n, std::string cam_info_topic);
 
+	/** Sets the intrinsic calibration */
+	void SetCameraInfo(const sensor_msgs::CameraInfo& camInfo);
+
 	/** \brief Get x-direction FOV in radians */
 	double GetFovX() {
 		return (2.0f * atan2(double(x_res) / 2.0f, (double)calib_K_data[0][0]));	
