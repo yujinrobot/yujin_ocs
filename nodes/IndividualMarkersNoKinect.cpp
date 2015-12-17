@@ -35,6 +35,7 @@
 */
 
 
+#include <std_msgs/Bool.h>
 #include "ar_track_alvar/CvTestbed.h"
 #include "ar_track_alvar/MarkerDetector.h"
 #include "ar_track_alvar/Shared.h"
@@ -219,6 +220,12 @@ void configCallback(ar_track_alvar::ParamsConfig &config, uint32_t level)
   max_track_error = config.max_track_error;
 }
 
+void enableCallback(const std_msgs::BoolConstPtr& msg)
+{
+    enableSwitched = enabled != msg->data;
+    enabled = msg->data;
+}
+
 int main(int argc, char *argv[])
 {
 	ros::init (argc, argv, "marker_detect");
@@ -277,11 +284,15 @@ int main(int argc, char *argv[])
   {
     // This always happens, as enable is true by default
     ROS_INFO("Subscribing to image topic");
-    	cam_sub_ = it_.subscribe (cam_image_topic, 1, &getCapCallback);
+       cam_sub_ = it_.subscribe (cam_image_topic, 1, &getCapCallback);
   }
 
   // Run at the configured rate, discarding pointcloud msgs if necessary
   ros::Rate rate(max_frequency);
+
+  /// Subscriber for enable-topic so that a user can turn off the detection if it is not used without
+  /// having to use the reconfigure where he has to know all parameters
+  ros::Subscriber enable_sub_ = pn.subscribe("enable_detection", 1, &enableCallback);
 
   while (ros::ok())
   {
