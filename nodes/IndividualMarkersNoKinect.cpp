@@ -78,7 +78,7 @@ void getCapCallback (const sensor_msgs::ImageConstPtr & image_msg);
 
 void getCapCallback (const sensor_msgs::ImageConstPtr & image_msg)
 {
-	//If we've already gotten the cam info, then go ahead
+    //If we've already gotten the cam info, then go ahead
 	if(cam->getCamInfo_){
 		try{
 			tf::StampedTransform CamToOutput;
@@ -280,13 +280,6 @@ int main(int argc, char *argv[])
 	 
 	image_transport::ImageTransport it_(n);
 
-  if (enabled == true)
-  {
-    // This always happens, as enable is true by default
-    ROS_INFO("Subscribing to image topic");
-       cam_sub_ = it_.subscribe (cam_image_topic, 1, &getCapCallback);
-  }
-
   // Run at the configured rate, discarding pointcloud msgs if necessary
   ros::Rate rate(max_frequency);
 
@@ -294,6 +287,7 @@ int main(int argc, char *argv[])
   /// having to use the reconfigure where he has to know all parameters
   ros::Subscriber enable_sub_ = pn.subscribe("enable_detection", 1, &enableCallback);
 
+  enableSwitched = true;
   while (ros::ok())
   {
     ros::spinOnce();
@@ -306,15 +300,15 @@ int main(int argc, char *argv[])
       rate = ros::Rate(max_frequency);
     }
 
-    if (enableSwitched == true)
+    if (enableSwitched)
     {
       // Enable/disable switch: subscribe/unsubscribe to make use of pointcloud processing nodelet
       // lazy publishing policy; in CPU-scarce computer as TurtleBot's laptop this is a huge saving
-      if (enabled == false)
-        cam_sub_.shutdown();
-      else
-        cam_sub_ = it_.subscribe(cam_image_topic, 1, &getCapCallback);
-      enableSwitched = false;
+        if (enabled)
+            cam_sub_ = it_.subscribe(cam_image_topic, 1, &getCapCallback);
+        else
+            cam_sub_.shutdown();
+        enableSwitched = false;
     }
   }
 
