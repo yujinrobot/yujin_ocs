@@ -102,8 +102,7 @@ void getCapCallback (const sensor_msgs::ImageConstPtr & image_msg)
             IplImage ipl_image = cv_ptr_->image;
 
             marker_detector.Detect(&ipl_image, cam, true, false, max_new_marker_error, max_track_error, CVSEQ, true);
-
-			arPoseMarkers_.markers.clear ();
+            arPoseMarkers_.markers.clear ();
 			for (size_t i=0; i<marker_detector.markers->size(); i++) 
 			{
 				//Get the pose relative to the camera
@@ -123,6 +122,14 @@ void getCapCallback (const sensor_msgs::ImageConstPtr & image_msg)
                 tf::Vector3 markerOrigin (0, 0, 0);
                 tf::Transform m (tf::Quaternion::getIdentity (), markerOrigin);
                 tf::Transform markerPose = t * m; // marker pose in the camera frame
+
+                tf::Vector3 z_axis_cam = tf::Transform(rotation, tf::Vector3(0,0,0)) * tf::Vector3(0, 0, 1);
+//                ROS_INFO("%02i Z in cam frame: %f %f %f",id, z_axis_cam.x(), z_axis_cam.y(), z_axis_cam.z());
+                /// as we can't see through markers, this one is false positive detection
+                if (z_axis_cam.z() > 0)
+                {
+                    continue;
+                }
 
 				//Publish the transform from the camera to the marker		
 				std::string markerFrame = "ar_marker_";
