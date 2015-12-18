@@ -8,9 +8,9 @@
     By no means it pretends to be an efficient and robust, widely used math library, but a play ground where
     to put common code that is typically repeated in many robot control programs.
   </description>
-  
+
   <license>BSD</license>
-  <author>Jorge Santos</author> 
+  <author>Jorge Santos</author>
   <maintainer email="jihoonl@yujinrobot.com">Jihoon Lee</maintainer>
   <url type="website">http://ros.org/wiki/yocs_math_toolkit</url>
   <url type="repository">https://github.com/yujinrobot/yujin_ocs</url>
@@ -19,6 +19,7 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <build_depend>ecl_build</build_depend>
+  <build_depend>ecl_config</build_depend>
   <build_depend>ecl_exceptions</build_depend>
   <build_depend>ecl_formatters</build_depend>
   <build_depend>ecl_linear_algebra</build_depend>
@@ -27,13 +28,14 @@
   <build_depend>tf</build_depend>
 
   <run_depend>ecl_build</run_depend>
+  <run_depend>ecl_config</run_depend>
   <run_depend>ecl_exceptions</run_depend>
   <run_depend>ecl_formatters</run_depend>
   <run_depend>ecl_linear_algebra</run_depend>
   <run_depend>geometry_msgs</run_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>tf</run_depend>
-  
+
   <export>
   </export>
 </package>

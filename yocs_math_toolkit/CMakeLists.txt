@@ -4,11 +4,12 @@ project(yocs_math_toolkit)
 ##############################################################################
 # Find Packages
 ##############################################################################
- 
+
 find_package(catkin
     REQUIRED
     COMPONENTS
         ecl_build
+        ecl_config
         ecl_exceptions
         ecl_formatters
         ecl_linear_algebra
@@ -26,6 +27,7 @@ catkin_package(
     LIBRARIES ${PROJECT_NAME}
     CATKIN_DEPENDS
         ecl_build
+        ecl_config
         ecl_exceptions
         ecl_formatters
         ecl_linear_algebra
@@ -40,7 +42,7 @@ catkin_package(
 
 ecl_enable_cxx11_compiler()
 add_definitions(${catkin_DEFINITIONS})
-include_directories(include ${catkin_INCLUDE_DIRS})    
+include_directories(include ${catkin_INCLUDE_DIRS})
 
 ##############################################################################
 # Sources
