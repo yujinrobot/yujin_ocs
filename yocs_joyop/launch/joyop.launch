@@ -1,6 +1,6 @@
-<!-- 
+<!--
   JoyOp launcher
-  
+
   Includes JoyOp and the ROS joystick driver
  -->
 
@@ -21,7 +21,8 @@
   <arg name="cmd_vel_topic_name"    default="cmd_vel"/>
   <arg name="enable_topic_name"     default="enable"/>
   <arg name="disable_topic_name"    default="disable"/>
- 
+  <arg name="wait_for_connection"   default="-1"         doc="time to wait to try and connect/enable via the motor topics on initialisation."/>
+
   <node pkg="yocs_joyop" type="joyop" name="yocs_joyop" output="screen">
     <param name="linear_axis"           value="$(arg linear_axis)"/>
     <param name="angular_axis"          value="$(arg angular_axis)"/>
@@ -31,6 +32,7 @@
     <param name="enable_button"         value="$(arg enable_button)"/>
     <param name="disable_button"        value="$(arg disable_button)"/>
     <param name="spin_frequency"        value="$(arg spin_frequency)"/>
+    <param name="wait_for_connection"   value="$(arg wait_for_connection)"/>
     <remap from="joy"                   to="$(arg joy_topic_name)"/>
   	<remap from="yocs_joyop/cmd_vel"    to="$(arg cmd_vel_topic_name)"/>
     <remap from="yocs_joyop/enable"     to="$(arg enable_topic_name)"/>
