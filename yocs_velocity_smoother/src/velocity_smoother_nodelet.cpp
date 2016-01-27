@@ -181,15 +181,7 @@ void VelocitySmoother::spin()
       }
 
       w_inc = target_vel.angular.z - last_cmd_vel.angular.z;
-      if ((robot_feedback == ODOMETRY) && (current_vel.angular.z*target_vel.angular.z < 0.0))
-      {
-        // countermarch (on robots with significant inertia; requires odometry feedback to be detected)
-        max_w_inc = decel_lim_w*period;
-      }
-      else
-      {
-        max_w_inc = ((w_inc*target_vel.angular.z > 0.0)?accel_lim_w:decel_lim_w)*period;
-      }
+      max_w_inc = accel_lim_w * period;
 
       // Calculate and normalise vectors A (desired velocity increment) and B (maximum velocity increment),
       // where v acts as coordinate x and w as coordinate y; the sign of the angle from A to B determines
