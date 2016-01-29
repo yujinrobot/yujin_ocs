@@ -35,6 +35,7 @@
 */
 
 
+#include <std_msgs/Bool.h>
 #include "ar_track_alvar/CvTestbed.h"
 #include "ar_track_alvar/MarkerDetector.h"
 #include "ar_track_alvar/Shared.h"
@@ -77,7 +78,7 @@ void getCapCallback (const sensor_msgs::ImageConstPtr & image_msg);
 
 void getCapCallback (const sensor_msgs::ImageConstPtr & image_msg)
 {
-	//If we've already gotten the cam info, then go ahead
+    //If we've already gotten the cam info, then go ahead
 	if(cam->getCamInfo_){
 		try{
 			tf::StampedTransform CamToOutput;
@@ -101,8 +102,7 @@ void getCapCallback (const sensor_msgs::ImageConstPtr & image_msg)
             IplImage ipl_image = cv_ptr_->image;
 
             marker_detector.Detect(&ipl_image, cam, true, false, max_new_marker_error, max_track_error, CVSEQ, true);
-
-			arPoseMarkers_.markers.clear ();
+            arPoseMarkers_.markers.clear ();
 			for (size_t i=0; i<marker_detector.markers->size(); i++) 
 			{
 				//Get the pose relative to the camera
@@ -122,6 +122,14 @@ void getCapCallback (const sensor_msgs::ImageConstPtr & image_msg)
                 tf::Vector3 markerOrigin (0, 0, 0);
                 tf::Transform m (tf::Quaternion::getIdentity (), markerOrigin);
                 tf::Transform markerPose = t * m; // marker pose in the camera frame
+
+                tf::Vector3 z_axis_cam = tf::Transform(rotation, tf::Vector3(0,0,0)) * tf::Vector3(0, 0, 1);
+//                ROS_INFO("%02i Z in cam frame: %f %f %f",id, z_axis_cam.x(), z_axis_cam.y(), z_axis_cam.z());
+                /// as we can't see through markers, this one is false positive detection
+                if (z_axis_cam.z() > 0)
+                {
+                    continue;
+                }
 
 				//Publish the transform from the camera to the marker		
 				std::string markerFrame = "ar_marker_";
@@ -219,6 +227,12 @@ void configCallback(ar_track_alvar::ParamsConfig &config, uint32_t level)
   max_track_error = config.max_track_error;
 }
 
+void enableCallback(const std_msgs::BoolConstPtr& msg)
+{
+    enableSwitched = enabled != msg->data;
+    enabled = msg->data;
+}
+
 int main(int argc, char *argv[])
 {
 	ros::init (argc, argv, "marker_detect");
@@ -273,16 +287,14 @@ int main(int argc, char *argv[])
 	 
 	image_transport::ImageTransport it_(n);
 
-  if (enabled == true)
-  {
-    // This always happens, as enable is true by default
-    ROS_INFO("Subscribing to image topic");
-    	cam_sub_ = it_.subscribe (cam_image_topic, 1, &getCapCallback);
-  }
-
   // Run at the configured rate, discarding pointcloud msgs if necessary
   ros::Rate rate(max_frequency);
 
+  /// Subscriber for enable-topic so that a user can turn off the detection if it is not used without
+  /// having to use the reconfigure where he has to know all parameters
+  ros::Subscriber enable_sub_ = pn.subscribe("enable_detection", 1, &enableCallback);
+
+  enableSwitched = true;
   while (ros::ok())
   {
     ros::spinOnce();
@@ -295,15 +307,15 @@ int main(int argc, char *argv[])
       rate = ros::Rate(max_frequency);
     }
 
-    if (enableSwitched == true)
+    if (enableSwitched)
     {
       // Enable/disable switch: subscribe/unsubscribe to make use of pointcloud processing nodelet
       // lazy publishing policy; in CPU-scarce computer as TurtleBot's laptop this is a huge saving
-      if (enabled == false)
-        cam_sub_.shutdown();
-      else
-        cam_sub_ = it_.subscribe(cam_image_topic, 1, &getCapCallback);
-      enableSwitched = false;
+        if (enabled)
+            cam_sub_ = it_.subscribe(cam_image_topic, 1, &getCapCallback);
+        else
+            cam_sub_.shutdown();
+        enableSwitched = false;
     }
   }
 
