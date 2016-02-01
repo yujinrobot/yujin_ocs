@@ -2,8 +2,8 @@
 Changelog for package ar_track_alvar
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.3 (2016-02-02)
+------------------
 * [feat] New bool-Topic to enable/disable the marker detection (`#70 <https://github.com/sniekum/ar_track_alvar/issues/70>`_)
 * [feat] added public way to set intrinsicCalibration for Camera class
 * [fix] not publishing marker that are facing in the same direction as the camera.
