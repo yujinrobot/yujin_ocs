@@ -1,0 +1,23 @@
+sudo: required
+dist: trusty
+language: generic
+
+compiler:
+  - gcc
+
+notifications:
+  email:
+    on_failure: always
+    recipients:
+      - 130s@2000.jukuin.keio.ac.jp
+env:
+  matrix:
+    - ROS_DISTRO="indigo" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu USE_DEB=true
+    - ROS_DISTRO="indigo" ROS_REPOSITORY_PATH=http://packages.ros.org/ros-shadow-fixed/ubuntu USE_DEB=true
+    - ROS_DISTRO="jade" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu USE_DEB=true
+    - ROS_DISTRO="jade" ROS_REPOSITORY_PATH=http://packages.ros.org/ros-shadow-fixed/ubuntu USE_DEB=true
+install:
+  - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
+
+script:
+  - source .ci_config/travis.sh
