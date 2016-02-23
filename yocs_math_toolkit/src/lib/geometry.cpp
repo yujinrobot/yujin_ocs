@@ -147,6 +147,26 @@ double distance3D(const tf::Transform& a, const tf::Transform& b)
 }
 
 
+double heading(const tf::Vector3& p)
+{
+  return std::atan2(p.y(), p.x());
+}
+
+double heading(geometry_msgs::Point p)
+{
+  return heading(tf::Vector3(p.x, p.y, p.z));
+}
+
+double heading(geometry_msgs::Pose p)
+{
+  return heading(p.position);
+}
+
+double heading(const tf::Transform& t)
+{
+  return heading(t.getOrigin());
+}
+
 double heading(const tf::Vector3& a, const tf::Vector3& b)
 {
   return std::atan2(b.y() - a.y(), b.x() - a.x());
