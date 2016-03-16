@@ -41,6 +41,7 @@ namespace yocs_velocity_smoother {
 
 VelocitySmoother::VelocitySmoother(const std::string &name)
 : name(name)
+, quiet(false)
 , shutdown_req(false)
 , input_active(false)
 , pr_next(0)
@@ -146,16 +147,21 @@ void VelocitySmoother::spin()
     {
       // If the publisher has been inactive for a while, or if our current commanding differs a lot
       // from robot velocity feedback, we cannot trust the former; relay on robot's feedback instead
-      // This can happen mainly due to preemption of current controller on velocity multiplexer.
       // TODO: current command/feedback difference thresholds are 진짜 arbitrary; they should somehow
       // be proportional to max v and w...
       // The one for angular velocity is very big because is it's less necessary (for example the
       // reactive controller will never make the robot spin) and because the gyro has a 15 ms delay
-      ROS_WARN("Using robot velocity feedback (%s) instead of last command: %f, %f, %f",
-                robot_feedback == ODOMETRY ? "odometry" : "end commands",
-               (ros::Time::now()      - last_cb_time).toSec(),
-                current_vel.linear.x  - last_cmd_vel.linear.x,
-                current_vel.angular.z - last_cmd_vel.angular.z);
+      if ( !quiet ) {
+        // this condition can be unavoidable due to preemption of current velocity control on
+        // velocity multiplexer so be quiet if we're instructed to do so
+        ROS_WARN_STREAM("Velocity Smoother : using robot velocity feedback " <<
+                        std::string(robot_feedback == ODOMETRY ? "odometry" : "end commands") <<
+                        " instead of last command: " <<
+                        (ros::Time::now() - last_cb_time).toSec() << ", " <<
+                        current_vel.linear.x  - last_cmd_vel.linear.x << ", " <<
+                        current_vel.angular.z - last_cmd_vel.angular.z << ", [" << name << "]"
+                        );
+      }
       last_cmd_vel = current_vel;
     }
 
@@ -256,6 +262,7 @@ bool VelocitySmoother::init(ros::NodeHandle& nh)
   // Optional parameters
   int feedback;
   nh.param("frequency",      frequency,     20.0);
+  nh.param("quiet",          quiet,         quiet);
   nh.param("decel_factor",   decel_factor,   1.0);
   nh.param("robot_feedback", feedback, (int)NONE);
 
