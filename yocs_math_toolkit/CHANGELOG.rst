@@ -2,10 +2,10 @@
 Changelog
 =========
 
-Forthcoming
------------
-
-* sophus helpers
+0.8.0 (2016-05-06)
+------------------
+* ecl deprecation macros
+* pretty printing vectors updated
 
 0.6.0 (2014-07-08)
 ------------------

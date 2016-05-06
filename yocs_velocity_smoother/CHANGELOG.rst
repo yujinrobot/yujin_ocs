@@ -2,8 +2,9 @@
 Changelog for package yocs_velocity_smoother
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.6.3 (2014-12-05)
+0.8.0 (2016-05-06)
 ------------------
+* option for quieting warning due to unavoidable mux overrides
 
 0.6.2 (2014-11-30)
 ------------------

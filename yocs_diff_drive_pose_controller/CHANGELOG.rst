@@ -2,6 +2,11 @@
 Changelog for package yocs_diff_drive_pose_controller
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.8.0 (2016-05-06)
+------------------
+* verbose option
+* bugfix for wrapping angles properly
+
 0.6.4 (2015-10-10)
 ------------------
 * many minor improvements

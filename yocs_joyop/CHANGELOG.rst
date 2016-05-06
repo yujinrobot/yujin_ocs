@@ -2,6 +2,10 @@
 Changelog
 =========
 
+0.8.0 (2016-05-06)
+------------------
+* loop around waiting for a connection
+
 0.6.4 (2015-10-10)
 ------------------
 * Relays for connecting with simple topics (e.g. sounds)
