@@ -60,6 +60,7 @@ private:
   double speed_lim_v, accel_lim_v, decel_lim_v;
   double speed_lim_w, accel_lim_w, decel_lim_w;
   double decel_factor;
+  bool holonomic_robot;
 
   double frequency;
 
