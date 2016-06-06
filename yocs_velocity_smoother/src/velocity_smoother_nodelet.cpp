@@ -317,7 +317,7 @@ public:
   {
     NODELET_DEBUG("Velocity Smoother : waiting for worker thread to finish...");
     vel_smoother_->shutdown();
-	if(worker_thread_->joinable())
+    if(worker_thread_->joinable())
     {
     	worker_thread_->join();
     }
