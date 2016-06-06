@@ -317,7 +317,10 @@ public:
   {
     NODELET_DEBUG("Velocity Smoother : waiting for worker thread to finish...");
     vel_smoother_->shutdown();
-    worker_thread_->join();
+	if(worker_thread_->joinable())
+    {
+    	worker_thread_->join();
+    }
   }
 
   std::string unresolvedName(const std::string &name) const {
