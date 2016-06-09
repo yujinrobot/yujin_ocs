@@ -18,7 +18,6 @@ env:
     - ROS_DISTRO="jade" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu USE_DEB=true
     - ROS_DISTRO="jade" ROS_REPOSITORY_PATH=http://packages.ros.org/ros-shadow-fixed/ubuntu USE_DEB=true
     - ROS_DISTRO="jade"   PRERELEASE=true
-    - ROS_DISTRO="kinetic"
 matrix:
   allow_failures:
     - env: ROS_DISTRO="indigo" PRERELEASE=true
