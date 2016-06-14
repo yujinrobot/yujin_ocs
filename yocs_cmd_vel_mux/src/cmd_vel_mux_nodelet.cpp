@@ -95,34 +95,48 @@ void CmdVelMuxNodelet::onInit()
 
 void CmdVelMuxNodelet::reloadConfiguration(yocs_cmd_vel_mux::reloadConfig &config, uint32_t unused_level)
 {
-  std::string yaml_cfg_file;
   ros::NodeHandle &nh = this->getNodeHandle();
   ros::NodeHandle &nh_priv = this->getPrivateNodeHandle();
-  if( config.yaml_cfg_file == "" )
+
+  boost::shared_ptr<std::istream> is;
+
+  // Configuration can come directly as a yaml-formatted string or as a file path,
+  // but not both, so we give priority to the first option
+  if (config.yaml_cfg_data.size() > 0)
   {
-    // typically fired on startup, so look for a parameter to set a default
-    nh_priv.getParam("yaml_cfg_file", yaml_cfg_file);
+    is.reset(new std::istringstream(config.yaml_cfg_data));
   }
   else
   {
-    yaml_cfg_file = config.yaml_cfg_file;
+    std::string yaml_cfg_file;
+    if (config.yaml_cfg_file == "")
+    {
+      // typically fired on startup, so look for a parameter to set a default
+      nh_priv.getParam("yaml_cfg_file", yaml_cfg_file);
+    }
+    else
+    {
+      yaml_cfg_file = config.yaml_cfg_file;
+    }
+
+    is.reset(new std::ifstream(yaml_cfg_file.c_str(), std::ifstream::in));
+    if (is->good() == false)
+    {
+      NODELET_ERROR_STREAM("CmdVelMux : configuration file not found [" << yaml_cfg_file << "]");
+      return;
+    }
   }
 
   /*********************
   ** Yaml File Parsing
   **********************/
-  std::ifstream ifs(yaml_cfg_file.c_str(), std::ifstream::in);
-  if (ifs.good() == false)
-  {
-    NODELET_ERROR_STREAM("CmdVelMux : configuration file not found [" << yaml_cfg_file << "]");
-    return;
-  }
+
   // probably need to bring the try catches back here
   YAML::Node doc;
 #ifdef HAVE_NEW_YAMLCPP
-  doc = YAML::Load(ifs);
+  doc = YAML::Load(*is);
 #else
-  YAML::Parser parser(ifs);
+  YAML::Parser parser(*is);
   parser.GetNextDocument(doc);
 #endif
 
@@ -131,12 +145,14 @@ void CmdVelMuxNodelet::reloadConfiguration(yocs_cmd_vel_mux::reloadConfig &confi
   **********************/
   std::string output_name("output");
 #ifdef HAVE_NEW_YAMLCPP
-  if ( doc["publisher"] ) {
+  if (doc["publisher"])
+  {
     doc["publisher"] >> output_name;
   }
 #else
   const YAML::Node *node = doc.FindValue("publisher");
-  if ( node != NULL ) {
+  if (node != NULL)
+  {
     *node >> output_name;
   }
 #endif
@@ -145,13 +161,16 @@ void CmdVelMuxNodelet::reloadConfiguration(yocs_cmd_vel_mux::reloadConfig &confi
   /*********************
   ** Input Subscribers
   **********************/
-  try {
+  try
+  {
     cmd_vel_sub.configure(doc["subscribers"]);
   }
-  catch(EmptyCfgException& e) {
+  catch (EmptyCfgException& e)
+  {
     NODELET_WARN("CmdVelMux : yaml configured zero subscribers, check yaml content.");
   }
-  catch(YamlException& e) {
+  catch (YamlException& e)
+  {
     NODELET_ERROR_STREAM("CmdVelMux : yaml parsing problem [" << std::string(e.what()) + "]");
   }
 
@@ -166,12 +185,11 @@ void CmdVelMuxNodelet::reloadConfiguration(yocs_cmd_vel_mux::reloadConfig &confi
         nh_priv.createTimer(ros::Duration(cmd_vel_sub[i].timeout), TimerFunctor(i, this), true, false);
 
     NODELET_DEBUG("CmdVelMux : subscribed to '%s' on topic '%s'. pr: %d, to: %.2f",
-              cmd_vel_sub[i].name.c_str(), cmd_vel_sub[i].topic.c_str(),
-              cmd_vel_sub[i].priority, cmd_vel_sub[i].timeout);
+                  cmd_vel_sub[i].name.c_str(), cmd_vel_sub[i].topic.c_str(),
+                  cmd_vel_sub[i].priority, cmd_vel_sub[i].timeout);
   }
 
-  NODELET_INFO_STREAM("CmdVelMux : (re)configured [" << yaml_cfg_file << "]");
-  ifs.close();
+  NODELET_INFO_STREAM("CmdVelMux : (re)configured");
 }
 
 } // namespace yocs_cmd_vel_mux
