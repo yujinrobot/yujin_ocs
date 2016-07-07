@@ -57,6 +57,7 @@ bool KeyOp::init()
   nh.getParam("angular_vel_step", angular_vel_step_);
   nh.getParam("angular_vel_max", angular_vel_max_);
   nh.getParam("wait_for_connection", wait_for_connection_);
+  nh.getParam("default_power_status", power_status_);
 
   ROS_INFO_STREAM("KeyOp : using linear  vel step [" << linear_vel_step_ << "].");
   ROS_INFO_STREAM("KeyOp : using linear  vel max  [" << linear_vel_max_ << "].");
