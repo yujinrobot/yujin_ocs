@@ -85,6 +85,8 @@ bool KeyOp::init()
    **********************/
   if (!wait_for_connection_)
   {
+    // start keyboard input thread
+    thread_.start(&KeyOp::keyboardInputLoop, *this);
     return true;
   }
   ecl::MilliSleep millisleep;
