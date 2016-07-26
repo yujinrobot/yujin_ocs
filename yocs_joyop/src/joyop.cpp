@@ -30,15 +30,15 @@ private:
   // states
   int linear_, angular_, enabled_;
   // button ids
-  int deadman_button_, enable_button_, disable_button_;
-  double l_scale_, a_scale_, spin_freq_;
+  int deadman_button_, enable_button_, disable_button_, boost_button_;
+  double l_scale_, a_scale_, boost_scale_, spin_freq_;
   ros::Publisher enable_pub_, disable_pub_, vel_pub_;
   ros::Subscriber joy_sub_;
 
   geometry_msgs::Twist last_published_;
   boost::mutex publish_mutex_;
   // callback notifications (kept separate from current state)
-  bool enable_pressed_, disable_pressed_, deadman_pressed_, zero_twist_published_;
+  bool enable_pressed_, disable_pressed_, deadman_pressed_, boost_pressed_, zero_twist_published_;
   int wait_for_connection_; /**< Time to wait for enable/disable topics in seconds (-1 to not wait). **/
   ros::Timer timer_;
 
@@ -51,14 +51,17 @@ JoyOp::JoyOp():
   deadman_button_(4),
   enable_button_(0),
   disable_button_(1),
+  boost_button_(5),
   l_scale_(0.3),
   a_scale_(0.9),
+  boost_scale_(2.0),
   spin_freq_(10),
   wait_for_connection_(-1),
   enabled_(false),
   enable_pressed_(false),
   disable_pressed_(false),
   deadman_pressed_(false),
+  boost_pressed_(false),
   zero_twist_published_(false)
 {
   ph_.param("linear_axis", linear_, linear_);
@@ -66,8 +69,10 @@ JoyOp::JoyOp():
   ph_.param("deadman_button", deadman_button_, deadman_button_);
   ph_.param("enable_button", enable_button_, enable_button_);
   ph_.param("disable_button", disable_button_, disable_button_);
+  ph_.param("boost_button", boost_button_, boost_button_);
   ph_.param("angular_scale", a_scale_, a_scale_);
   ph_.param("linear_scale", l_scale_, l_scale_);
+  ph_.param("boost_scale", boost_scale_, boost_scale_);
   ph_.param("spin_frequency", spin_freq_, spin_freq_);
   ph_.param("wait_for_connection", wait_for_connection_, wait_for_connection_);
 
@@ -136,8 +141,25 @@ JoyOp::JoyOp():
 void JoyOp::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 {
   geometry_msgs::Twist vel;
-  vel.angular.z = a_scale_*joy->axes[angular_];
-  vel.linear.x = l_scale_*joy->axes[linear_];
+  if (!boost_pressed_ && joy->buttons[boost_button_])
+  {
+    ROS_INFO_STREAM("JoyOp: Boost activated.");
+  }
+  else if (boost_pressed_ && !joy->buttons[boost_button_])
+  {
+    ROS_INFO_STREAM("JoyOp: Boost deactivated.");
+  }
+  boost_pressed_ = joy->buttons[boost_button_];
+  if (boost_pressed_)
+  {
+    vel.angular.z = a_scale_*joy->axes[angular_]*boost_scale_;
+    vel.linear.x = l_scale_*joy->axes[linear_]*boost_scale_;
+  }
+  else
+  {
+    vel.angular.z = a_scale_*joy->axes[angular_];
+    vel.linear.x = l_scale_*joy->axes[linear_];
+  }
   last_published_ = vel;
   deadman_pressed_ = joy->buttons[deadman_button_];
   enable_pressed_ = joy->buttons[enable_button_];
