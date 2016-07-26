@@ -28,17 +28,17 @@ private:
   ros::NodeHandle ph_, nh_;
 
   // states
-  int linear_, angular_, enabled_;
+  int linear_axis_, angular_axis_, boost_axis_, enabled_;
   // button ids
-  int deadman_button_, enable_button_, disable_button_, boost_button_;
+  int deadman_button_, enable_button_, disable_button_, brake_button_;
   double l_scale_, a_scale_, boost_scale_, spin_freq_;
-  ros::Publisher enable_pub_, disable_pub_, vel_pub_;
+  ros::Publisher enable_pub_, disable_pub_, vel_pub_, brake_vel_pub_;
   ros::Subscriber joy_sub_;
 
   geometry_msgs::Twist last_published_;
   boost::mutex publish_mutex_;
   // callback notifications (kept separate from current state)
-  bool enable_pressed_, disable_pressed_, deadman_pressed_, boost_pressed_, zero_twist_published_;
+  bool enable_pressed_, disable_pressed_, deadman_pressed_, brake_pressed_, boost_active_, zero_twist_published_;
   int wait_for_connection_; /**< Time to wait for enable/disable topics in seconds (-1 to not wait). **/
   ros::Timer timer_;
 
@@ -46,12 +46,13 @@ private:
 
 JoyOp::JoyOp():
   ph_("~"),
-  linear_(1),
-  angular_(0),
+  linear_axis_(1),
+  angular_axis_(0),
+  boost_axis_(5),
   deadman_button_(4),
   enable_button_(0),
   disable_button_(1),
-  boost_button_(5),
+  brake_button_(5),
   l_scale_(0.3),
   a_scale_(0.9),
   boost_scale_(2.0),
@@ -61,15 +62,17 @@ JoyOp::JoyOp():
   enable_pressed_(false),
   disable_pressed_(false),
   deadman_pressed_(false),
-  boost_pressed_(false),
+  brake_pressed_(false),
+  boost_active_(false),
   zero_twist_published_(false)
 {
-  ph_.param("linear_axis", linear_, linear_);
-  ph_.param("angular_axis", angular_, angular_);
+  ph_.param("linear_axis", linear_axis_, linear_axis_);
+  ph_.param("angular_axis", angular_axis_, angular_axis_);
+  ph_.param("boost_axis", boost_axis_, boost_axis_);
   ph_.param("deadman_button", deadman_button_, deadman_button_);
   ph_.param("enable_button", enable_button_, enable_button_);
   ph_.param("disable_button", disable_button_, disable_button_);
-  ph_.param("boost_button", boost_button_, boost_button_);
+  ph_.param("brake_button", brake_button_, brake_button_);
   ph_.param("angular_scale", a_scale_, a_scale_);
   ph_.param("linear_scale", l_scale_, l_scale_);
   ph_.param("boost_scale", boost_scale_, boost_scale_);
@@ -79,6 +82,7 @@ JoyOp::JoyOp():
   enable_pub_ = ph_.advertise<std_msgs::String>("enable", 1, true);
   disable_pub_ = ph_.advertise<std_msgs::String>("disable", 1, true);
   vel_pub_ = ph_.advertise<geometry_msgs::Twist>("cmd_vel", 1, true);
+  brake_vel_pub_ = ph_.advertise<geometry_msgs::Twist>("brake_vel", 1, true);
   joy_sub_ = nh_.subscribe<sensor_msgs::Joy>("joy", 10, &JoyOp::joyCallback, this);
 
   timer_ = nh_.createTimer(ros::Duration(1/spin_freq_), boost::bind(&JoyOp::publish, this));
@@ -98,7 +102,7 @@ JoyOp::JoyOp():
   while (!connected)
   {
     if ((enable_pub_.getNumSubscribers() > 0) &&
-        (disable_pub_.getNumSubscribers() > 0))
+        (disable_pub_.getNumSubscribers() > 0)) // brake is optional
     {
       connected = true;
       break;
@@ -141,29 +145,40 @@ JoyOp::JoyOp():
 void JoyOp::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 {
   geometry_msgs::Twist vel;
-  if (!boost_pressed_ && joy->buttons[boost_button_])
+  if (!boost_active_ && (joy->axes[boost_axis_] == -1.0)) // fully pressed
   {
+    boost_active_ = true;
     ROS_INFO_STREAM("JoyOp: Boost activated.");
   }
-  else if (boost_pressed_ && !joy->buttons[boost_button_])
+  else if (boost_active_ && (joy->axes[boost_axis_] == -1.0)) // fully pressed again
   {
+    boost_active_ = false;
     ROS_INFO_STREAM("JoyOp: Boost deactivated.");
   }
-  boost_pressed_ = joy->buttons[boost_button_];
-  if (boost_pressed_)
+
+  if (boost_active_)
   {
-    vel.angular.z = a_scale_*joy->axes[angular_]*boost_scale_;
-    vel.linear.x = l_scale_*joy->axes[linear_]*boost_scale_;
+    vel.angular.z = a_scale_*joy->axes[angular_axis_]*boost_scale_;
+    vel.linear.x = l_scale_*joy->axes[linear_axis_]*boost_scale_;
   }
   else
   {
-    vel.angular.z = a_scale_*joy->axes[angular_];
-    vel.linear.x = l_scale_*joy->axes[linear_];
+    vel.angular.z = a_scale_*joy->axes[angular_axis_];
+    vel.linear.x = l_scale_*joy->axes[linear_axis_];
   }
   last_published_ = vel;
   deadman_pressed_ = joy->buttons[deadman_button_];
   enable_pressed_ = joy->buttons[enable_button_];
   disable_pressed_ = joy->buttons[disable_button_];
+  if (!brake_pressed_ && joy->buttons[brake_button_])
+  {
+    ROS_INFO_STREAM("JoyOp: Brake activated.");
+  }
+  else if (brake_pressed_ && !joy->buttons[boost_axis_])
+  {
+    ROS_INFO_STREAM("JoyOp: Brake released.");
+  }
+  brake_pressed_ = joy->buttons[boost_axis_];
 }
 
 void JoyOp::publish()
@@ -205,7 +220,13 @@ void JoyOp::publish()
     enabled_ = false;
   }
 
-  if (deadman_pressed_)
+  if (brake_pressed_)
+  {
+    vel_pub_.publish(geometry_msgs::Twist());
+    brake_vel_pub_.publish(geometry_msgs::Twist());
+    zero_twist_published_=true;
+  }
+  else if (deadman_pressed_)
   {
     if (enabled_)
     {
@@ -220,6 +241,7 @@ void JoyOp::publish()
   else if(!deadman_pressed_ && !zero_twist_published_)
   {
     vel_pub_.publish(*new geometry_msgs::Twist());
+    brake_vel_pub_.publish(geometry_msgs::Twist());
     zero_twist_published_=true;
   }
 }
