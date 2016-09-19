@@ -38,8 +38,8 @@ public:
 
 class EmptyCfgException: public std::runtime_error {
 public:
-  EmptyCfgException()
-        : std::runtime_error("") {}
+  EmptyCfgException(const std::string& msg)
+        : std::runtime_error(msg) {}
         virtual ~EmptyCfgException() throw() {}
 };
 

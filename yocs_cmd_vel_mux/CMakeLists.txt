@@ -6,6 +6,8 @@ find_package(catkin REQUIRED COMPONENTS roscpp pluginlib nodelet dynamic_reconfi
 find_package(PkgConfig)
 pkg_search_module(yaml-cpp REQUIRED yaml-cpp)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+
 if(NOT ${yaml-cpp_VERSION} VERSION_LESS "0.5")
 add_definitions(-DHAVE_NEW_YAMLCPP)
 endif()

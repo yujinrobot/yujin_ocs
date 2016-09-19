@@ -19,6 +19,7 @@
 
 #include <ros/ros.h>
 #include <geometry_msgs/Twist.h>
+
 #include <yaml-cpp/yaml.h>
 
 #ifdef HAVE_NEW_YAMLCPP
@@ -31,18 +32,13 @@ void operator >> (const YAML::Node& node, T& i)
 }
 #endif
 
-/*****************************************************************************
-** Preprocessing
-*****************************************************************************/
-
-// move to a static const?
-#define VACANT  std::numeric_limits<unsigned int>::max()
 
 /*****************************************************************************
 ** Namespaces
 *****************************************************************************/
 
 namespace yocs_cmd_vel_mux {
+
 
 /*****************************************************************************
 ** CmdVelSubscribers
@@ -62,25 +58,27 @@ public:
   {
   public:
     unsigned int           idx;          /**< Index; assigned according to the order on YAML file */
-    std::string            name;         /**< Descriptive name */
-    ros::Subscriber        subs;         /**< The subscriber itself */
+    std::string            name;         /**< Descriptive name; must be unique to this subscriber */
     std::string            topic;        /**< The name of the topic */
+    ros::Subscriber        subs;         /**< The subscriber itself */
     ros::Timer             timer;        /**< No incoming messages timeout */
     double                 timeout;      /**< Timer's timeout, in seconds  */
     unsigned int           priority;     /**< UNIQUE integer from 0 (lowest priority) to MAX_INT */
     std::string            short_desc;   /**< Short description (optional) */
     bool                   active;       /**< Whether this source is active */
 
-    CmdVelSubs(unsigned int idx) : idx(idx), active(false) {};
+    CmdVelSubs(unsigned int idx) : idx(idx), active(false) { };
+    ~CmdVelSubs() { }
 
+    /** Fill attributes with a YAML node content */
     void operator << (const YAML::Node& node);
   };
 
-  CmdVelSubscribers() : allowed(VACANT) { }
+  CmdVelSubscribers() { }
   ~CmdVelSubscribers() { }
 
-  std::vector<CmdVelSubs>::size_type size() { return list.size(); };
-  CmdVelSubs& operator [] (unsigned int idx) { return list[idx]; };
+  std::vector<std::shared_ptr<CmdVelSubs>>::size_type size() { return list.size(); };
+  std::shared_ptr<CmdVelSubs>& operator [] (unsigned int idx) { return list[idx]; };
 
   /**
    * @brief Configures the subscribers from a yaml file.
@@ -95,9 +93,10 @@ public:
   unsigned int allowed;
 
 private:
-  std::vector<CmdVelSubs> list;
+  std::vector<std::shared_ptr<CmdVelSubs>> list;
 };
 
 } // namespace yocs_cmd_vel_mux
+
 
 #endif /* CMD_VEL_SUBSCRIBERS_HPP_ */
