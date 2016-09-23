@@ -82,6 +82,8 @@ double max_track_error;
 std::string cam_image_topic; 
 std::string cam_info_topic; 
 std::string output_frame;
+int marker_resolution = 7; // default marker resolution
+int marker_margin = 2; // default marker margin
 
 
 //Debugging utility function
@@ -483,7 +485,7 @@ int main(int argc, char *argv[])
     std::cout << std::endl;
     cout << "Not enough arguments provided." << endl;
     cout << "Usage: ./individualMarkers <marker size in cm> <max new marker error> <max track error> "
-         << "<cam image topic> <cam info topic> <output frame> [ <max frequency> ]";
+         << "<cam image topic> <cam info topic> <output frame> [ <max frequency> <marker_resolution> <marker_margin>]";
     std::cout << std::endl;
     return 0;
   }
@@ -495,7 +497,6 @@ int main(int argc, char *argv[])
   cam_image_topic = argv[4];
   cam_info_topic = argv[5];
   output_frame = argv[6];
-  marker_detector.SetMarkerSize(marker_size);
 
   if (argc > 7)
     max_frequency = atof(argv[7]);
@@ -507,6 +508,13 @@ int main(int argc, char *argv[])
 
   if (argc > 7)
     pn.setParam("max_frequency", max_frequency);
+
+  if (argc > 8)
+    marker_resolution = atoi(argv[8]);
+  if (argc > 9)
+    marker_margin = atoi(argv[9]);
+
+  marker_detector.SetMarkerSize(marker_size, marker_resolution, marker_margin);
 
   cam = new Camera(n, cam_info_topic);
   tf_listener = new tf::TransformListener(n);
