@@ -2,8 +2,8 @@
 Changelog for package ar_track_alvar
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.4 (2016-09-26)
+------------------
 * [fix] Shutdown camera info sub after called
   Disable camera info subscription after receiving the info.
   This stops e. g. Asus Xtion from having an active subscription to the RGB image stream and thus saving CPU.
