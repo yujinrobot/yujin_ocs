@@ -2,6 +2,16 @@
 Changelog for package ar_track_alvar
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [fix] Shutdown camera info sub after called
+  Disable camera info subscription after receiving the info.
+  This stops e. g. Asus Xtion from having an active subscription to the RGB image stream and thus saving CPU.
+* [capability] add mark_resolution and mark_marge as input option
+* [capability] New parameter -array to create an array of markers `#83 <https://github.com/sniekum/ar_track_alvar/issues/83>`_
+* [maintenance] Add a maintainer to receive notification from ros buildfarm.
+* Contributors: AlexReimann, Isaac I.Y. Saito, Mehdi, Tokyo Opensource Robotics Developer 534
+
 0.5.3 (2016-02-02)
 ------------------
 * [feat] New bool-Topic to enable/disable the marker detection (`#70 <https://github.com/sniekum/ar_track_alvar/issues/70>`_)
