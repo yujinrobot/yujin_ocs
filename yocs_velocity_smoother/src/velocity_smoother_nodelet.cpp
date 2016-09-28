@@ -140,17 +140,26 @@ void VelocitySmoother::spin()
       }
     }
 
+    //check if the feedback is off from what we expect
+    //don't care about min / max velocities here, just for rough checking
+    double period_buffer = 2.0;
+
+    double v_deviation_lower_bound = last_cmd_vel.linear.x - decel_lim_v * period * period_buffer;
+    double v_deviation_upper_bound = last_cmd_vel.linear.x + accel_lim_v * period * period_buffer;
+
+    double w_deviation_lower_bound = last_cmd_vel.angular.z - decel_lim_w * period * period_buffer;
+    double angular_max_deviation = last_cmd_vel.angular.z + accel_lim_w * period * period_buffer;
+
+    bool v_different_from_feedback = current_vel.linear.x < v_deviation_lower_bound || current_vel.linear.x > v_deviation_upper_bound;
+    bool w_different_from_feedback = current_vel.angular.z < w_deviation_lower_bound || current_vel.angular.z > angular_max_deviation;
+
     if ((robot_feedback != NONE) && (input_active == true) && (cb_avg_time > 0.0) &&
         (((ros::Time::now() - last_cb_time).toSec() > 5.0*cb_avg_time)     || // 5 missing msgs
-          (std::abs(current_vel.linear.x  - last_cmd_vel.linear.x)  > 0.2) ||
-          (std::abs(current_vel.angular.z - last_cmd_vel.angular.z) > 2.0)))
+            v_different_from_feedback || w_different_from_feedback))
     {
       // If the publisher has been inactive for a while, or if our current commanding differs a lot
       // from robot velocity feedback, we cannot trust the former; relay on robot's feedback instead
-      // TODO: current command/feedback difference thresholds are 진짜 arbitrary; they should somehow
-      // be proportional to max v and w...
-      // The one for angular velocity is very big because is it's less necessary (for example the
-      // reactive controller will never make the robot spin) and because the gyro has a 15 ms delay
+      // This might not work super well using the odometry if it has a high delay
       if ( !quiet ) {
         // this condition can be unavoidable due to preemption of current velocity control on
         // velocity multiplexer so be quiet if we're instructed to do so
