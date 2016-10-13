@@ -78,6 +78,7 @@ JoyOp::JoyOp():
   ph_.param("boost_scale", boost_scale_, boost_scale_);
   ph_.param("spin_frequency", spin_freq_, spin_freq_);
   ph_.param("wait_for_connection", wait_for_connection_, wait_for_connection_);
+  ph_.param("enable_on_start", enabled_, enabled_);
 
   enable_pub_ = ph_.advertise<std_msgs::String>("enable", 1, true);
   disable_pub_ = ph_.advertise<std_msgs::String>("disable", 1, true);
