@@ -28,7 +28,7 @@ private:
   ros::NodeHandle ph_, nh_;
 
   // states
-  int linear_axis_, angular_axis_, boost_axis_, enabled_;
+  int linear_axis_, angular_axis_, boost_axis_;
   // button ids
   int deadman_button_, enable_button_, disable_button_, brake_button_;
   double l_scale_, a_scale_, boost_scale_, spin_freq_;
@@ -38,7 +38,7 @@ private:
   geometry_msgs::Twist last_published_;
   boost::mutex publish_mutex_;
   // callback notifications (kept separate from current state)
-  bool enable_pressed_, disable_pressed_, deadman_pressed_, brake_pressed_, boost_active_, zero_twist_published_;
+  bool enable_pressed_, disable_pressed_, deadman_pressed_, brake_pressed_, boost_active_, zero_twist_published_, enabled_;
   int wait_for_connection_; /**< Time to wait for enable/disable topics in seconds (-1 to not wait). **/
   ros::Timer timer_;
 
@@ -78,6 +78,7 @@ JoyOp::JoyOp():
   ph_.param("boost_scale", boost_scale_, boost_scale_);
   ph_.param("spin_frequency", spin_freq_, spin_freq_);
   ph_.param("wait_for_connection", wait_for_connection_, wait_for_connection_);
+  ph_.param("enable_on_start", enabled_, enabled_);
 
   enable_pub_ = ph_.advertise<std_msgs::String>("enable", 1, true);
   disable_pub_ = ph_.advertise<std_msgs::String>("disable", 1, true);
@@ -139,6 +140,11 @@ JoyOp::JoyOp():
     msg.data = "all";
     enable_pub_.publish(msg);
     ROS_INFO("JoyOp: connected.");
+
+    if(enabled_)
+    {
+      ROS_INFO_STREAM("JoyOp: Enabling motors.");
+    }
   }
 }
 

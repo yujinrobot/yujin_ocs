@@ -26,6 +26,7 @@
   <arg name="enable_topic_name"     default="enable"/>
   <arg name="disable_topic_name"    default="disable"/>
   <arg name="wait_for_connection"   default="-1"         doc="time to wait to try and connect/enable via the motor topics on initialisation."/>
+  <arg name="enable_on_start"       default="false"/>
 
   <node pkg="yocs_joyop" type="joyop" name="yocs_joyop" output="screen">
     <param name="linear_axis"           value="$(arg linear_axis)"/>
@@ -40,6 +41,7 @@
     <param name="brake_button"          value="$(arg brake_button)"/>
     <param name="spin_frequency"        value="$(arg spin_frequency)"/>
     <param name="wait_for_connection"   value="$(arg wait_for_connection)"/>
+    <param name="enable_on_start"       value="$(arg enable_on_start)"/>
     <remap from="joy"                   to="$(arg joy_topic_name)"/>
     <remap from="yocs_joyop/cmd_vel"    to="$(arg cmd_vel_topic_name)"/>
     <remap from="yocs_joyop/brake_vel"  to="$(arg brake_vel_topic_name)"/>
