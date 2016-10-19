@@ -2,8 +2,8 @@
 Changelog
 =========
 
-Forthcoming
------------
+0.9.1 (2016-10-19)
+------------------
 * added dynamic reconfigure for maximum velocities
 
 0.6.4 (2015-10-10)
