@@ -2,6 +2,10 @@
 Changelog
 =========
 
+Forthcoming
+-----------
+* added dynamic reconfigure for maximum velocities
+
 0.6.4 (2015-10-10)
 ------------------
 * Relays for connecting with simple topics (e.g. sounds)
