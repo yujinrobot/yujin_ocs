@@ -2,8 +2,8 @@
 Changelog
 =========
 
-Forthcoming
------------
+0.9.1 (2016-10-19)
+------------------
 
 * sophus helpers
 

@@ -2,7 +2,7 @@
 # CMake
 ##############################################################################
 
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 2.8.4)
 project(yocs_joyop)
 
 ##############################################################################
@@ -15,7 +15,9 @@ find_package(catkin REQUIRED COMPONENTS ecl_exceptions
                                         sensor_msgs
                                         std_msgs
                                         yocs_msgs
-                                        roscpp)
+                                        roscpp
+                                        yocs_msgs
+)
 
 find_package(Boost REQUIRED COMPONENTS thread)
 

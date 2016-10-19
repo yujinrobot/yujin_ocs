@@ -11,6 +11,8 @@
 #include <std_msgs/String.h>
 #include "boost/thread/mutex.hpp"
 #include "boost/thread/thread.hpp"
+#include <dynamic_reconfigure/server.h>
+#include <yocs_msgs/JoystickConfig.h>
 
 
 namespace yocs_joyop
@@ -24,6 +26,7 @@ public:
 private:
   void joyCallback(const sensor_msgs::Joy::ConstPtr& joy);
   void publish();
+  void reconfigCB(yocs_msgs::JoystickConfig &config, uint32_t level); 
 
   ros::NodeHandle ph_, nh_;
 
@@ -41,7 +44,7 @@ private:
   bool enable_pressed_, disable_pressed_, deadman_pressed_, brake_pressed_, boost_active_, zero_twist_published_, enabled_;
   int wait_for_connection_; /**< Time to wait for enable/disable topics in seconds (-1 to not wait). **/
   ros::Timer timer_;
-
+  
 };
 
 JoyOp::JoyOp():
@@ -73,8 +76,6 @@ JoyOp::JoyOp():
   ph_.param("enable_button", enable_button_, enable_button_);
   ph_.param("disable_button", disable_button_, disable_button_);
   ph_.param("brake_button", brake_button_, brake_button_);
-  ph_.param("angular_scale", a_scale_, a_scale_);
-  ph_.param("linear_scale", l_scale_, l_scale_);
   ph_.param("boost_scale", boost_scale_, boost_scale_);
   ph_.param("spin_frequency", spin_freq_, spin_freq_);
   ph_.param("wait_for_connection", wait_for_connection_, wait_for_connection_);
@@ -88,6 +89,13 @@ JoyOp::JoyOp():
 
   timer_ = nh_.createTimer(ros::Duration(1/spin_freq_), boost::bind(&JoyOp::publish, this));
 
+  dynamic_reconfigure::Server<yocs_msgs::JoystickConfig> *             dynamic_reconfigure_server;
+  dynamic_reconfigure::Server<yocs_msgs::JoystickConfig>::CallbackType dynamic_reconfigure_callback;
+  
+  dynamic_reconfigure_callback = boost::bind(&JoyOp::reconfigCB, this, _1, _2);
+  dynamic_reconfigure_server = new dynamic_reconfigure::Server<yocs_msgs::JoystickConfig>(ph_);
+  dynamic_reconfigure_server->setCallback(dynamic_reconfigure_callback);
+  
   /******************************************
    ** Wait for connection
    *******************************************/
@@ -250,6 +258,13 @@ void JoyOp::publish()
     brake_vel_pub_.publish(geometry_msgs::Twist());
     zero_twist_published_=true;
   }
+}
+
+void JoyOp::reconfigCB(yocs_msgs::JoystickConfig &config, uint32_t level) 
+{
+  ROS_INFO("JoyOp: Reconfigure linear : %f, angular : %f", config.linear_scale, config.angular_scale);
+  l_scale_ = config.linear_scale;
+  a_scale_ = config.angular_scale;
 }
 
 } // namespace yocs_joyop
