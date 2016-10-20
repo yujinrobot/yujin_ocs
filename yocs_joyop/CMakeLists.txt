@@ -41,6 +41,7 @@ target_link_libraries(joyop ${catkin_LIBRARIES})
 
 install(PROGRAMS
             scripts/magic_button_relay.py
+            scripts/reconfigure_joystick.py
         DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
        )
 

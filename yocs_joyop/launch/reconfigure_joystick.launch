@@ -1,0 +1,6 @@
+<launch>
+  <node pkg="yocs_joyop" type="reconfigure_joystick.py" name="reconfigure_joystick" >
+    <param name="linear_scale" value="0.5"/>
+    <param name="angular_scale" value="0.5"/>
+  </node>
+</launch>
