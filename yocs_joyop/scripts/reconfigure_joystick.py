@@ -6,10 +6,10 @@ import dynamic_reconfigure.client
 from yocs_msgs.cfg import JoystickConfig
 
 ##############################################################################
-# BagJoystick
+# ReconfigureJoystick
 ##############################################################################
 
-class BagJoystick(object):
+class ReconfigureJoystick(object):
   
     def shutdown(self):
       try:
@@ -20,7 +20,7 @@ class BagJoystick(object):
     def setup(self):
       if not self.client:
 	try:
-	  self.client = dynamic_reconfigure.client.Client("yocs_joyop", timeout=10)
+	  self.client = dynamic_reconfigure.client.Client("yocs_joyop", timeout=30)
 	except rospy.ROSException:
 	  rospy.logwarn("Reconfiture Joy :Could not connect to dynamic reconfigure server. Try again....")
 	  return False
@@ -48,14 +48,9 @@ class BagJoystick(object):
       except self.client.DynamicReconfigureParameterException:
 	rospy.logwarn("Reconfiture Joy : failed to update joystick configuration for bagging")
 	  
-    def spin(self):
-      rate = rospy.Rate(10)
-      while not rospy.is_shutdown():
-	rate.sleep()
-
 if __name__ == '__main__':
     rospy.init_node("reconfigure_joystick", log_level=rospy.INFO)
-    bag_joystick = BagJoystick()
-    bag_joystick.spin()
+    bag_joystick = ReconfigureJoystick()
+    rospy.spin()
     
     
