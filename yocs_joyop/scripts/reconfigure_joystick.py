@@ -15,14 +15,14 @@ class ReconfigureJoystick(object):
       try:
 	self.client.update_configuration({"linear_scale":self.original_l_value, "angular_scale":self.original_a_value})
       except self.client.DynamicReconfigureParameterException:
-	rospy.logwarn("Reconfiture Joy : failed to reset joystick configuration to original")
+	rospy.logwarn("Reconfigure Joy : failed to reset joystick configuration to original")
 	
     def setup(self):
       if not self.client:
 	try:
 	  self.client = dynamic_reconfigure.client.Client("yocs_joyop", timeout=30)
 	except rospy.ROSException:
-	  rospy.logwarn("Reconfiture Joy :Could not connect to dynamic reconfigure server. Try again....")
+	  rospy.logwarn("Reconfigure Joy :Could not connect to dynamic reconfigure server. Try again....")
 	  return False
       return True
 	
@@ -41,12 +41,12 @@ class ReconfigureJoystick(object):
 	self.original_l_value = self.client.get_configuration()["linear_scale"]
 	self.original_a_value = self.client.get_configuration()["angular_scale"]
       except self.client.DynamicReconfigureParameterException:
-	rospy.logwarn("Reconfiture Joy : failed to get original joystick configuration")
+	rospy.logwarn("Reconfigure Joy : failed to get original joystick configuration")
       
       try:
 	self.client.update_configuration({"linear_scale":_l_scale, "angular_scale":_a_scale})
       except self.client.DynamicReconfigureParameterException:
-	rospy.logwarn("Reconfiture Joy : failed to update joystick configuration for bagging")
+	rospy.logwarn("Reconfigure Joy : failed to update joystick configuration for bagging")
 	  
 if __name__ == '__main__':
     rospy.init_node("reconfigure_joystick", log_level=rospy.INFO)
