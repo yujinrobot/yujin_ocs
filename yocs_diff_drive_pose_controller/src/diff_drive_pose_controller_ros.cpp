@@ -221,14 +221,18 @@ void DiffDrivePoseControllerROS::controlMaxVelCB(const std_msgs::Float32ConstPtr
 
 void DiffDrivePoseControllerROS::enableCB(const std_msgs::StringConstPtr msg)
 {
-  if (this->enable())
+  if (!msg->data.empty())
   {
     goal_frame_name_ = msg->data;
-    ROS_INFO_STREAM("Controller has been enabled. [" << name_ << "] with goal frame [" << goal_frame_name_ << "]");
+  }
+
+  if (this->enable())
+  {
+    ROS_INFO_STREAM("Controller has been enabled [" << name_ << "] with goal frame [" << goal_frame_name_ << "].");
   }
   else
   {
-    ROS_INFO_STREAM("Controller was already enabled. [" << name_ <<"] with Goal frame [" << goal_frame_name_ << "]");
+    ROS_INFO_STREAM("Controller was already enabled [" << name_ <<"], now tracking goal frame [" << goal_frame_name_ << "].");
   }
 }
 
