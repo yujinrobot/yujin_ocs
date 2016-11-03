@@ -35,6 +35,11 @@ public:
   OdometryHelper(const std::string& odometry_topic_name);
   virtual ~OdometryHelper();
 
+  /**
+   * @brief Returns if initialised (odometry available)
+   */
+  bool initialized();
+
   /********************
   ** Setters
   ********************/
@@ -46,29 +51,33 @@ public:
   // convenience getters in various formats.
 
   /**
-   * @brief 3d position of the robot in eigen format.
+   * @brief 3d position of the robot in Eigen format.
+   * @return true if successful (helper got odometry)
    */
-  void position(Eigen::Vector3f& position);
+  bool position(Eigen::Vector3f& position);
 
   /**
    * @brief Heading angle for mobile robot 2d use cases.
    *
    * @param angle : in radians
+   * @return true if successful (helper got odometry)
    */
-  void yaw(float& angle);
+  bool yaw(float& angle);
 
   /**
    * @brief Mobile robot velocities in a 2d use case.
    *
    * @param mobile_robot_velocities : linear translational velocity, v and angular rate, w
+   * @return true if successful (helper got odometry)
    */
-  void velocities(std::pair<float, float>& mobile_robot_velocities);
-  nav_msgs::Odometry odometry();
+  bool velocities(std::pair<float, float>& mobile_robot_velocities);
+
+  std::shared_ptr<nav_msgs::Odometry> odometry();
 
 protected:
   ros::Subscriber odometry_subscriber_;
   std::mutex data_mutex_;
-  nav_msgs::Odometry odometry_;
+  std::unique_ptr<nav_msgs::Odometry> odometry_;
 };
 
 /*****************************************************************************
