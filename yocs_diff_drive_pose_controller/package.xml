@@ -12,10 +12,11 @@
   <url type="website">http://ros.org/wiki/yocs_diff_drive_pose_controller</url>
   <url type="repository">https://github.com/yujinrobot/yujin_ocs</url>
   <url type="bugtracker">https://github.com/yujinrobot/yujin_ocs/issues</url>
-  
+
   <buildtool_depend>catkin</buildtool_depend>
 
   <build_depend>ecl_threads</build_depend>
+  <build_depend>dynamic_reconfigure</build_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_depend>nodelet</build_depend>
   <build_depend>pluginlib</build_depend>
@@ -25,8 +26,11 @@
   <build_depend>tf</build_depend>
   <build_depend>yocs_controllers</build_depend>
   <build_depend>yocs_math_toolkit</build_depend>
+  <build_depend>yocs_msgs</build_depend>
+
 
   <run_depend>ecl_threads</run_depend>
+  <run_depend>dynamic_reconfigure</run_depend>
   <run_depend>geometry_msgs</run_depend>
   <run_depend>nodelet</run_depend>
   <run_depend>pluginlib</run_depend>
@@ -36,7 +40,8 @@
   <run_depend>tf</run_depend>
   <run_depend>yocs_controllers</run_depend>
   <run_depend>yocs_math_toolkit</run_depend>
-  
+  <run_depend>yocs_msgs</run_depend>
+
   <export>
     <nodelet plugin="${prefix}/plugins/nodelets.xml"/>
   </export>

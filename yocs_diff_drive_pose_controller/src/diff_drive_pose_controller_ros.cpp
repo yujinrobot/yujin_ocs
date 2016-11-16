@@ -133,6 +133,17 @@ bool DiffDrivePoseControllerROS::init()
       "base_frame_name = " << base_frame_name_ <<", goal_frame_name = " << goal_frame_name_ << " [" << name_ <<"]");
   ROS_DEBUG_STREAM(
       "v_max = " << v_max_ <<", k_1 = " << k_1_ << ", k_2 = " << k_2_ << ", beta = " << beta_ << ", lambda = " << lambda_ << ", dist_thres = " << dist_thres_ << ", orient_thres = " << orient_thres_ <<" [" << name_ <<"]");
+
+  reconfig_server_ = boost::shared_ptr<dynamic_reconfigure::Server<yocs_msgs::PoseControllerConfig> >(
+                               new dynamic_reconfigure::Server<yocs_msgs::PoseControllerConfig>(nh_));
+
+  ///dynamic reconfigure server callback type
+  dynamic_reconfigure::Server<yocs_msgs::PoseControllerConfig>::CallbackType reconfig_callback_func;
+
+  reconfig_callback_func = boost::bind(&DiffDrivePoseControllerROS::reconfigCB, this, _1, _2);
+
+  reconfig_server_->setCallback(reconfig_callback_func);
+
   return true;
 }
 
@@ -246,6 +257,24 @@ void DiffDrivePoseControllerROS::disableCB(const std_msgs::EmptyConstPtr msg)
   {
     ROS_INFO_STREAM("Controller was already disabled. [" << name_ <<"]");
   }
+}
+
+void DiffDrivePoseControllerROS::reconfigCB(yocs_msgs::PoseControllerConfig &config, uint32_t level)
+{
+  controller_mutex_.lock();
+  v_min_movement_ = config.v_min;
+  v_max_ = config.v_max;
+  w_max_ = config.w_max;
+  w_min_ = config.w_min;
+  k_1_ = config.k_1;
+  k_2_ = config.k_2;
+  beta_ = config.beta;
+  lambda_ = config.lambda;
+  dist_thres_ = config.dist_thres;
+  orient_thres_ = config.orient_thres;
+  dist_eps_ = config.dist_eps;
+  orient_eps_ = config.orient_eps;
+  controller_mutex_.unlock();
 }
 
 } // namespace yocs

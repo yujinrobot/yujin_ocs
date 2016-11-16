@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(yocs_diff_drive_pose_controller)
 
 find_package(catkin REQUIRED COMPONENTS ecl_threads
+                                        dynamic_reconfigure
                                         geometry_msgs
                                         nodelet
                                         pluginlib
@@ -11,11 +12,13 @@ find_package(catkin REQUIRED COMPONENTS ecl_threads
                                         tf
                                         yocs_controllers
                                         yocs_math_toolkit
+                                        yocs_msgs
             )
 
 catkin_package(INCLUDE_DIRS include
                LIBRARIES yocs_diff_drive_pose_controller yocs_diff_drive_pose_controller_nodelet
                CATKIN_DEPENDS ecl_threads
+                              dynamic_reconfigure
                               geometry_msgs
                               nodelet
                               pluginlib
@@ -25,6 +28,7 @@ catkin_package(INCLUDE_DIRS include
                               tf
                               yocs_controllers
                               yocs_math_toolkit
+                              yocs_msgs
               )
 
 include_directories(include ${catkin_INCLUDE_DIRS})

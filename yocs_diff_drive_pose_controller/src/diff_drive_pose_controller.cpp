@@ -62,6 +62,7 @@ bool DiffDrivePoseController::step()
 
 void DiffDrivePoseController::calculateControls()
 {
+  controller_mutex_.lock();
   double angle_diff = mtk::wrapAngle(theta_ - delta_);
 
   if (r_ > dist_thres_)
@@ -97,6 +98,7 @@ void DiffDrivePoseController::calculateControls()
       }
     }
   }
+  controller_mutex_.unlock();
 }
 
 void DiffDrivePoseController::controlPose()
@@ -126,7 +128,6 @@ void DiffDrivePoseController::controlPose()
 
 void DiffDrivePoseController::controlOrientation(double angle_difference)
 {
-
   w_ = orientation_gain_ * (angle_difference);
 
   //enforce limits on angular velocity

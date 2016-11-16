@@ -38,10 +38,14 @@
  ** Includes
  *****************************************************************************/
 #include <ros/ros.h>
+#include <ecl/threads/mutex.hpp>
 #include <std_msgs/Empty.h>
 #include <std_msgs/Float32.h>
 #include <std_msgs/String.h>
 #include <tf/transform_listener.h>
+#include <boost/shared_ptr.hpp>
+#include <dynamic_reconfigure/server.h>
+#include <yocs_msgs/PoseControllerConfig.h>
 
 #include "yocs_diff_drive_pose_controller/diff_drive_pose_controller.hpp"
 
@@ -132,6 +136,8 @@ private:
    */
   void disableCB(const std_msgs::EmptyConstPtr msg);
 
+  void reconfigCB(yocs_msgs::PoseControllerConfig &config, uint32_t level);
+
   // basics
   ros::NodeHandle nh_;
   std::string name_;
@@ -156,6 +162,10 @@ private:
   std::string base_frame_name_;
   /// frame name of the goal (pose)
   std::string goal_frame_name_;
+
+  ///dynamic reconfigure server
+  boost::shared_ptr<dynamic_reconfigure::Server<yocs_msgs::PoseControllerConfig> > reconfig_server_;
+
 };
 
 } // namespace yocs
