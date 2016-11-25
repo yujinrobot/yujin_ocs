@@ -32,6 +32,7 @@ catkin_package()
 include_directories(${catkin_INCLUDE_DIRS})
 add_executable(joyop src/joyop.cpp)
 target_link_libraries(joyop ${catkin_LIBRARIES})
+add_dependencies(joyop yocs_msgs_gencpp)
 
 ##############################################################################
 # Install
