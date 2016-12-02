@@ -52,7 +52,7 @@ void ARPairTrackingClient::createMirrorMarkers()
     mtk::tf2pose(marker_gb, kk.pose);
     global_markers_mirrors_.markers.push_back(kk);
 
-    ROS_DEBUG("Marker %d: %s", global_markers_.markers[i].id, mtk::pose2str(global_markers_.markers[i].pose.pose));
+    ROS_DEBUG("Marker %d: %s", global_markers_.markers[i].id, mtk::pose2str2D(global_markers_.markers[i].pose.pose).c_str());
 
     // TODO: In the current annotation design, it is impossible to record both left and right id of ar marker. 
   }
