@@ -38,6 +38,12 @@ target_link_libraries(waypoint_provider waypoint_provider_lib waypoint_provider_
 ## Install ##
 #############
 
+install(TARGETS waypoint_provider_lib waypoint_provider_yaml_parser_lib
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
 install(TARGETS waypoint_provider 
         DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
