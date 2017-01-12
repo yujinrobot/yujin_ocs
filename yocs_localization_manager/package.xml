@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>yocs_localization_manager</name>
-  <version>0.8.1</version>
+  <version>0.8.2</version>
   <description>
     Localization Manager helps to localize robot's position with annotated information
   </description>

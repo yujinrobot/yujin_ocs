@@ -1,6 +1,6 @@
 <package>
   <name>yocs_virtual_sensor</name>
-  <version>0.8.1</version>
+  <version>0.8.2</version>
   <description>
       Virtual sensor that uses semantic map information to "see" obstacles undetectable by robot sensors.
       

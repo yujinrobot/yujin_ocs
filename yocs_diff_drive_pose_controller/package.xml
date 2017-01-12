@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>yocs_diff_drive_pose_controller</name>
-  <version>0.8.1</version>
+  <version>0.8.2</version>
   <description>
     A controller for driving a differential drive base to a pose goal or along a path specified by multiple poses.
     A pose consists of a 2D position (x,y) and a 1D orientation (theta).

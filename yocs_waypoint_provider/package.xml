@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>yocs_waypoint_provider</name>
-  <version>0.8.1</version>
+  <version>0.8.2</version>
   <description>
     Parse a multiple poses from yaml and provide as topic and service. This package is highly inspired by yocs_waypoints_navi
   </description>

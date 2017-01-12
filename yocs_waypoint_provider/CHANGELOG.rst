@@ -2,8 +2,8 @@
 Changelog for package yocs_waypoint_provider
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.6.3 (2014-12-05)
-------------------
+Forthcoming
+* add missing install rules
 
 0.6.2 (2014-11-30)
 ------------------
