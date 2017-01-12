@@ -3,21 +3,23 @@
  -->
 
 <launch>
-  <arg name="linear_vel_step"     default="0.05"/>
-  <arg name="linear_vel_max"      default="1.5"/>
-  <arg name="angular_vel_step"    default="0.33"/>
-  <arg name="angular_vel_max"     default="6.6"/>
-  <arg name="wait_for_connection" default="true"/>
-  <arg name="cmd_vel_topic_name"  default="cmd_vel"/>
-  <arg name="enable_topic_name"   default="enable_motors"/>
-  <arg name="disable_topic_name"  default="disable_motors"/>
- 
+  <arg name="linear_vel_step"       default="0.05"/>
+  <arg name="linear_vel_max"        default="1.5"/>
+  <arg name="angular_vel_step"      default="0.33"/>
+  <arg name="angular_vel_max"       default="6.6"/>
+  <arg name="wait_for_connection"   default="true"/>
+  <arg name="default_power_status"  default="false"/>
+  <arg name="cmd_vel_topic_name"    default="cmd_vel"/>
+  <arg name="enable_topic_name"     default="enable_motors"/>
+  <arg name="disable_topic_name"    default="disable_motors"/>
+
   <node pkg="yocs_keyop" type="yocs_keyop" name="yocs_keyop" output="screen">
     <param name="linear_vel_step"           value="$(arg linear_vel_step)"/>
     <param name="linear_vel_max"            value="$(arg linear_vel_max)"/>
     <param name="angular_vel_step"          value="$(arg angular_vel_step)"/>
     <param name="angular_vel_max"           value="$(arg angular_vel_max)"/>
     <param name="wait_for_connection"       value="$(arg wait_for_connection)"/>
+    <param name="default_power_status"      value="$(arg default_power_status)"/>
     <remap from="yocs_keyop/cmd_vel"        to="$(arg cmd_vel_topic_name)"/>
     <remap from="yocs_keyop/enable_motors"  to="$(arg enable_topic_name)"/>
     <remap from="yocs_keyop/disable_motors" to="$(arg disable_topic_name)"/>
