@@ -48,10 +48,12 @@ void DiffDrivePoseController::setInput(double distance_to_goal, double delta, do
 
 void DiffDrivePoseController::setCurrentLimits(double v_min, double w_min, double v_max, double w_max)
 {
+  controller_mutex_.lock();
   v_min_ = v_min;
   w_min_ = w_min;
   v_max_ = v_max;
   w_max_ = w_max;
+  controller_mutex_.unlock();
 }
 
 bool DiffDrivePoseController::step()

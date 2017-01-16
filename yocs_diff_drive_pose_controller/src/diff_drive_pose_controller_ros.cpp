@@ -225,9 +225,12 @@ void DiffDrivePoseControllerROS::setControlOutput()
 
 void DiffDrivePoseControllerROS::controlMaxVelCB(const std_msgs::Float32ConstPtr msg)
 {
+  controller_mutex_.lock();
   v_max_ = msg->data;
+
   //v_min_ = -v_max_; //if we also want to enable driving backwards
   ROS_INFO_STREAM("Maximum linear control velocity has been set to " << v_max_ << ". [" << name_ << "]");
+  controller_mutex_.unlock();
 }
 
 void DiffDrivePoseControllerROS::enableCB(const std_msgs::StringConstPtr msg)
@@ -263,9 +266,10 @@ void DiffDrivePoseControllerROS::reconfigCB(yocs_msgs::PoseControllerConfig &con
 {
   controller_mutex_.lock();
   v_min_movement_ = config.v_min;
+  v_min_ = v_min_movement_;
   v_max_ = config.v_max;
   w_max_ = config.w_max;
-  w_min_ = config.w_min;
+  w_min_ = -w_max_;
   k_1_ = config.k_1;
   k_2_ = config.k_2;
   beta_ = config.beta;
