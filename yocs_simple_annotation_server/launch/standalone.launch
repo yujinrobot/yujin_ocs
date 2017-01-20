@@ -1,0 +1,5 @@
+<launch>
+  <node pkg="yocs_simple_annotation_server" type="simple_annotation_server.py" name="simple_annotation_server" output="screen">
+    <param name="filename" value="$(find yocs_simple_annotation_server)/yaml/annotations.yaml"/>
+  </node>
+</launch>

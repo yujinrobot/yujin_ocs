@@ -1,0 +1,19 @@
+ar_markers: []
+columns: []
+tables:
+- height: 0.0
+  name: t123123123
+  pose:
+    header:
+      frame_id: ''
+      seq: 0
+      stamp: {nsecs: 0, secs: 0}
+    pose:
+      covariance: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+      pose:
+        orientation: {w: 0.0, x: 0.0, y: 0.0, z: 0.0}
+        position: {x: 0.0, y: 0.0, z: 0.0}
+  radius: 0.0
+walls: []
