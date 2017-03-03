@@ -1,3 +1,4 @@
+
 /**
  * @file /src/velocity_smoother_nodelet.cpp
  *
@@ -295,10 +296,12 @@ bool VelocitySmoother::init(ros::NodeHandle& nh)
   decel_lim_w = decel_factor*accel_lim_w;
 
   // Publishers and subscribers
-  odometry_sub    = nh.subscribe("odometry",      1, &VelocitySmoother::odometryCB, this);
-  current_vel_sub = nh.subscribe("robot_cmd_vel", 1, &VelocitySmoother::robotVelCB, this);
-  raw_in_vel_sub  = nh.subscribe("raw_cmd_vel",   1, &VelocitySmoother::velocityCB, this);
-  smooth_vel_pub  = nh.advertise <geometry_msgs::Twist> ("smooth_cmd_vel", 1);
+  if (feedback == ODOMETRY)
+    odometry_sub = nh.subscribe("odometry", 1, &VelocitySmoother::odometryCB, this);
+  else if (feedback == COMMANDS)
+    current_vel_sub = nh.subscribe("robot_cmd_vel", 1, &VelocitySmoother::robotVelCB, this);
+  raw_in_vel_sub = nh.subscribe("raw_cmd_vel", 1, &VelocitySmoother::velocityCB, this);
+  smooth_vel_pub = nh.advertise <geometry_msgs::Twist> ("smooth_cmd_vel", 1);
 
   return true;
 }
