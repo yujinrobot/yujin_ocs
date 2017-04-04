@@ -13,11 +13,12 @@
 #include <ros/ros.h>
 #include <nodelet/nodelet.h>
 #include <pluginlib/class_list_macros.h>
-
+#include <pluginlib/class_loader.h>
 #include <dynamic_reconfigure/server.h>
 #include <yocs_velocity_smoother/paramsConfig.h>
 
-#include <ecl/threads/thread.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/thread.hpp>
 
 #include "yocs_velocity_smoother/velocity_smoother_nodelet.hpp"
 
@@ -262,7 +263,7 @@ bool VelocitySmoother::init(ros::NodeHandle& nh)
   // Optional parameters
   int feedback;
   nh.param("frequency",      frequency,     20.0);
-  nh.param("quiet",          quiet,         quiet);
+  nh.param("quiet",          quiet,         false);
   nh.param("decel_factor",   decel_factor,   1.0);
   nh.param("robot_feedback", feedback, (int)NONE);
 
@@ -316,7 +317,10 @@ public:
   {
     NODELET_DEBUG("Velocity Smoother : waiting for worker thread to finish...");
     vel_smoother_->shutdown();
-    worker_thread_.join();
+    if(worker_thread_->joinable())
+    {
+    	worker_thread_->join();
+    }
   }
 
   std::string unresolvedName(const std::string &name) const {
@@ -335,7 +339,7 @@ public:
     if (vel_smoother_->init(ph))
     {
       NODELET_DEBUG_STREAM("Velocity Smoother : nodelet initialised [" << name << "]");
-      worker_thread_.start(&VelocitySmoother::spin, *vel_smoother_);
+      worker_thread_ = new boost::thread(boost::bind(&VelocitySmoother::spin, vel_smoother_));
     }
     else
     {
@@ -345,9 +349,14 @@ public:
 
 private:
   boost::shared_ptr<VelocitySmoother> vel_smoother_;
-  ecl::Thread                        worker_thread_;
+  boost::thread*                      worker_thread_;
 };
 
 } // namespace yocs_velocity_smoother
 
-PLUGINLIB_EXPORT_CLASS(yocs_velocity_smoother::VelocitySmootherNodelet, nodelet::Nodelet);
+
+#ifdef PLUGINLIB_EXPORT_CLASS
+  PLUGINLIB_EXPORT_CLASS(yocs_velocity_smoother::VelocitySmootherNodelet, nodelet::Nodelet)
+#else
+  PLUGINLIB_DECLARE_CLASS(yocs_velocity_smoother, VelocitySmootherNodelet, yocs_velocity_smoother::VelocitySmootherNodelet, nodelet::Nodelet)
+#endif
