@@ -1,6 +1,6 @@
 <package>
   <name>yocs_controllers</name>
-  <version>0.10.0</version>
+  <version>0.11.0</version>
   <description>
      Library for various controller types and algorithms
   </description>
