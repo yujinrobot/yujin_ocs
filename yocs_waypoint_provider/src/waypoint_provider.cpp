@@ -145,6 +145,7 @@ namespace yocs {
     marker.ns = "trajectories";
     marker.id = i + marker_index_;
     marker.pose = geometry_msgs::Pose();
+    marker.pose.orientation.w = 1; // normalize quaternion
     marker.type = visualization_msgs::Marker::LINE_STRIP;
     marker.action = visualization_msgs::Marker::ADD;
     marker.color.r = 0.0f;
