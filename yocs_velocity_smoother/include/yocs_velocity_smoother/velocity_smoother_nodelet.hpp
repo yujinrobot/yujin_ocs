@@ -19,6 +19,7 @@
 
 #include <ros/ros.h>
 #include <nav_msgs/Odometry.h>
+#include <mutex>
 
 /*****************************************************************************
 ** Namespaces
@@ -44,6 +45,7 @@ public:
   bool init(ros::NodeHandle& nh);
   void spin();
   void shutdown() { shutdown_req = true; };
+  std::mutex locker;
 
 private:
   enum RobotFeedbackType
@@ -95,6 +97,7 @@ private:
   dynamic_reconfigure::Server<yocs_velocity_smoother::paramsConfig> *             dynamic_reconfigure_server;
   dynamic_reconfigure::Server<yocs_velocity_smoother::paramsConfig>::CallbackType dynamic_reconfigure_callback;
   void reconfigCB(yocs_velocity_smoother::paramsConfig &config, uint32_t unused_level);
+  
 };
 
 } // yocs_namespace velocity_smoother
