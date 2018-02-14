@@ -54,6 +54,7 @@ void VelocitySmoother::reconfigCB(yocs_velocity_smoother::paramsConfig &config, 
   ROS_INFO("Reconfigure request : %f %f %f %f %f",
            config.speed_lim_v, config.speed_lim_w, config.accel_lim_v, config.accel_lim_w, config.decel_factor);
 
+  locker.lock();
   speed_lim_v  = config.speed_lim_v;
   speed_lim_w  = config.speed_lim_w;
   accel_lim_v  = config.accel_lim_v;
@@ -61,6 +62,7 @@ void VelocitySmoother::reconfigCB(yocs_velocity_smoother::paramsConfig &config, 
   decel_factor = config.decel_factor;
   decel_lim_v  = decel_factor*accel_lim_v;
   decel_lim_w  = decel_factor*accel_lim_w;
+  locker.unlock();
 }
 
 void VelocitySmoother::velocityCB(const geometry_msgs::Twist::ConstPtr& msg)
@@ -94,10 +96,12 @@ void VelocitySmoother::velocityCB(const geometry_msgs::Twist::ConstPtr& msg)
   input_active = true;
 
   // Bound speed with the maximum values
+  locker.lock();
   target_vel.linear.x  =
       msg->linear.x  > 0.0 ? std::min(msg->linear.x,  speed_lim_v) : std::max(msg->linear.x,  -speed_lim_v);
   target_vel.angular.z =
       msg->angular.z > 0.0 ? std::min(msg->angular.z, speed_lim_w) : std::max(msg->angular.z, -speed_lim_w);
+  locker.unlock();
 }
 
 void VelocitySmoother::odometryCB(const nav_msgs::Odometry::ConstPtr& msg)
@@ -123,6 +127,14 @@ void VelocitySmoother::spin()
 
   while (! shutdown_req && ros::ok())
   {
+    locker.lock();
+    double accel_lim_v_(accel_lim_v);
+    double accel_lim_w_(accel_lim_w);
+    double decel_factor(decel_factor);
+    double decel_lim_v_(decel_lim_v);
+    double decel_lim_w_(decel_lim_w);
+    locker.unlock();
+    
     if ((input_active == true) && (cb_avg_time > 0.0) &&
         ((ros::Time::now() - last_cb_time).toSec() > std::min(3.0*cb_avg_time, 0.5)))
     {
@@ -144,11 +156,11 @@ void VelocitySmoother::spin()
     //don't care about min / max velocities here, just for rough checking
     double period_buffer = 2.0;
 
-    double v_deviation_lower_bound = last_cmd_vel.linear.x - decel_lim_v * period * period_buffer;
-    double v_deviation_upper_bound = last_cmd_vel.linear.x + accel_lim_v * period * period_buffer;
+    double v_deviation_lower_bound = last_cmd_vel.linear.x - decel_lim_v_ * period * period_buffer;
+    double v_deviation_upper_bound = last_cmd_vel.linear.x + accel_lim_v_ * period * period_buffer;
 
-    double w_deviation_lower_bound = last_cmd_vel.angular.z - decel_lim_w * period * period_buffer;
-    double angular_max_deviation = last_cmd_vel.angular.z + accel_lim_w * period * period_buffer;
+    double w_deviation_lower_bound = last_cmd_vel.angular.z - decel_lim_w_ * period * period_buffer;
+    double angular_max_deviation = last_cmd_vel.angular.z + accel_lim_w_ * period * period_buffer;
 
     bool v_different_from_feedback = current_vel.linear.x < v_deviation_lower_bound || current_vel.linear.x > v_deviation_upper_bound;
     bool w_different_from_feedback = current_vel.angular.z < w_deviation_lower_bound || current_vel.angular.z > angular_max_deviation;
@@ -188,22 +200,22 @@ void VelocitySmoother::spin()
       if ((robot_feedback == ODOMETRY) && (current_vel.linear.x*target_vel.linear.x < 0.0))
       {
         // countermarch (on robots with significant inertia; requires odometry feedback to be detected)
-        max_v_inc = decel_lim_v*period;
+        max_v_inc = decel_lim_v_*period;
       }
       else
       {
-        max_v_inc = ((v_inc*target_vel.linear.x > 0.0)?accel_lim_v:decel_lim_v)*period;
+        max_v_inc = ((v_inc*target_vel.linear.x > 0.0)?accel_lim_v:decel_lim_v_)*period;
       }
 
       w_inc = target_vel.angular.z - last_cmd_vel.angular.z;
       if ((robot_feedback == ODOMETRY) && (current_vel.angular.z*target_vel.angular.z < 0.0))
       {
         // countermarch (on robots with significant inertia; requires odometry feedback to be detected)
-        max_w_inc = decel_lim_w*period;
+        max_w_inc = decel_lim_w_*period;
       }
       else
       {
-        max_w_inc = ((w_inc*target_vel.angular.z > 0.0)?accel_lim_w:decel_lim_w)*period;
+        max_w_inc = ((w_inc*target_vel.angular.z > 0.0)?accel_lim_w_:decel_lim_w_)*period;
       }
 
       // Calculate and normalise vectors A (desired velocity increment) and B (maximum velocity increment),
@@ -240,7 +252,6 @@ void VelocitySmoother::spin()
         // we must limit angular velocity
         cmd_vel->angular.z = last_cmd_vel.angular.z + sign(w_inc)*max_w_inc;
       }
-
       smooth_vel_pub.publish(cmd_vel);
       last_cmd_vel = *cmd_vel;
     }
