@@ -139,6 +139,9 @@ protected:
   /// maximum angular base velocity [rad/s]
   double w_max_;
 
+  /// previous linear base velocity [m/s]
+  double p_v_;
+
   /// path to goal curvature
   double cur_;
   /// constant factor determining the ratio of the rate of change in theta to the rate of change in r
@@ -171,6 +174,8 @@ protected:
   double orient_eps_;
   /// Enable or disable ros messages.
   bool verbose_;
+  /// Spin Rate
+  double spin_rate_;
 };
 
 } /* end namespace */

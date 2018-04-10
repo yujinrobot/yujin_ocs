@@ -1,0 +1,8 @@
+{
+    "python.autoComplete.extraPaths": [
+        "/opt/groot/navi_ws/devel/lib/python2.7/dist-packages",
+        "/opt/groot/messages_ws/devel/lib/python2.7/dist-packages",
+        "/opt/yujin/amd64/indigo-devel/lib/python2.7/dist-packages",
+        "/opt/ros/indigo/lib/python2.7/dist-packages"
+    ]
+}
