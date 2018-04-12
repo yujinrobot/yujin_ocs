@@ -195,7 +195,7 @@ bool DiffDrivePoseControllerROS::getPoseDiff()
   // helper: theta = tf's orientation + delta
   double heading = mtk::wrapAngle(tf::getYaw(tf_goal_pose_rel_.getRotation()));
   double theta = heading + delta;
-  
+
   setInput(r, delta, theta);
 
   return true;
