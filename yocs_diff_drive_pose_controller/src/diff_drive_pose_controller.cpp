@@ -22,6 +22,7 @@ DiffDrivePoseController::DiffDrivePoseController(std::string name, double v_max,
   theta_ = 0.0;
   cur_ = 0.0;
   pose_reached_ = false;
+  p_v_ = 0.0;
 
   v_min_movement_ = v_min_movement;
   w_min_movement_ = w_min_movement;
@@ -72,6 +73,7 @@ void DiffDrivePoseController::calculateControls()
   {
     //reached goal position, so just adjust orientation
     v_ = 0.0;
+    p_v_ = 0.0;
     controlOrientation(angle_diff);
   }
 
@@ -121,7 +123,16 @@ void DiffDrivePoseController::controlPose()
   v_ = enforceMinVelocity(v_, v_min_movement_);
   v_ = enforceMinMax(v_, v_min_, v_max_);
 
-//  ROS_WARN_STREAM("r_: " << r_ << " dist_thres_: " << dist_thres_ << ", delta_-theta_: " << delta_ - theta_ << ", orient_thres_" << orient_thres_);
+  double max_acc = v_max_ / spin_rate_;
+  double v_acc = v_ - p_v_;
+  if( v_acc > max_acc ) v_acc = max_acc;
+  else if( v_acc <-max_acc ) v_acc = -max_acc;
+
+  v_ = p_v_ + v_acc;
+
+  p_v_ = v_;
+
+  // ROS_WARN_STREAM("v : " << v_ << ", w : " << w_  << ", r_ : " << r_ << ", delta_-theta_ : " << delta_ - theta_ << ", delta : " << delta_ );
 }
 
 void DiffDrivePoseController::controlOrientation(double angle_difference)

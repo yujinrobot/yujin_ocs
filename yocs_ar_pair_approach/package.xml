@@ -1,6 +1,6 @@
 <package>
   <name>yocs_ar_pair_approach</name>
-  <version>0.12.0</version>
+  <version>0.12.1</version>
   <description>
     Search and approach behaviour, moving to a target in front of a pair of ar markers.
   </description>

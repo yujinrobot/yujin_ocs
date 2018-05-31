@@ -127,6 +127,13 @@ bool DiffDrivePoseControllerROS::init()
     ROS_WARN_STREAM(
         "Couldn't retrieve parameter 'orient_eps' from parameter server! Using default '" << orient_eps_ << "'. [" << name_ <<"]");
   }
+  
+  spin_rate_ = 25.0;
+  if (!nh_.getParam("spin_rate", spin_rate_))
+  {
+    ROS_WARN_STREAM(
+        "Couldn't retrieve parameter 'orient_eps' from parameter server! Using default '" << spin_rate_ << "'. [" << name_ <<"]");
+  }
 
   ROS_DEBUG_STREAM("Controller initialised with the following parameters: [" << name_ <<"]");
   ROS_DEBUG_STREAM(
@@ -241,6 +248,7 @@ void DiffDrivePoseControllerROS::disableCB(const std_msgs::EmptyConstPtr msg)
   if (this->disable())
   {
     ROS_INFO_STREAM("Controller has been disabled. [" << name_ <<"]");
+    p_v_ = 0.0;
   }
   else
   {

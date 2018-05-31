@@ -1,3 +1,5 @@
 *.swo
 *.swp
 *.pyc
+.vccode
+*.json
