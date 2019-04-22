@@ -97,8 +97,19 @@ void VelocitySmoother::velocityCB(const geometry_msgs::Twist::ConstPtr& msg)
 
   // Bound speed with the maximum values
   locker.lock();
-  target_vel.linear.x  =
-      msg->linear.x  > 0.0 ? std::min(msg->linear.x,  speed_lim_v) : std::max(msg->linear.x,  -speed_lim_v);
+  if (!holonomic_robot) {
+    target_vel.linear.x  =
+        msg->linear.x  > 0.0 ? std::min(msg->linear.x,  speed_lim_v) : std::max(msg->linear.x,  -speed_lim_v);
+  } else {
+    double v = std::hypot(msg->linear.x, msg->linear.y);
+    if (v < speed_lim_v) {
+      target_vel.linear.x  = msg->linear.x;
+      target_vel.linear.y  = msg->linear.y;
+    } else {
+      target_vel.linear.x  = msg->linear.x * speed_lim_v / v;
+      target_vel.linear.y  = msg->linear.y * speed_lim_v / v;
+    }
+  }
   target_vel.angular.z =
       msg->angular.z > 0.0 ? std::min(msg->angular.z, speed_lim_w) : std::max(msg->angular.z, -speed_lim_w);
   locker.unlock();
@@ -189,22 +200,28 @@ void VelocitySmoother::spin()
     geometry_msgs::TwistPtr cmd_vel;
 
     if ((target_vel.linear.x  != last_cmd_vel.linear.x) ||
+        (holonomic_robot && (target_vel.linear.y != last_cmd_vel.linear.y)) ||
         (target_vel.angular.z != last_cmd_vel.angular.z))
     {
       // Try to reach target velocity ensuring that we don't exceed the acceleration limits
       cmd_vel.reset(new geometry_msgs::Twist(target_vel));
 
-      double v_inc, w_inc, max_v_inc, max_w_inc;
-
-      v_inc = target_vel.linear.x - last_cmd_vel.linear.x;
-      if ((robot_feedback == ODOMETRY) && (current_vel.linear.x*target_vel.linear.x < 0.0))
-      {
+      double v_incs[2], w_inc, max_v_incs[2], max_w_inc;
+      v_incs[0] = target_vel.linear.x - last_cmd_vel.linear.x;
+      v_incs[1] = target_vel.linear.y - last_cmd_vel.linear.y;
+      if (robot_feedback == ODOMETRY) {
         // countermarch (on robots with significant inertia; requires odometry feedback to be detected)
-        max_v_inc = decel_lim_v_*period;
+        if (current_vel.linear.x*target_vel.linear.x < 0.0) {
+          max_v_incs[0] = decel_lim_v*period;
+        }
+        if (current_vel.linear.y*target_vel.linear.y < 0.0) {
+          max_v_incs[1] = decel_lim_v*period;
+        }
       }
       else
       {
-        max_v_inc = ((v_inc*target_vel.linear.x > 0.0)?accel_lim_v:decel_lim_v_)*period;
+        max_v_incs[0] = ((v_incs[0]*target_vel.linear.x > 0.0)?accel_lim_v:decel_lim_v)*period;
+        max_v_incs[1] = ((v_incs[1]*target_vel.linear.y > 0.0)?accel_lim_v:decel_lim_v)*period;
       }
 
       w_inc = target_vel.angular.z - last_cmd_vel.angular.z;
@@ -218,33 +235,40 @@ void VelocitySmoother::spin()
         max_w_inc = ((w_inc*target_vel.angular.z > 0.0)?accel_lim_w_:decel_lim_w_)*period;
       }
 
-      // Calculate and normalise vectors A (desired velocity increment) and B (maximum velocity increment),
-      // where v acts as coordinate x and w as coordinate y; the sign of the angle from A to B determines
-      // which velocity (v or w) must be overconstrained to keep the direction provided as command
-      double MA = sqrt(    v_inc *     v_inc +     w_inc *     w_inc);
-      double MB = sqrt(max_v_inc * max_v_inc + max_w_inc * max_w_inc);
+      if (!holonomic_robot) {
+        // Calculate and normalise vectors A (desired velocity increment) and B (maximum velocity increment),
+        // where v acts as coordinate x and w as coordinate y; the sign of the angle from A to B determines
+        // which velocity (v or w) must be overconstrained to keep the direction provided as command
+        double MA = sqrt(    v_incs[0] *     v_incs[0] +     w_inc *     w_inc);
+        double MB = sqrt(max_v_incs[0] * max_v_incs[0] + max_w_inc * max_w_inc);
 
-      double Av = std::abs(v_inc) / MA;
-      double Aw = std::abs(w_inc) / MA;
-      double Bv = max_v_inc / MB;
-      double Bw = max_w_inc / MB;
-      double theta = atan2(Bw, Bv) - atan2(Aw, Av);
+        double Av = std::abs(v_incs[0]) / MA;
+        double Aw = std::abs(w_inc) / MA;
+        double Bv = max_v_incs[0] / MB;
+        double Bw = max_w_inc / MB;
+        double theta = atan2(Bw, Bv) - atan2(Aw, Av);
 
-      if (theta < 0)
-      {
-        // overconstrain linear velocity
-        max_v_inc = (max_w_inc*std::abs(v_inc))/std::abs(w_inc);
+        if (theta < 0)
+        {
+          // overconstrain linear velocity
+          max_v_incs[0] = (max_w_inc*std::abs(v_incs[0]))/std::abs(w_inc);
+        }
+        else
+        {
+          // overconstrain angular velocity
+          max_w_inc = (max_v_incs[0]*std::abs(w_inc))/std::abs(v_incs[0]);
+        }
       }
-      else
-      {
-        // overconstrain angular velocity
-        max_w_inc = (max_v_inc*std::abs(w_inc))/std::abs(v_inc);
-      }
 
-      if (std::abs(v_inc) > max_v_inc)
+      if (std::abs(v_incs[0]) > max_v_incs[0])
       {
         // we must limit linear velocity
-        cmd_vel->linear.x  = last_cmd_vel.linear.x  + sign(v_inc)*max_v_inc;
+        cmd_vel->linear.x  = last_cmd_vel.linear.x  + sign(v_incs[0])*max_v_incs[0];
+      }
+      if (holonomic_robot && (std::abs(v_incs[1]) > max_v_incs[1]))
+      {
+        // we must limit linear velocity
+        cmd_vel->linear.y  = last_cmd_vel.linear.y  + sign(v_incs[1])*max_v_incs[1];
       }
 
       if (std::abs(w_inc) > max_w_inc)
@@ -285,6 +309,7 @@ bool VelocitySmoother::init(ros::NodeHandle& nh)
   nh.param("quiet",          quiet,         quiet);
   nh.param("decel_factor",   decel_factor,   1.0);
   nh.param("robot_feedback", feedback, (int)NONE);
+  nh.param("holonomic_robot", holonomic_robot, false);
 
   if ((int(feedback) < NONE) || (int(feedback) > COMMANDS))
   {
