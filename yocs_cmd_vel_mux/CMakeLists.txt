@@ -2,11 +2,22 @@ cmake_minimum_required(VERSION 2.8.3)
 project(yocs_cmd_vel_mux)
 find_package(catkin REQUIRED COMPONENTS roscpp pluginlib nodelet dynamic_reconfigure geometry_msgs)
 
-# pkg-config support
-find_package(PkgConfig)
-pkg_search_module(yaml-cpp REQUIRED yaml-cpp)
+# check find_package first
+find_package(yaml-cpp QUIET)
+if(NOT yaml-cpp_FOUND)
+    # requires pkg-config support
+    find_package(PkgConfig)
+    pkg_search_module(yaml-cpp REQUIRED yaml-cpp)
+else()
+    # remap yaml-cpp's exported config variables to work with catkin_package's DEPEND argument
+    set(yaml-cpp_INCLUDE_DIRS ${YAML_CPP_INCLUDE_DIR})
+    set(yaml-cpp_LIBRARIES ${YAML_CPP_LIBRARIES})
+endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+# config c++ version with cmake variable
+if(NOT CMAKE_CXX_STANDARD)
+    set(CMAKE_CXX_STANDARD 11)
+endif()
 
 if(NOT ${yaml-cpp_VERSION} VERSION_LESS "0.5")
 add_definitions(-DHAVE_NEW_YAMLCPP)
