@@ -68,7 +68,7 @@ void CmdVelSubscribers::configure(const YAML::Node& node)
     }
 
     std::vector<std::shared_ptr<CmdVelSubs>> new_list(node.size());
-    for (unsigned int i = 0; i < node.size(); i++)
+    for (size_t i = 0; i < node.size(); i++)
     {
       // Parse entries on YAML
       std::string new_subs_name = node[i]["name"].Scalar();
