@@ -199,7 +199,7 @@ void CmdVelMuxNodelet::reloadConfiguration(yocs_cmd_vel_mux::reloadConfig &confi
 
   // (Re)create subscribers whose topic is invalid: new ones and those with changed names
   double longest_timeout = 0.0;
-  for (unsigned int i = 0; i < cmd_vel_subs.size(); i++)
+  for (size_t i = 0; i < cmd_vel_subs.size(); i++)
   {
     if (!cmd_vel_subs[i]->subs)
     {
